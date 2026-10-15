@@ -19,6 +19,7 @@ describe('edit lists', () => {
 		expect(indentItem(['- a', '10. b'], spaces2, 1)).toEqual({
 			ok: true,
 			edits: [{ lineIndex: 1, text: '  1. b' }],
+			lineMoves: [],
 		});
 	});
 
@@ -26,6 +27,7 @@ describe('edit lists', () => {
 		expect(outdentItem(['- a', '  - b', '  1. c'], spaces2, 1)).toEqual({
 			ok: true,
 			edits: [{ lineIndex: 1, text: '- b' }],
+			lineMoves: [],
 		});
 	});
 

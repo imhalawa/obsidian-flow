@@ -48,17 +48,31 @@ describe('moveItemUp', () => {
 	});
 
 	it('lists no edits when the swap changes no line', () => {
-		expect(moveItemUp(['- a', '- a'], spaces2, 1)).toEqual({ ok: true, edits: [] });
+		expect(moveItemUp(['- a', '- a'], spaces2, 1)).toEqual(
+			expect.objectContaining({ ok: true, edits: [] }),
+		);
 	});
 
 	it('lists only the lines that change', () => {
-		expect(moveItemUp(['- a', '- a', '- b'], spaces2, 2)).toEqual({
-			ok: true,
-			edits: [
-				{ lineIndex: 1, text: '- b' },
-				{ lineIndex: 2, text: '- a' },
-			],
-		});
+		expect(moveItemUp(['- a', '- a', '- b'], spaces2, 2)).toEqual(
+			expect.objectContaining({
+				edits: [
+					{ lineIndex: 1, text: '- b' },
+					{ lineIndex: 2, text: '- a' },
+				],
+			}),
+		);
+	});
+
+	it('reports where each block went', () => {
+		expect(moveItemUp(['- a', '  - x', '- b'], spaces2, 2)).toEqual(
+			expect.objectContaining({
+				lineMoves: [
+					{ fromLine: 2, toLine: 2, delta: -2 },
+					{ fromLine: 0, toLine: 1, delta: 1 },
+				],
+			}),
+		);
 	});
 });
 

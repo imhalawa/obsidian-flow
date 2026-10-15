@@ -21,12 +21,22 @@ describe('guardedEdits', () => {
 
 	it('accepts edits that produce the expected depths', () => {
 		const edits = [{ lineIndex: 1, text: '  - b' }];
-		expect(guardedEdits(lines, style, edits, [0, 1])).toEqual({ ok: true, edits });
+		expect(guardedEdits(lines, style, edits, [0, 1], [])).toEqual({
+			ok: true,
+			edits,
+			lineMoves: [],
+		});
+	});
+
+	it('passes the line moves through', () => {
+		const moves = [{ fromLine: 0, toLine: 0, delta: 1 }];
+		const result = guardedEdits(lines, style, [], [0, 0], moves);
+		expect(result).toEqual({ ok: true, edits: [], lineMoves: moves });
 	});
 
 	it('refuses edits that produce other depths', () => {
 		const edits = [{ lineIndex: 1, text: ' - b' }];
-		expect(guardedEdits(lines, style, edits, [0, 1])).toEqual({
+		expect(guardedEdits(lines, style, edits, [0, 1], [])).toEqual({
 			ok: false,
 			reason: 'structure-check-failed',
 		});
@@ -34,7 +44,7 @@ describe('guardedEdits', () => {
 
 	it('refuses edits that change the number of items', () => {
 		const edits = [{ lineIndex: 1, text: 'b' }];
-		expect(guardedEdits(lines, style, edits, [0, 1])).toEqual({
+		expect(guardedEdits(lines, style, edits, [0, 1], [])).toEqual({
 			ok: false,
 			reason: 'structure-check-failed',
 		});
