@@ -2,6 +2,7 @@ export class Plugin {
 	app: unknown;
 	private stored: unknown = null;
 	readonly settingTabs: unknown[] = [];
+	readonly commands: Command[] = [];
 
 	constructor(app: unknown = {}) {
 		this.app = app;
@@ -15,6 +16,16 @@ export class Plugin {
 	addSettingTab(tab: unknown): void {
 		this.settingTabs.push(tab);
 	}
+	addCommand(command: Command): Command {
+		this.commands.push(command);
+		return command;
+	}
+}
+
+export interface Command {
+	id: string;
+	name: string;
+	editorCheckCallback?: (checking: boolean, editor: unknown, context: unknown) => boolean | void;
 }
 
 export class PluginSettingTab {
@@ -23,6 +34,13 @@ export class PluginSettingTab {
 		public app: unknown,
 		public plugin: unknown,
 	) {}
+}
+
+export class Notice {
+	static readonly shown: string[] = [];
+	constructor(message: string) {
+		Notice.shown.push(message);
+	}
 }
 
 export type App = unknown;
