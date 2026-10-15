@@ -4,5 +4,5 @@
 	"mutate": ["src/**/*.ts", "!src/main.ts", "!src/settings.ts"],
 	"reporters": ["clear-text", "progress"],
 	"thresholds": { "high": 90, "low": 80, "break": 80 },
-	"coverageAnalysis": "perTest"
+	"coverageAnalysis": "all"
 }
