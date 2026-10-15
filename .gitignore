@@ -25,3 +25,6 @@ data.json
 coverage
 .stryker-tmp
 reports
+
+# end-to-end cache (downloaded Obsidian)
+.e2e-cache

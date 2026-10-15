@@ -46,5 +46,15 @@ export default defineConfig(
 			'vitest/no-disabled-tests': 'error',
 		},
 	},
+	{
+		files: ['e2e/**/*.ts'],
+		languageOptions: { globals: { ...globals.node } },
+		rules: {
+			'obsidianmd/no-nodejs-modules': 'off',
+			'obsidianmd/prefer-window-timers': 'off',
+			'obsidianmd/hardcoded-config-path': 'off',
+			'no-restricted-globals': 'off',
+		},
+	},
 	prettier,
 );
