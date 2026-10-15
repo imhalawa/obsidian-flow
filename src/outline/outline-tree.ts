@@ -27,7 +27,7 @@ interface ActiveFence {
 interface ParseState {
 	tree: OutlineTree;
 	last: OutlineNode | null;
-	afterBlank: boolean;
+	blankStart: number | null;
 	fence: ActiveFence | null;
 	tabSize: number;
 }
@@ -46,6 +46,13 @@ function firstBodyLine(lines: readonly string[]): number {
 /** Marks a node and all its ancestors as reaching at least the given line. */
 function extendThrough(node: OutlineNode | null, lineIndex: number): void {
 	for (let up = node; up; up = up.parent) up.endLine = lineIndex;
+}
+
+/** Extends the nodes of a chain that end right before a blank run to cover the run. */
+function extendOverBlanks(node: OutlineNode | null, blankStart: number, lastBlank: number): void {
+	for (let up = node; up; up = up.parent) {
+		if (up.endLine === blankStart - 1) up.endLine = lastBlank;
+	}
 }
 
 /** Returns the nearest node, starting at `from`, whose content column is at or below `columns`. */
@@ -84,7 +91,7 @@ function readItem(state: ParseState, line: string, columns: number): ListItem | 
 
 /** Adds a list item line to the tree under the nearest containing item. */
 function addItem(state: ParseState, item: ListItem, lineIndex: number, columns: number): void {
-	extendThrough(state.last, lineIndex - 1);
+	extendOverBlanks(state.last, state.blankStart ?? lineIndex, lineIndex - 1);
 	const gapColumns = visualWidth(item.indent + item.marker + item.gap, state.tabSize);
 	const markerEnd = visualWidth(item.indent + item.marker, state.tabSize);
 	const wideGap = gapColumns - markerEnd > INDENTED_CODE_COLUMNS;
@@ -109,7 +116,7 @@ function addItem(state: ParseState, item: ListItem, lineIndex: number, columns: 
 
 /** Handles a non-blank line that is not a list item. */
 function addText(state: ParseState, line: string, lineIndex: number, columns: number): void {
-	const lazy = !state.afterBlank && !LIST_INTERRUPT.test(line);
+	const lazy = state.blankStart === null && !LIST_INTERRUPT.test(line);
 	const owner = lazy ? state.last : nearestContaining(state.last, columns);
 	if (!owner) state.last = null;
 	extendThrough(owner, lineIndex);
@@ -121,7 +128,7 @@ export function parseOutline(lines: readonly string[], tabSize: number): Outline
 	const state: ParseState = {
 		tree: { roots: [], nodes: [] },
 		last: null,
-		afterBlank: false,
+		blankStart: null,
 		fence: null,
 		tabSize,
 	};
@@ -131,7 +138,7 @@ export function parseOutline(lines: readonly string[], tabSize: number): Outline
 		if (state.fence) {
 			consumeFenceLine(state, state.fence, line, index);
 		} else if (line.trim() === '') {
-			state.afterBlank = true;
+			state.blankStart ??= index;
 			return;
 		} else {
 			const columns = visualWidth(
@@ -142,7 +149,7 @@ export function parseOutline(lines: readonly string[], tabSize: number): Outline
 			if (item) addItem(state, item, index, columns);
 			else addText(state, line, index, columns);
 		}
-		state.afterBlank = false;
+		state.blankStart = null;
 	});
 	return state.tree;
 }
