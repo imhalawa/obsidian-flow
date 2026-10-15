@@ -252,6 +252,14 @@ describe('parseOutline line ranges', () => {
 		]);
 	});
 
+	it('does not stretch a nested item over a paragraph that belongs to its parent', () => {
+		expect(rangesOf(['- a', '  - b', '', '  para', '- c'])).toEqual([
+			[0, 3],
+			[1, 1],
+			[4, 4],
+		]);
+	});
+
 	it('treats a whitespace only line as blank', () => {
 		expect(rangesOf(['- a', '  ', '- b'])).toEqual([
 			[0, 1],

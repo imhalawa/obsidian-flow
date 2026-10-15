@@ -4,5 +4,6 @@
 	"mutate": ["src/**/*.ts", "!src/main.ts", "!src/settings.ts"],
 	"reporters": ["clear-text", "progress"],
 	"thresholds": { "high": 90, "low": 80, "break": 80 },
-	"coverageAnalysis": "all"
+	"coverageAnalysis": "off",
+	"vitest": { "configFile": "vitest.stryker.config.ts" }
 }
