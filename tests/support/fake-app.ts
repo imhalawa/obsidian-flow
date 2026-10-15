@@ -15,6 +15,13 @@ export class FakeApp {
 		},
 	};
 
+	updateOptionsCalls = 0;
+	readonly workspace = {
+		updateOptions: (): void => {
+			this.updateOptionsCalls += 1;
+		},
+	};
+
 	loadLocalStorage(key: string): unknown {
 		return this.storage.get(key) ?? null;
 	}
