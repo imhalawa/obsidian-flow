@@ -41,6 +41,12 @@ describe('FlowPlugin lifecycle', () => {
 		).toHaveLength(2);
 	});
 
+	it('registers the item suggester', async () => {
+		const plugin = makePlugin();
+		await plugin.onload();
+		expect((plugin as unknown as { editorSuggests: unknown[] }).editorSuggests).toHaveLength(1);
+	});
+
 	it('renders an empty settings tab without throwing', async () => {
 		const plugin = makePlugin();
 		const tab = new FlowSettingTab({} as never, plugin);

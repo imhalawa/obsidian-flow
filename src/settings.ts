@@ -5,12 +5,14 @@ export interface FlowSettings {
 	enabled: boolean;
 	rememberZoom: boolean;
 	hideBlockIds: boolean;
+	itemSuggester: boolean;
 }
 
 export const DEFAULT_SETTINGS: FlowSettings = {
 	enabled: true,
 	rememberZoom: true,
 	hideBlockIds: true,
+	itemSuggester: true,
 };
 
 export class FlowSettingTab extends PluginSettingTab {
@@ -40,6 +42,15 @@ export class FlowSettingTab extends PluginSettingTab {
 					this.plugin.settings.hideBlockIds = value;
 					await this.plugin.saveSettings();
 					this.app.workspace.updateOptions();
+				}),
+			);
+		new Setting(this.containerEl)
+			.setName('Suggest items after ((')
+			.setDesc('Type (( to search the items of your notes and insert a link to one.')
+			.addToggle((toggle) =>
+				toggle.setValue(this.plugin.settings.itemSuggester).onChange(async (value) => {
+					this.plugin.settings.itemSuggester = value;
+					await this.plugin.saveSettings();
 				}),
 			);
 	}

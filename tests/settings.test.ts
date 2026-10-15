@@ -22,6 +22,7 @@ describe('settings tab', () => {
 		expect(Setting.created.map((setting) => setting.name)).toEqual([
 			'Remember zoom per note',
 			'Hide block ids',
+			'Suggest items after ((',
 		]);
 	});
 
@@ -30,6 +31,7 @@ describe('settings tab', () => {
 		expect(Setting.created.map((setting) => setting.description)).toEqual([
 			'Reopen each note at the item you zoomed into.',
 			'Hide the id at the end of an item unless the cursor is on its line.',
+			'Type (( to search the items of your notes and insert a link to one.',
 		]);
 	});
 
@@ -38,6 +40,7 @@ describe('settings tab', () => {
 		expect(Setting.created.map((setting) => setting.toggle?.value)).toEqual([
 			plugin.settings.rememberZoom,
 			plugin.settings.hideBlockIds,
+			plugin.settings.itemSuggester,
 		]);
 	});
 
@@ -54,5 +57,12 @@ describe('settings tab', () => {
 		expect(plugin.settings.hideBlockIds).toBe(false);
 		expect(await plugin.loadData()).toMatchObject({ hideBlockIds: false });
 		expect(app.updateOptionsCalls).toBe(1);
+	});
+
+	it('saves the item suggester setting when its toggle changes', async () => {
+		const { plugin } = await showTab();
+		await Setting.created[2]?.toggle?.handler?.(false);
+		expect(plugin.settings.itemSuggester).toBe(false);
+		expect(await plugin.loadData()).toMatchObject({ itemSuggester: false });
 	});
 });
