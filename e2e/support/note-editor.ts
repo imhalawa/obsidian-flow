@@ -165,4 +165,12 @@ export class NoteEditor {
 	path(): Promise<string> {
 		return this.app.evaluate<string>('app.workspace.getActiveFile().path');
 	}
+
+	/** Returns the folds as Obsidian reports them, in lines. */
+	async folds(): Promise<{ from: number; to: number }[]> {
+		const info = await this.app.evaluate<{ folds: { from: number; to: number }[] }>(
+			'app.workspace.activeLeaf.view.currentMode.getFoldInfo()',
+		);
+		return info.folds;
+	}
 }

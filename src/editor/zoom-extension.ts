@@ -3,6 +3,7 @@ import { EditorView } from '@codemirror/view';
 import { hiddenDecorations, zoomDecorations } from './zoom-decorations';
 import { zoomField } from './zoom-field';
 import { zoomEditFilter } from './zoom-filter';
+import { zoomFoldGuard } from './zoom-fold-guard';
 import { zoomHistoryField } from './zoom-history-field';
 import { zoomRemovedNotifier } from './zoom-removed';
 
@@ -12,6 +13,7 @@ export function zoomExtension(onZoomRemoved: () => void): Extension {
 		zoomField,
 		zoomHistoryField,
 		zoomEditFilter,
+		zoomFoldGuard,
 		EditorView.decorations.compute([zoomField], zoomDecorations),
 		EditorView.atomicRanges.of((view) => hiddenDecorations(view.state)),
 		zoomRemovedNotifier(onZoomRemoved),

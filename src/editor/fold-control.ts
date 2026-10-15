@@ -1,0 +1,104 @@
+import { foldEffect, foldedRanges, unfoldEffect } from '@codemirror/language';
+import { EditorSelection, type EditorState, type StateEffect } from '@codemirror/state';
+import { allFoldSpans, foldLookup, type FoldSpan } from '../outline/fold';
+import type { ZoomRange } from '../outline/zoom';
+import type { ZoomTarget } from './zoom-control';
+import { zoomField } from './zoom-field';
+
+export type FoldOutcome = 'done' | 'not-a-list-item' | 'no-children';
+
+interface DocRange {
+	from: number;
+	to: number;
+}
+
+/** Returns the document range a fold of an item hides: after its first line to the subtree end. */
+function rangeOf(state: EditorState, span: FoldSpan): DocRange {
+	return {
+		from: state.doc.line(span.fromLine + 1).to,
+		to: state.doc.line(span.toLine + 1).to,
+	};
+}
+
+/** Returns the folds that start where a fold range starts. */
+function foldsStartingAt(state: EditorState, position: number): DocRange[] {
+	const found: DocRange[] = [];
+	foldedRanges(state).between(position, position, (from, to) => {
+		if (from === position) found.push({ from, to });
+	});
+	return found;
+}
+
+/** Returns the lines the user can see: the zoomed range, or the whole note. */
+function visibleLines(state: EditorState): ZoomRange {
+	const zoom = state.field(zoomField);
+	if (!zoom) return { fromLine: 0, toLine: state.doc.lines - 1 };
+	return {
+		fromLine: state.doc.lineAt(zoom.from).number - 1,
+		toLine: state.doc.lineAt(zoom.to).number - 1,
+	};
+}
+
+/** Moves the main cursor to the start of a fold when the fold would hide it. */
+function selectionOutside(
+	state: EditorState,
+	folds: readonly DocRange[],
+): EditorSelection | undefined {
+	const head = state.selection.main.head;
+	const hiding = folds.find((fold) => head > fold.from && head <= fold.to);
+	return hiding ? EditorSelection.single(hiding.from) : undefined;
+}
+
+/** Folds the ranges that are not folded yet and keeps the cursor visible. */
+function foldRanges(target: ZoomTarget, ranges: readonly DocRange[]): void {
+	const fresh = ranges.filter((range) => foldsStartingAt(target.state, range.from).length === 0);
+	if (fresh.length === 0) return;
+	target.dispatch({
+		effects: fresh.map((range) => foldEffect.of(range)),
+		selection: selectionOutside(target.state, fresh),
+	});
+}
+
+/** Folds the deepest item at the cursor. */
+export function foldItem(target: ZoomTarget): FoldOutcome {
+	const state = target.state;
+	const cursorLine = state.doc.lineAt(state.selection.main.head).number - 1;
+	const lookup = foldLookup(state.doc.toJSON(), state.tabSize, cursorLine);
+	if (lookup.kind !== 'span') return lookup.kind;
+	foldRanges(target, [rangeOf(state, lookup.span)]);
+	return 'done';
+}
+
+/** Unfolds the deepest item at the cursor. */
+export function unfoldItem(target: ZoomTarget): FoldOutcome {
+	const state = target.state;
+	const cursorLine = state.doc.lineAt(state.selection.main.head).number - 1;
+	const lookup = foldLookup(state.doc.toJSON(), state.tabSize, cursorLine);
+	if (lookup.kind !== 'span') return lookup.kind;
+	const effects = foldsStartingAt(state, rangeOf(state, lookup.span).from).map((fold) =>
+		unfoldEffect.of(fold),
+	);
+	if (effects.length > 0) target.dispatch({ effects });
+	return 'done';
+}
+
+/** Folds every item with children that is visible. */
+export function foldAll(target: ZoomTarget): FoldOutcome {
+	const state = target.state;
+	const spans = allFoldSpans(state.doc.toJSON(), state.tabSize, visibleLines(state));
+	foldRanges(
+		target,
+		spans.map((span) => rangeOf(state, span)),
+	);
+	return 'done';
+}
+
+/** Unfolds every fold in the note. */
+export function unfoldAll(target: ZoomTarget): FoldOutcome {
+	const effects: StateEffect<DocRange>[] = [];
+	foldedRanges(target.state).between(0, target.state.doc.length, (from, to) => {
+		effects.push(unfoldEffect.of({ from, to }));
+	});
+	if (effects.length > 0) target.dispatch({ effects });
+	return 'done';
+}
