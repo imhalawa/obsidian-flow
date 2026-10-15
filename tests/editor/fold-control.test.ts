@@ -1,6 +1,13 @@
 import { foldEffect, foldedRanges } from '@codemirror/language';
 import { describe, expect, it } from 'vitest';
-import { foldAll, foldItem, unfoldAll, unfoldItem } from '../../src/editor/fold-control';
+import {
+	foldAll,
+	foldItem,
+	isFolded,
+	toggleBranch,
+	unfoldAll,
+	unfoldItem,
+} from '../../src/editor/fold-control';
 import { zoomIn } from '../../src/editor/zoom-control';
 import { FakeZoomTarget } from '../support/fake-zoom-target';
 
@@ -145,5 +152,83 @@ describe('foldAll and unfoldAll', () => {
 		const before = target.dispatched.length;
 		unfoldAll(target);
 		expect(target.dispatched).toHaveLength(before);
+	});
+});
+
+describe('toggleBranch', () => {
+	it('folds an item that is open', () => {
+		const target = new FakeZoomTarget(NOTE, 0);
+		expect(toggleBranch(target, 1, false)).toBe('done');
+		expect(folds(target)).toEqual([[endOfLine(1), endOfLine(4)]]);
+	});
+
+	it('unfolds an item that is folded', () => {
+		const target = new FakeZoomTarget(NOTE, 0);
+		toggleBranch(target, 1, false);
+		toggleBranch(target, 1, false);
+		expect(folds(target)).toEqual([]);
+	});
+
+	it('folds only the item itself when not deep', () => {
+		const target = new FakeZoomTarget(NOTE, 0);
+		toggleBranch(target, 1, false);
+		expect(folds(target)).toHaveLength(1);
+	});
+
+	it('folds the item and every descendant that has children when deep', () => {
+		const target = new FakeZoomTarget(NOTE, 0);
+		toggleBranch(target, 1, true);
+		expect(folds(target)).toEqual([
+			[endOfLine(1), endOfLine(4)],
+			[endOfLine(2), endOfLine(3)],
+		]);
+	});
+
+	it('unfolds the item and every fold inside it when deep and the item is folded', () => {
+		const target = new FakeZoomTarget(NOTE, 0);
+		toggleBranch(target, 1, true);
+		toggleBranch(target, 1, true);
+		expect(folds(target)).toEqual([]);
+	});
+
+	it('leaves folds outside the branch alone when unfolding deep', () => {
+		const target = new FakeZoomTarget(NOTE, 0);
+		toggleBranch(target, 5, false);
+		toggleBranch(target, 1, true);
+		toggleBranch(target, 1, true);
+		expect(folds(target)).toEqual([[endOfLine(5), endOfLine(6)]]);
+	});
+
+	it('reports an item without children', () => {
+		const target = new FakeZoomTarget(NOTE, 0);
+		expect(toggleBranch(target, 4, false)).toBe('no-children');
+		expect(folds(target)).toEqual([]);
+	});
+
+	it('reports a line that does not start an item', () => {
+		const target = new FakeZoomTarget(NOTE, 0);
+		expect(toggleBranch(target, 0, false)).toBe('not-a-list-item');
+	});
+
+	it('moves a cursor that the fold would hide to the end of the item line', () => {
+		const target = new FakeZoomTarget(NOTE, at('c'));
+		toggleBranch(target, 1, false);
+		expect(target.caret).toBe(endOfLine(1));
+	});
+});
+
+describe('isFolded', () => {
+	it('is true for an item whose children are folded', () => {
+		const target = new FakeZoomTarget(NOTE, 0);
+		toggleBranch(target, 1, false);
+		expect(isFolded(target.state, 1)).toBe(true);
+	});
+
+	it.each([
+		['an open item', 1],
+		['a leaf', 4],
+		['a line outside the list', 0],
+	])('is false for %s', (_name, line) => {
+		expect(isFolded(new FakeZoomTarget(NOTE, 0).state, line)).toBe(false);
 	});
 });

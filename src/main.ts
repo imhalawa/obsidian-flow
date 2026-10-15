@@ -1,7 +1,9 @@
 import { Notice, Plugin } from 'obsidian';
 import { registerCommands } from './commands';
+import { systemBlockLinkServices } from './commands/copy-item-link';
 import { blockIdHiding } from './editor/block-id-hiding';
 import { ItemSuggest } from './editor/item-suggest';
+import { registerItemPointer } from './editor/register-item-pointer';
 import { registerZoom } from './editor/register-zoom';
 import { DEFAULT_SETTINGS, FlowSettings, FlowSettingTab } from './settings';
 
@@ -22,6 +24,14 @@ export default class FlowPlugin extends Plugin {
 				isEnabled: () => this.settings.itemSuggester,
 				random: () => Math.random(),
 			}),
+		);
+		registerItemPointer(
+			this,
+			{
+				clickBulletToZoom: () => this.settings.clickBulletToZoom,
+				clickThreadLineToFold: () => this.settings.clickThreadLineToFold,
+			},
+			systemBlockLinkServices(),
 		);
 		registerZoom(this, {
 			rememberZoom: () => this.settings.rememberZoom,
