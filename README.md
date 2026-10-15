@@ -1,31 +1,28 @@
-# Obsidian Sample Plugin
+# Flow Outliner
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+Outliner experience for Obsidian, inspired by RemNote, Roam Research and Logseq. Early scaffolding: no user-facing features yet.
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+## Development
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
+Requires Node.js 22.12 or newer.
 
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open modal (simple)" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and outputs a Notice on click.
-- Registers a global interval which logs 'setInterval' to the console.
+```bash
+npm install
+npm run dev
+npm run check
+```
 
-## First time developing plugins?
+| Script                  | Purpose                                            |
+| ----------------------- | -------------------------------------------------- |
+| `npm run dev`           | Watch build to `main.js`                           |
+| `npm run build`         | Typecheck and production bundle                    |
+| `npm run check`         | Typecheck, lint, format check, tests with coverage |
+| `npm run test:mutation` | Mutation testing with Stryker                      |
+| `npm run format`        | Format with Prettier                               |
 
-Quick starting guide for new plugin devs:
+Copy `main.js`, `manifest.json` and `styles.css` into `<Vault>/.obsidian/plugins/flow-outliner/` to try it in Obsidian.
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `src/main.ts` to `main.js`.
-- Make changes to `src/main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+Contributor and agent guidance: [AGENTS.md](AGENTS.md), [CLAUDE.md](CLAUDE.md), [docs/references.md](docs/references.md).
 
 ## Releasing new releases
 
