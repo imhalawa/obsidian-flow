@@ -15,5 +15,12 @@
 		"allowSyntheticDefaultImports": true,
 		"lib": ["ES2021", "DOM"]
 	},
-	"include": ["src/**/*.ts", "tests/**/*.ts", "vitest.config.ts", "vitest.stryker.config.ts"]
+	"include": [
+		"src/**/*.ts",
+		"tests/**/*.ts",
+		"vitest.config.ts",
+		"vitest.stryker.config.ts",
+		"vitest.e2e.config.ts",
+		"e2e/**/*.ts"
+	]
 }

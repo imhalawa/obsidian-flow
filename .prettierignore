@@ -4,3 +4,4 @@ coverage
 .stryker-tmp
 reports
 package-lock.json
+.e2e-cache
