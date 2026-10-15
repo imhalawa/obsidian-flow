@@ -173,4 +173,18 @@ export class NoteEditor {
 		);
 		return info.folds;
 	}
+
+	/** Returns the ids of the blocks Obsidian found in the open note once it has saved and indexed it. */
+	async blockIds(): Promise<string[]> {
+		const read = () =>
+			this.app.evaluate<string[]>(
+				'Object.keys(app.metadataCache.getFileCache(app.workspace.getActiveFile())?.blocks ?? {})',
+			);
+		let ids = await read();
+		for (let attempt = 0; attempt < 40 && ids.length === 0; attempt += 1) {
+			await new Promise((resolve) => setTimeout(resolve, 250));
+			ids = await read();
+		}
+		return ids;
+	}
 }

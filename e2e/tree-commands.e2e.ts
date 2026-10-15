@@ -21,6 +21,7 @@ describe('plugin in real Obsidian', () => {
 			'Object.keys(app.commands.commands).filter((id) => id.startsWith("flow-outliner:"))',
 		);
 		expect(ids.sort()).toEqual([
+			'flow-outliner:copy-item-link',
 			'flow-outliner:fold-all',
 			'flow-outliner:fold-item',
 			'flow-outliner:indent-item',
