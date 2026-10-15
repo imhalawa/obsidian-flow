@@ -16,6 +16,7 @@ describe('homeColumn', () => {
 		['in the indent', ['\t- abc'], 0, 0],
 		['on a continuation line', ['- abc', '  def'], 1, 4],
 		['outside an item', ['abc'], 0, 2],
+		['on a line that only looks like an item', ['text', '    - abc'], 1, 9],
 		['on a line that does not exist', ['- abc'], 4, 2],
 	])('does nothing when the caret is %s', (_name, lines, line, column) => {
 		expect(homeColumn(lines, 4, line, column)).toBeNull();

@@ -4,7 +4,6 @@ import type { IndentStyle } from './indent-style';
 import { ownLastLine } from './item-text';
 import { spanEdit, type KeyEdit } from './key-edit';
 import { applyEdits, lineAt } from './line-edit';
-import { parseListItem } from './list-item';
 import { parseOutline } from './outline-tree';
 
 /** Returns the edit for Enter at the end of an empty item: outdent it, or end the list at the top level. */
@@ -16,8 +15,7 @@ export function enterOnEmptyItem(
 ): KeyEdit | null {
 	const item = itemStartingAt(parseOutline(lines, style.tabSize), lineIndex);
 	const text = lineAt(lines, lineIndex);
-	const parsed = parseListItem(text);
-	if (!item || !parsed || parsed.content !== '' || column !== text.length) return null;
+	if (!item || item.text !== '' || column !== text.length) return null;
 	if (item.children.length > 0 || ownLastLine(lines, item) !== lineIndex) return null;
 	if (!item.parent) {
 		return spanEdit(lines, applyEdits(lines, [{ lineIndex, text: '' }]), lineIndex, 0);

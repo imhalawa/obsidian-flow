@@ -20,9 +20,10 @@ export function homeColumn(
 	lineIndex: number,
 	column: number,
 ): number | null {
-	if (!itemStartingAt(parseOutline(lines, tabSize), lineIndex)) return null;
-	const start = textStartColumn(lineAt(lines, lineIndex));
-	return start !== null && column > start ? start : null;
+	const item = itemStartingAt(parseOutline(lines, tabSize), lineIndex);
+	if (!item) return null;
+	const start = textStartColumn(lines, item);
+	return column > start ? start : null;
 }
 
 /** Returns the text of the item that holds a line, without its marker and children, or null. */
@@ -34,10 +35,9 @@ export function itemTextRange(
 	const item = itemAtLine(parseOutline(lines, tabSize), lineIndex);
 	if (!item) return null;
 	const last = ownLastLine(lines, item);
-	const start = textStartColumn(lineAt(lines, item.startLine));
-	if (start === null || lineIndex > last) return null;
+	if (lineIndex > last) return null;
 	return {
-		from: { line: item.startLine, column: start },
+		from: { line: item.startLine, column: textStartColumn(lines, item) },
 		to: { line: last, column: lineAt(lines, last).length },
 	};
 }

@@ -60,6 +60,7 @@ describe('enterOnEmptyItem', () => {
 		['the line is not an item', ['- a', ''], 1, 0],
 		['the line is a continuation of an item', ['- a', '  '], 1, 2],
 		['the line does not exist', ['- a'], 3, 0],
+		['the line only looks like an item', ['text', '    - '], 1, 6],
 	])('does nothing when %s', (_name, lines, line, column) => {
 		expect(enterOnEmptyItem(lines, spaces, line, column)).toBeNull();
 	});

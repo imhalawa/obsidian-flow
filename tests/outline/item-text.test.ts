@@ -4,24 +4,19 @@ import { parseOutline } from '../../src/outline/outline-tree';
 
 describe('textStartColumn', () => {
 	it.each([
-		['- text', 2],
-		['\t* text', 3],
-		['12. text', 4],
-		['- [ ] task', 6],
-		['- [x]   task', 8],
-		['-   text', 4],
-		['- ', 2],
-		['- [ ] ', 6],
-	])('finds the text of %j at column %i', (line, column) => {
-		expect(textStartColumn(line)).toBe(column);
+		[['- text'], 0, 2],
+		[['- p', '\t* text'], 1, 3],
+		[['12. text'], 0, 4],
+		[['- [ ] task'], 0, 6],
+		[['- [x]   task'], 0, 8],
+		[['-   text'], 0, 4],
+		[['- '], 0, 2],
+		[['- [ ] '], 0, 6],
+	])('finds the text of %j item %i at column %i', (lines, index, column) => {
+		const item = parseOutline(lines, 4).nodes[index];
+		if (!item) throw new Error('no such item');
+		expect(textStartColumn(lines, item)).toBe(column);
 	});
-
-	it.each([[''], ['plain text'], ['-text'], ['> - quote']])(
-		'returns null for %j, which is not an item',
-		(line) => {
-			expect(textStartColumn(line)).toBeNull();
-		},
-	);
 });
 
 describe('ownLastLine', () => {
@@ -49,6 +44,10 @@ describe('ownLastLine', () => {
 
 	it('leaves out blank lines between the item text and its first child', () => {
 		expect(lastOf(['- a', '  more', '', '  - b'], 0)).toBe(1);
+	});
+
+	it('treats a line of spaces as blank', () => {
+		expect(lastOf(['- a', '   ', '- b'], 0)).toBe(0);
 	});
 
 	it('keeps a blank line inside continuation text', () => {

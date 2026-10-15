@@ -10,6 +10,16 @@ import { zoomIn } from '../../src/editor/zoom-control';
 import { FakeZoomTarget } from '../support/fake-zoom-target';
 
 const always = () => true;
+
+/** Places one cursor at each position, with the last one as the main cursor. */
+function placeCursors(target: FakeZoomTarget, positions: number[]): void {
+	target.state = target.state.update({
+		selection: EditorSelection.create(
+			positions.map((position) => EditorSelection.cursor(position)),
+			positions.length - 1,
+		),
+	}).state;
+}
 const never = () => false;
 
 describe('enterInEmptyItem', () => {
@@ -34,6 +44,19 @@ describe('enterInEmptyItem', () => {
 		expect(target.dispatched[0]?.userEvent).toBe('flow.list-enter');
 	});
 
+	it('scrolls the new cursor into view', () => {
+		const target = new FakeZoomTarget('- a\n- ', 6);
+		enterInEmptyItem(target);
+		expect(target.dispatched[0]?.scrollIntoView).toBe(true);
+	});
+
+	it('changes the first line of the zoom when the zoomed item is the empty one', () => {
+		const target = new FakeZoomTarget('- a\n  - ', 8);
+		zoomIn(target);
+		expect(enterInEmptyItem(target)).toBe(true);
+		expect(target.text).toBe('- a\n- ');
+	});
+
 	it('does nothing for an item with text', () => {
 		const target = new FakeZoomTarget('- a\n- b', 7);
 		expect(enterInEmptyItem(target)).toBe(false);
@@ -48,12 +71,7 @@ describe('enterInEmptyItem', () => {
 
 	it('does nothing with several cursors', () => {
 		const target = new FakeZoomTarget('- a\n- ', 6);
-		target.state = target.state.update({
-			selection: EditorSelection.create([
-				EditorSelection.cursor(1),
-				EditorSelection.cursor(6),
-			]),
-		}).state;
+		placeCursors(target, [1, 6]);
 		expect(enterInEmptyItem(target)).toBe(false);
 	});
 
@@ -111,6 +129,23 @@ describe('homeInItem', () => {
 		expect(target.selected).toEqual({ from: 2, to: 2 });
 	});
 
+	it('moves to the text start of a line that is not the first', () => {
+		const target = new FakeZoomTarget('- x\n- abc', 9);
+		expect(homeInItem(target, false, always)).toBe(true);
+		expect(target.selected).toEqual({ from: 6, to: 6 });
+	});
+
+	it('does nothing at the text start of a line that is not the first', () => {
+		const target = new FakeZoomTarget('- x\n- abc', 6);
+		expect(homeInItem(target, false, always)).toBe(false);
+	});
+
+	it('scrolls the cursor into view as a selection change', () => {
+		const target = new FakeZoomTarget('- abc', 5);
+		homeInItem(target, false, always);
+		expect(target.dispatched[0]).toMatchObject({ scrollIntoView: true, userEvent: 'select' });
+	});
+
 	it('extends the selection from its anchor when asked to', () => {
 		const target = new FakeZoomTarget('- abc', 5);
 		expect(homeInItem(target, true, always)).toBe(true);
@@ -140,12 +175,7 @@ describe('homeInItem', () => {
 
 	it('does nothing with several cursors', () => {
 		const target = new FakeZoomTarget('- abc\n- def', 5);
-		target.state = target.state.update({
-			selection: EditorSelection.create([
-				EditorSelection.cursor(5),
-				EditorSelection.cursor(11),
-			]),
-		}).state;
+		placeCursors(target, [5, 11]);
 		expect(homeInItem(target, false, always)).toBe(false);
 	});
 });
@@ -153,6 +183,22 @@ describe('homeInItem', () => {
 describe('selectItemText', () => {
 	it('selects the text of the item at the cursor', () => {
 		const target = new FakeZoomTarget('- abc\n  - def', 4);
+		expect(selectItemText(target)).toBe(true);
+		expect(target.selected).toEqual({ from: 2, to: 5 });
+	});
+
+	it('scrolls the selection into view as a selection change', () => {
+		const target = new FakeZoomTarget('- abc', 3);
+		selectItemText(target);
+		expect(target.dispatched[0]).toMatchObject({ scrollIntoView: true, userEvent: 'select' });
+	});
+
+	it.each([
+		['starts before the text and ends inside it', 0, 3],
+		['starts inside the text and ends at its end', 3, 5],
+	])('selects the item text when the selection %s', (_name, anchor, head) => {
+		const target = new FakeZoomTarget('- abc', 0);
+		target.select(anchor, head);
 		expect(selectItemText(target)).toBe(true);
 		expect(target.selected).toEqual({ from: 2, to: 5 });
 	});
@@ -183,12 +229,7 @@ describe('selectItemText', () => {
 
 	it('does nothing with several cursors', () => {
 		const target = new FakeZoomTarget('- abc\n- def', 3);
-		target.state = target.state.update({
-			selection: EditorSelection.create([
-				EditorSelection.cursor(3),
-				EditorSelection.cursor(9),
-			]),
-		}).state;
+		placeCursors(target, [3, 9]);
 		expect(selectItemText(target)).toBe(false);
 	});
 });

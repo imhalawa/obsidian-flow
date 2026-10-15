@@ -53,6 +53,7 @@ describe('backspaceAtItemStart', () => {
 		['the line above continues an item', ['- a', '  more', '- b'], 2, 2],
 		['the line is not an item', ['- a', 'text'], 1, 0],
 		['the line does not exist', ['- a'], 5, 0],
+		['the line only looks like an item', ['text', '    - a'], 1, 6],
 	])('does nothing when %s', (_name, lines, line, column) => {
 		expect(backspaceAtItemStart(lines, 4, line, column)).toBeNull();
 	});

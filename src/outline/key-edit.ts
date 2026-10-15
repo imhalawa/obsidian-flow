@@ -13,11 +13,9 @@ export function spanEdit(
 	caretColumn: number,
 ): KeyEdit | null {
 	const changed = after.flatMap((text, index) => (text === before[index] ? [] : [index]));
-	const first = changed[0];
-	const last = changed[changed.length - 1];
-	if (first === undefined || last === undefined) return null;
-	const fromLine = Math.min(first, caretLine);
-	const toLine = Math.max(last, caretLine);
+	if (changed.length === 0) return null;
+	const fromLine = Math.min(...changed, caretLine);
+	const toLine = Math.max(...changed, caretLine);
 	const offsetOfCaretLine = after
 		.slice(fromLine, caretLine)
 		.reduce((sum, text) => sum + text.length + 1, 0);
