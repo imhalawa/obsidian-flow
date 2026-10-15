@@ -6,7 +6,9 @@
 		"!src/main.ts",
 		"!src/settings.ts",
 		"!src/ui/breadcrumb-widget.ts",
-		"!src/editor/zoom-persistence.ts"
+		"!src/editor/zoom-persistence.ts",
+		"!src/editor/block-id-hiding.ts",
+		"!src/editor/item-suggest.ts"
 	],
 	"reporters": ["clear-text", "progress"],
 	"thresholds": { "high": 90, "low": 80, "break": 80 },

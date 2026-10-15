@@ -61,6 +61,13 @@ export class DevtoolsConnection {
 		return result.result.value;
 	}
 
+	/** Types text into the focused element one character at a time, the way input methods do. */
+	async insertText(text: string): Promise<void> {
+		for (const character of text) {
+			await this.send('Input.insertText', { text: character });
+		}
+	}
+
 	/** Closes the connection. */
 	close(): void {
 		this.socket.close();

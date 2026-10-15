@@ -13,27 +13,56 @@ const showTab = async () => {
 	const plugin = new FlowPlugin(app as never, {} as never);
 	await plugin.onload();
 	new FlowSettingTab(app as never, plugin).display();
-	return plugin;
+	return { app, plugin };
 };
 
 describe('settings tab', () => {
-	it('offers a sentence case toggle to remember zoom per note', async () => {
+	it('lists its settings in sentence case', async () => {
 		await showTab();
-		expect(Setting.created.map((setting) => setting.name)).toEqual(['Remember zoom per note']);
-		expect(Setting.created[0]?.description).toBe(
+		expect(Setting.created.map((setting) => setting.name)).toEqual([
+			'Remember zoom per note',
+			'Hide block ids',
+			'Suggest items after ((',
+		]);
+	});
+
+	it('describes each setting', async () => {
+		await showTab();
+		expect(Setting.created.map((setting) => setting.description)).toEqual([
 			'Reopen each note at the item you zoomed into.',
-		);
+			'Hide the id at the end of an item unless the cursor is on its line.',
+			'Type (( to search the items of your notes and insert a link to one.',
+		]);
 	});
 
-	it('shows the current value', async () => {
-		const plugin = await showTab();
-		expect(Setting.created[0]?.toggle?.value).toBe(plugin.settings.rememberZoom);
+	it('shows the current values', async () => {
+		const { plugin } = await showTab();
+		expect(Setting.created.map((setting) => setting.toggle?.value)).toEqual([
+			plugin.settings.rememberZoom,
+			plugin.settings.hideBlockIds,
+			plugin.settings.itemSuggester,
+		]);
 	});
 
-	it('saves the value when the toggle changes', async () => {
-		const plugin = await showTab();
+	it('saves remember zoom when its toggle changes', async () => {
+		const { plugin } = await showTab();
 		await Setting.created[0]?.toggle?.handler?.(false);
 		expect(plugin.settings.rememberZoom).toBe(false);
 		expect(await plugin.loadData()).toMatchObject({ rememberZoom: false });
+	});
+
+	it('saves hide block ids and refreshes the editors when its toggle changes', async () => {
+		const { app, plugin } = await showTab();
+		await Setting.created[1]?.toggle?.handler?.(false);
+		expect(plugin.settings.hideBlockIds).toBe(false);
+		expect(await plugin.loadData()).toMatchObject({ hideBlockIds: false });
+		expect(app.updateOptionsCalls).toBe(1);
+	});
+
+	it('saves the item suggester setting when its toggle changes', async () => {
+		const { plugin } = await showTab();
+		await Setting.created[2]?.toggle?.handler?.(false);
+		expect(plugin.settings.itemSuggester).toBe(false);
+		expect(await plugin.loadData()).toMatchObject({ itemSuggester: false });
 	});
 });

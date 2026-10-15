@@ -22,7 +22,9 @@ export class NoteEditor {
 		await app.evaluate(
 			`(async () => {
 				const file = await app.vault.create(${JSON.stringify(`note-${noteCounter}.md`)}, ${JSON.stringify(text)});
-				await app.workspace.getLeaf(false).openFile(file);
+				const leaf = app.workspace.getLeaf(false);
+				await leaf.openFile(file);
+				app.workspace.setActiveLeaf(leaf, { focus: true });
 				return true;
 			})()`,
 		);
@@ -172,5 +174,55 @@ export class NoteEditor {
 			'app.workspace.activeLeaf.view.currentMode.getFoldInfo()',
 		);
 		return info.folds;
+	}
+
+	/** Returns the ids of the blocks Obsidian found in the open note once it has saved and indexed it. */
+	async blockIds(): Promise<string[]> {
+		const read = () =>
+			this.app.evaluate<string[]>(
+				'Object.keys(app.metadataCache.getFileCache(app.workspace.getActiveFile())?.blocks ?? {})',
+			);
+		let ids = await read();
+		for (let attempt = 0; attempt < 40 && ids.length === 0; attempt += 1) {
+			await new Promise((resolve) => setTimeout(resolve, 250));
+			ids = await read();
+		}
+		return ids;
+	}
+
+	/** Focuses the editor, puts the caret at the end of the note and types text as a user does. */
+	async typeKeys(text: string): Promise<void> {
+		await this.app.evaluate(
+			'(() => { const editor = app.workspace.activeEditor.editor; editor.focus(); editor.setCursor(editor.offsetToPos(editor.getValue().length)); return true; })()',
+		);
+		await this.app.typeText(text);
+	}
+
+	/** Waits until Obsidian has indexed the list items of a note. */
+	async waitUntilIndexed(path: string): Promise<void> {
+		await this.app.evaluate(
+			`new Promise((resolve) => { const check = () => { const file = app.vault.getFileByPath(${JSON.stringify(path)}); if (file && app.metadataCache.getFileCache(file)?.listItems) resolve(true); else setTimeout(check, 50); }; check(); })`,
+		);
+	}
+
+	/** Waits for the item suggestions to show and returns their texts. */
+	suggestions(): Promise<string[]> {
+		return this.app.evaluate<string[]>(
+			`new Promise((resolve) => { const read = () => Array.from(activeDocument.querySelectorAll(".flow-item-suggest-text")).map((el) => el.textContent); const check = () => { const found = read(); if (found.length > 0) resolve(found); else setTimeout(check, 50); }; check(); })`,
+		);
+	}
+
+	/** Clicks the item suggestion with the given text. */
+	async chooseSuggestion(text: string): Promise<void> {
+		await this.app.evaluate(
+			`Array.from(activeDocument.querySelectorAll(".flow-item-suggest-text")).find((el) => el.textContent === ${JSON.stringify(text)}).click()`,
+		);
+	}
+
+	/** Reads a note from disk by path. */
+	readNote(path: string): Promise<string> {
+		return this.app.evaluate<string>(
+			`app.vault.read(app.vault.getFileByPath(${JSON.stringify(path)}))`,
+		);
 	}
 }
