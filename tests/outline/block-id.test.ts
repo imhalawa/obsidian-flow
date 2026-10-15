@@ -8,6 +8,7 @@ import {
 	idLineOf,
 	newBlockId,
 	readBlockId,
+	stripBlockId,
 } from '../../src/outline/block-id';
 import { parseOutline } from '../../src/outline/outline-tree';
 
@@ -145,5 +146,16 @@ describe('blockIdSpans', () => {
 	it('finds nothing in a note without items', () => {
 		expect(blockIdSpans(['text ^x1'], 4)).toEqual([]);
 		expect(blockIdSpans([], 4)).toEqual([]);
+	});
+});
+
+describe('stripBlockId', () => {
+	it.each([
+		['a trailing id', 'a ^abc123', 'a'],
+		['text without an id', 'a', 'a'],
+		['a caret inside the text', 'a ^b c', 'a ^b c'],
+		['only an id', ' ^abc123', ''],
+	])('handles %s', (_name, text, expected) => {
+		expect(stripBlockId(text)).toBe(expected);
 	});
 });

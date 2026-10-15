@@ -37,6 +37,11 @@ export function readBlockId(lines: readonly string[], item: OutlineNode): string
 	return TRAILING_ID.exec(lineAt(lines, idLineOf(lines, item)))?.[1] ?? null;
 }
 
+/** Returns the text without a trailing block id. */
+export function stripBlockId(text: string): string {
+	return text.replace(TRAILING_ID, '');
+}
+
 /** Returns every block id at the end of a line, in order and with repeats. */
 export function allBlockIds(lines: readonly string[]): string[] {
 	return lines.flatMap((line) => TRAILING_ID.exec(line)?.[1] ?? []);
