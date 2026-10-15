@@ -3,6 +3,7 @@ export class Plugin {
 	private stored: unknown = null;
 	readonly settingTabs: unknown[] = [];
 	readonly commands: Command[] = [];
+	readonly editorExtensions: unknown[] = [];
 
 	constructor(app: unknown = {}) {
 		this.app = app;
@@ -15,6 +16,9 @@ export class Plugin {
 	}
 	addSettingTab(tab: unknown): void {
 		this.settingTabs.push(tab);
+	}
+	registerEditorExtension(extension: unknown): void {
+		this.editorExtensions.push(extension);
 	}
 	addCommand(command: Command): Command {
 		this.commands.push(command);

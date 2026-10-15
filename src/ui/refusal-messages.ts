@@ -5,6 +5,7 @@ const MESSAGES: Record<RefusalReason, string> = {
 	'no-previous-sibling': 'This item is the first one at its level.',
 	'no-next-sibling': 'This item is the last one at its level.',
 	'top-level': 'This item is already at the top level.',
+	'outside-zoom': 'That would change items outside the zoomed item. Zoom out first.',
 	'structure-check-failed': 'Could not change the list safely, so the note was left as it is.',
 };
 

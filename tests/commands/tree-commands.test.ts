@@ -26,6 +26,11 @@ describe('tree commands', () => {
 			['outdent-item', 'Outdent item'],
 			['move-item-up', 'Move item up'],
 			['move-item-down', 'Move item down'],
+			['zoom-in', 'Zoom in'],
+			['zoom-out', 'Zoom out'],
+			['zoom-reset', 'Show the whole note'],
+			['zoom-history-back', 'Zoom back'],
+			['zoom-history-forward', 'Zoom forward'],
 		]);
 	});
 
