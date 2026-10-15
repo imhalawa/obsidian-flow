@@ -1,4 +1,5 @@
 import { Plugin } from 'obsidian';
+import { registerCommands } from './commands';
 import { DEFAULT_SETTINGS, FlowSettings, FlowSettingTab } from './settings';
 
 export default class FlowPlugin extends Plugin {
@@ -11,6 +12,7 @@ export default class FlowPlugin extends Plugin {
 			(await this.loadData()) as Partial<FlowSettings> | null,
 		);
 		this.addSettingTab(new FlowSettingTab(this.app, this));
+		registerCommands(this);
 	}
 
 	async saveSettings() {

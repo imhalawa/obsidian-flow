@@ -1,4 +1,4 @@
-import { applyEdits, refuse, type EditResult, type LineEdit } from './line-edit';
+import { applyEdits, refuse, type EditResult, type LineEdit, type LineMove } from './line-edit';
 import type { IndentStyle } from './indent-style';
 import { parseOutline, type OutlineNode, type OutlineTree } from './outline-tree';
 
@@ -20,9 +20,10 @@ export function guardedEdits(
 	style: IndentStyle,
 	edits: LineEdit[],
 	expectedDepths: readonly number[],
+	lineMoves: LineMove[],
 ): EditResult {
 	const after = depthsOf(parseOutline(applyEdits(lines, edits), style.tabSize));
 	const same =
 		after.length === expectedDepths.length && after.every((d, i) => d === expectedDepths[i]);
-	return same ? { ok: true, edits } : refuse('structure-check-failed');
+	return same ? { ok: true, edits, lineMoves } : refuse('structure-check-failed');
 }
