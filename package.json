@@ -27,6 +27,8 @@
 		"@commitlint/cli": "^21.2.3",
 		"@commitlint/config-conventional": "^21.2.3",
 		"@eslint/js": "^9.39.4",
+		"@lezer/common": "^1.5.3",
+		"@lezer/markdown": "^1.8.0",
 		"@stryker-mutator/core": "^10.0.0",
 		"@stryker-mutator/vitest-runner": "^10.0.0",
 		"@types/node": "^22.15.17",
