@@ -1,3 +1,4 @@
+import { foldEffect, foldedRanges } from '@codemirror/language';
 import { EditorSelection, EditorState } from '@codemirror/state';
 import { describe, expect, it } from 'vitest';
 import {
@@ -73,6 +74,22 @@ describe('zoomOut and zoomReset', () => {
 		expect(isZoomed(target)).toBe(false);
 		zoomIn(target);
 		expect(isZoomed(target)).toBe(true);
+	});
+});
+
+describe('folds around a zoom', () => {
+	it('unfolds a parent that hides the item being zoomed into', () => {
+		const target = new FakeZoomTarget(NOTE, at('c'));
+		const parentEnd = NOTE.indexOf('\n', at('a'));
+		target.dispatch({ effects: foldEffect.of({ from: parentEnd, to: at('d') - 1 }) });
+		target.dispatch({ selection: { anchor: parentEnd } });
+		target.dispatch({ selection: { anchor: at('c') } });
+		zoomIn(target);
+		let folded = 0;
+		foldedRanges(target.state).between(0, NOTE.length, () => {
+			folded += 1;
+		});
+		expect(folded).toBe(0);
 	});
 });
 

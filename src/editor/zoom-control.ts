@@ -13,6 +13,7 @@ import {
 	type ZoomNavigation,
 	type ZoomState,
 } from './zoom-field';
+import { unfoldingHiders } from './zoom-fold-guard';
 import { zoomHistoryField, type ZoomEntry } from './zoom-history-field';
 
 export interface ZoomTarget {
@@ -61,8 +62,9 @@ export function dispatchZoom(
 	navigation: ZoomNavigation,
 ): void {
 	const next = startLine === null ? null : zoomOnLine(target.state, startLine);
+	const unfolds = next ? unfoldingHiders(target.state, next.from) : [];
 	target.dispatch({
-		effects: zoomChange.of({ startLine, navigation }),
+		effects: [zoomChange.of({ startLine, navigation }), ...unfolds],
 		selection: next ? clampSelection(target.state.selection, next) : undefined,
 		scrollIntoView: true,
 	});
