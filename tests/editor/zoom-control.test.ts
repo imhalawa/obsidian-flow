@@ -44,7 +44,7 @@ describe('zoomOut and zoomReset', () => {
 	it('zooms out one level to the parent item', () => {
 		const target = new FakeZoomTarget(NOTE, at('c'));
 		zoomIn(target);
-		zoomOut(target);
+		expect(zoomOut(target)).toBe('done');
 		expect(crumbTexts(target)).toEqual(['a', 'b']);
 	});
 
@@ -64,7 +64,7 @@ describe('zoomOut and zoomReset', () => {
 	it('shows the whole note from any depth', () => {
 		const target = new FakeZoomTarget(NOTE, at('c'));
 		zoomIn(target);
-		zoomReset(target);
+		expect(zoomReset(target)).toBe('done');
 		expect(target.zoom).toBeNull();
 	});
 
@@ -73,6 +73,14 @@ describe('zoomOut and zoomReset', () => {
 		expect(isZoomed(target)).toBe(false);
 		zoomIn(target);
 		expect(isZoomed(target)).toBe(true);
+	});
+});
+
+describe('scrolling', () => {
+	it('scrolls the cursor into view after zooming', () => {
+		const target = new FakeZoomTarget(NOTE, at('b'));
+		zoomIn(target);
+		expect(target.dispatched.at(-1)?.scrollIntoView).toBe(true);
 	});
 });
 
