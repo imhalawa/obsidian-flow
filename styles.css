@@ -50,3 +50,8 @@ button.flow-breadcrumbs__crumb:focus-visible {
 	color: var(--text-muted);
 	font-size: var(--font-ui-smaller);
 }
+
+.flow-over-item-control .cm-content,
+.flow-over-item-control .cm-line {
+	cursor: pointer;
+}

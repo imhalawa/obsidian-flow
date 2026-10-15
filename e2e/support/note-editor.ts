@@ -225,4 +225,39 @@ export class NoteEditor {
 			`app.vault.read(app.vault.getFileByPath(${JSON.stringify(path)}))`,
 		);
 	}
+
+	/** Returns the window point at the middle of the bullet of the item that starts on a line. */
+	bulletPoint(line: number): Promise<{ x: number; y: number }> {
+		return this.app.evaluate<{ x: number; y: number }>(
+			`(() => { const cm = app.workspace.activeEditor.editor.cm; const row = cm.state.doc.line(${line + 1}); const indent = /^\\s*/.exec(row.text)[0].length; const start = cm.coordsAtPos(row.from + indent); const end = cm.coordsAtPos(row.from + indent + 1); return { x: (start.left + end.left) / 2, y: (start.top + start.bottom) / 2 }; })()`,
+		);
+	}
+
+	/** Returns the vertical middle of a line in window coordinates. */
+	linePoint(line: number): Promise<number> {
+		return this.app.evaluate<number>(
+			`(() => { const cm = app.workspace.activeEditor.editor.cm; const start = cm.coordsAtPos(cm.state.doc.line(${line + 1}).from); return (start.top + start.bottom) / 2; })()`,
+		);
+	}
+
+	/** Tells whether the pointer shows the clickable cursor over an item control. */
+	pointerIsOverControl(): Promise<boolean> {
+		return this.app.evaluate<boolean>(
+			'app.workspace.activeEditor.editor.cm.dom.classList.contains("flow-over-item-control")',
+		);
+	}
+
+	/** Returns the labels of the entries of the open menu. */
+	menuEntries(): Promise<string[]> {
+		return this.app.evaluate<string[]>(
+			'Array.from(activeDocument.querySelectorAll(".menu .menu-item-title")).map((el) => el.textContent)',
+		);
+	}
+
+	/** Clicks the entry of the open menu with the given label. */
+	async chooseMenuEntry(label: string): Promise<void> {
+		await this.app.evaluate(
+			`Array.from(activeDocument.querySelectorAll(".menu .menu-item")).find((el) => el.querySelector(".menu-item-title").textContent === ${JSON.stringify(label)}).click()`,
+		);
+	}
 }

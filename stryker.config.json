@@ -8,7 +8,10 @@
 		"!src/ui/breadcrumb-widget.ts",
 		"!src/editor/zoom-persistence.ts",
 		"!src/editor/block-id-hiding.ts",
-		"!src/editor/item-suggest.ts"
+		"!src/editor/item-suggest.ts",
+		"!src/editor/item-pointer.ts",
+		"!src/editor/register-item-pointer.ts",
+		"!src/ui/item-menu.ts"
 	],
 	"reporters": ["clear-text", "progress"],
 	"thresholds": { "high": 90, "low": 80, "break": 80 },
