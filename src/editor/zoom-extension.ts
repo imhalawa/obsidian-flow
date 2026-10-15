@@ -12,7 +12,7 @@ export function zoomExtension(onZoomRemoved: () => void): Extension {
 		zoomField,
 		zoomHistoryField,
 		zoomEditFilter,
-		EditorView.decorations.compute([zoomField, 'doc'], zoomDecorations),
+		EditorView.decorations.compute([zoomField], zoomDecorations),
 		EditorView.atomicRanges.of((view) => hiddenDecorations(view.state)),
 		zoomRemovedNotifier(onZoomRemoved),
 	];
