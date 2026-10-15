@@ -33,12 +33,12 @@ describe('FlowPlugin lifecycle', () => {
 		expect((plugin as unknown as { settingTabs: unknown[] }).settingTabs).toHaveLength(1);
 	});
 
-	it('registers the zoom editor extension', async () => {
+	it('registers the block id hiding and zoom editor extensions', async () => {
 		const plugin = makePlugin();
 		await plugin.onload();
 		expect(
 			(plugin as unknown as { editorExtensions: unknown[] }).editorExtensions,
-		).toHaveLength(1);
+		).toHaveLength(2);
 	});
 
 	it('renders an empty settings tab without throwing', async () => {

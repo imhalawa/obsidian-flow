@@ -1,5 +1,6 @@
 import { Notice, Plugin } from 'obsidian';
 import { registerCommands } from './commands';
+import { blockIdHiding } from './editor/block-id-hiding';
 import { registerZoom } from './editor/register-zoom';
 import { DEFAULT_SETTINGS, FlowSettings, FlowSettingTab } from './settings';
 
@@ -14,6 +15,7 @@ export default class FlowPlugin extends Plugin {
 		);
 		this.addSettingTab(new FlowSettingTab(this.app, this));
 		registerCommands(this);
+		this.registerEditorExtension(blockIdHiding(() => this.settings.hideBlockIds));
 		registerZoom(this, {
 			rememberZoom: () => this.settings.rememberZoom,
 			notify: (message) => new Notice(message),

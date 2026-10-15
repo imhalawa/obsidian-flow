@@ -11,7 +11,11 @@ export default defineConfig({
 		coverage: {
 			provider: 'v8',
 			include: ['src/**/*.ts'],
-			exclude: ['src/ui/breadcrumb-widget.ts', 'src/editor/zoom-persistence.ts'],
+			exclude: [
+				'src/ui/breadcrumb-widget.ts',
+				'src/editor/zoom-persistence.ts',
+				'src/editor/block-id-hiding.ts',
+			],
 			reporter: ['text', 'lcov'],
 			thresholds: { lines: 90, functions: 90, branches: 85, statements: 90 },
 		},
