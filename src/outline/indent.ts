@@ -57,7 +57,7 @@ export function indentItem(
 	const shifted = reindentLines(lines, item.startLine, item.endLine, delta, style);
 	const edits =
 		previous.children.length === 0 ? renumberToOne(lines, shifted, item.startLine) : shifted;
-	return guardedEdits(lines, style, edits, depthsAfterShift(lines, style, item, 1));
+	return guardedEdits(lines, style, edits, depthsAfterShift(lines, style, item, 1), []);
 }
 
 /** Moves an item to its parent's level; later siblings become its children. */
@@ -91,5 +91,5 @@ export function outdentItem(
 	}
 	const firstLater = later[0];
 	if (!firstChild && firstLater) edits = renumberToOne(lines, edits, firstLater.startLine);
-	return guardedEdits(lines, style, edits, depthsAfterShift(lines, style, item, -1));
+	return guardedEdits(lines, style, edits, depthsAfterShift(lines, style, item, -1), []);
 }

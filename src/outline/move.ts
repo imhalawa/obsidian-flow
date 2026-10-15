@@ -63,7 +63,11 @@ function swapSiblings(
 		...nodes.filter((node) => within(node, first)),
 		...nodes.filter((node) => node.startLine > second.endLine),
 	].map(nodeDepth);
-	return guardedEdits(lines, style, edits, expected);
+	const lineMoves = [
+		{ fromLine: second.startLine, toLine: second.endLine, delta: -firstBlock.length },
+		{ fromLine: first.startLine, toLine: first.endLine, delta: secondBlock.length },
+	];
+	return guardedEdits(lines, style, edits, expected, lineMoves);
 }
 
 /** Returns an item with its previous and next sibling. */
