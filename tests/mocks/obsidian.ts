@@ -5,6 +5,11 @@ export const editorInfoField = StateField.define<{ file: { path: string } | null
 	update: (value) => value,
 });
 
+export const editorLivePreviewField = StateField.define<boolean>({
+	create: () => true,
+	update: (value) => value,
+});
+
 export class Plugin {
 	app: unknown;
 	private stored: unknown = null;
@@ -87,6 +92,9 @@ export class Setting {
 	}
 	setName(name: string): this {
 		this.name = name;
+		return this;
+	}
+	setHeading(): this {
 		return this;
 	}
 	setDesc(description: string): this {

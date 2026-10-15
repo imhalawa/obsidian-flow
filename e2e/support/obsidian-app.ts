@@ -89,6 +89,26 @@ export class ObsidianApp {
 		);
 	}
 
+	/** Moves the pointer to a point of the window. */
+	movePointer(x: number, y: number): Promise<void> {
+		return this.connection.pointer(x, y, 'move', 'left', 0);
+	}
+
+	/** Clicks at a point of the window; alt holds the Alt key. */
+	click(x: number, y: number, alt: boolean): Promise<void> {
+		return this.connection.pointer(x, y, 'click', 'left', alt ? 1 : 0);
+	}
+
+	/** Right-clicks at a point of the window. */
+	rightClick(x: number, y: number): Promise<void> {
+		return this.connection.pointer(x, y, 'click', 'right', 0);
+	}
+
+	/** Saves a screenshot of the window as a PNG file. */
+	async screenshot(path: string): Promise<void> {
+		writeFileSync(path, Buffer.from(await this.connection.screenshot(), 'base64'));
+	}
+
 	/** Types text into the focused editor one character at a time. */
 	typeText(text: string): Promise<void> {
 		return this.connection.insertText(text);

@@ -33,12 +33,12 @@ describe('FlowPlugin lifecycle', () => {
 		expect((plugin as unknown as { settingTabs: unknown[] }).settingTabs).toHaveLength(1);
 	});
 
-	it('registers the block id hiding and zoom editor extensions', async () => {
+	it('registers the block id hiding, item pointer and zoom editor extensions', async () => {
 		const plugin = makePlugin();
 		await plugin.onload();
 		expect(
 			(plugin as unknown as { editorExtensions: unknown[] }).editorExtensions,
-		).toHaveLength(2);
+		).toHaveLength(3);
 	});
 
 	it('registers the item suggester', async () => {

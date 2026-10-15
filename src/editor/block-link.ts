@@ -12,12 +12,15 @@ import type { ZoomTarget } from './zoom-control';
 export type BlockLinkOutcome =
 	{ kind: 'item'; id: string; added: boolean; duplicate: boolean } | { kind: 'not-a-list-item' };
 
-/** Gives the item at the cursor a block id if it has none, and returns the id. */
-export function ensureBlockId(target: ZoomTarget, random: () => number): BlockLinkOutcome {
+/** Gives the item on a line a block id if it has none, and returns the id. */
+export function ensureBlockIdOnLine(
+	target: ZoomTarget,
+	line: number,
+	random: () => number,
+): BlockLinkOutcome {
 	const state = target.state;
 	const lines = state.doc.toJSON();
-	const cursorLine = state.doc.lineAt(state.selection.main.head).number - 1;
-	const item = itemAtLine(parseOutline(lines, state.tabSize), cursorLine);
+	const item = itemAtLine(parseOutline(lines, state.tabSize), line);
 	if (!item) return { kind: 'not-a-list-item' };
 	const existing = readBlockId(lines, item);
 	if (existing !== null) {
@@ -40,4 +43,11 @@ export function ensureBlockId(target: ZoomTarget, random: () => number): BlockLi
 		userEvent: 'flow.block-id',
 	});
 	return { kind: 'item', id, added: true, duplicate: false };
+}
+
+/** Gives the item at the cursor a block id if it has none, and returns the id. */
+export function ensureBlockId(target: ZoomTarget, random: () => number): BlockLinkOutcome {
+	const state = target.state;
+	const cursorLine = state.doc.lineAt(state.selection.main.head).number - 1;
+	return ensureBlockIdOnLine(target, cursorLine, random);
 }

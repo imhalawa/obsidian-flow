@@ -61,6 +61,29 @@ export class DevtoolsConnection {
 		return result.result.value;
 	}
 
+	/** Captures the window as PNG data in base64. */
+	async screenshot(): Promise<string> {
+		const result = (await this.send('Page.captureScreenshot', { format: 'png' })) as {
+			data: string;
+		};
+		return result.data;
+	}
+
+	/** Moves the pointer, or presses and releases a mouse button, at a point of the window. */
+	async pointer(
+		x: number,
+		y: number,
+		action: 'move' | 'click',
+		button: 'left' | 'right',
+		modifiers: number,
+	): Promise<void> {
+		await this.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y, modifiers });
+		if (action === 'move') return;
+		const press = { x, y, button, clickCount: 1, modifiers };
+		await this.send('Input.dispatchMouseEvent', { type: 'mousePressed', ...press });
+		await this.send('Input.dispatchMouseEvent', { type: 'mouseReleased', ...press });
+	}
+
 	/** Types text into the focused element one character at a time, the way input methods do. */
 	async insertText(text: string): Promise<void> {
 		for (const character of text) {

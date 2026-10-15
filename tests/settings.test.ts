@@ -23,6 +23,9 @@ describe('settings tab', () => {
 			'Remember zoom per note',
 			'Hide block ids',
 			'Suggest items after ((',
+			'Bullets and thread lines',
+			'Click bullet to zoom',
+			'Click thread line to fold',
 		]);
 	});
 
@@ -32,6 +35,9 @@ describe('settings tab', () => {
 			'Reopen each note at the item you zoomed into.',
 			'Hide the id at the end of an item unless the cursor is on its line.',
 			'Type (( to search the items of your notes and insert a link to one.',
+			'',
+			'Select a bullet to zoom into that item.',
+			'Select a thread line to fold its branch. Hold Alt to fold every descendant too.',
 		]);
 	});
 
@@ -41,6 +47,9 @@ describe('settings tab', () => {
 			plugin.settings.rememberZoom,
 			plugin.settings.hideBlockIds,
 			plugin.settings.itemSuggester,
+			undefined,
+			plugin.settings.clickBulletToZoom,
+			plugin.settings.clickThreadLineToFold,
 		]);
 	});
 
@@ -64,5 +73,19 @@ describe('settings tab', () => {
 		await Setting.created[2]?.toggle?.handler?.(false);
 		expect(plugin.settings.itemSuggester).toBe(false);
 		expect(await plugin.loadData()).toMatchObject({ itemSuggester: false });
+	});
+
+	it('saves click bullet to zoom when its toggle changes', async () => {
+		const { plugin } = await showTab();
+		await Setting.created[4]?.toggle?.handler?.(false);
+		expect(plugin.settings.clickBulletToZoom).toBe(false);
+		expect(await plugin.loadData()).toMatchObject({ clickBulletToZoom: false });
+	});
+
+	it('saves click thread line to fold when its toggle changes', async () => {
+		const { plugin } = await showTab();
+		await Setting.created[5]?.toggle?.handler?.(false);
+		expect(plugin.settings.clickThreadLineToFold).toBe(false);
+		expect(await plugin.loadData()).toMatchObject({ clickThreadLineToFold: false });
 	});
 });
