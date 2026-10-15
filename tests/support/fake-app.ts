@@ -16,10 +16,15 @@ export class FakeApp {
 	};
 
 	updateOptionsCalls = 0;
+	readonly mainWindow = { history: { back: () => undefined, forward: () => undefined } };
 	readonly workspace = {
 		updateOptions: (): void => {
 			this.updateOptionsCalls += 1;
 		},
+		containerEl: { ownerDocument: { defaultView: this.mainWindow } },
+		onLayoutReady: (callback: () => void): void => callback(),
+		iterateAllLeaves: (): void => undefined,
+		on: (name: string): string => name,
 	};
 
 	loadLocalStorage(key: string): unknown {

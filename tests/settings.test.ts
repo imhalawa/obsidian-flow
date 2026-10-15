@@ -26,6 +26,7 @@ describe('settings tab', () => {
 			'Bullets and thread lines',
 			'Click bullet to zoom',
 			'Click thread line to fold',
+			'Use mouse back and forward for zoom',
 		]);
 	});
 
@@ -38,6 +39,7 @@ describe('settings tab', () => {
 			'',
 			'Select a bullet to zoom into that item.',
 			'Select a thread line to fold its branch. Hold Alt to fold every descendant too.',
+			"Step through zoom levels first. When none are left, Obsidian's own back and forward apply.",
 		]);
 	});
 
@@ -50,6 +52,7 @@ describe('settings tab', () => {
 			undefined,
 			plugin.settings.clickBulletToZoom,
 			plugin.settings.clickThreadLineToFold,
+			plugin.settings.useMouseHistory,
 		]);
 	});
 
@@ -87,5 +90,12 @@ describe('settings tab', () => {
 		await Setting.created[5]?.toggle?.handler?.(false);
 		expect(plugin.settings.clickThreadLineToFold).toBe(false);
 		expect(await plugin.loadData()).toMatchObject({ clickThreadLineToFold: false });
+	});
+
+	it('saves use mouse back and forward for zoom when its toggle changes', async () => {
+		const { plugin } = await showTab();
+		await Setting.created[6]?.toggle?.handler?.(false);
+		expect(plugin.settings.useMouseHistory).toBe(false);
+		expect(await plugin.loadData()).toMatchObject({ useMouseHistory: false });
 	});
 });

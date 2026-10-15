@@ -19,6 +19,7 @@ export default defineConfig({
 				'src/editor/item-pointer.ts',
 				'src/editor/register-item-pointer.ts',
 				'src/ui/item-menu.ts',
+				'src/editor/register-mouse-history.ts',
 			],
 			reporter: ['text', 'lcov'],
 			thresholds: { lines: 90, functions: 90, branches: 85, statements: 90 },
