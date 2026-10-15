@@ -1,7 +1,13 @@
 {
 	"$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
 	"testRunner": "vitest",
-	"mutate": ["src/**/*.ts", "!src/main.ts", "!src/settings.ts", "!src/ui/breadcrumb-widget.ts", "!src/editor/zoom-persistence.ts"],
+	"mutate": [
+		"src/**/*.ts",
+		"!src/main.ts",
+		"!src/settings.ts",
+		"!src/ui/breadcrumb-widget.ts",
+		"!src/editor/zoom-persistence.ts"
+	],
 	"reporters": ["clear-text", "progress"],
 	"thresholds": { "high": 90, "low": 80, "break": 80 },
 	"coverageAnalysis": "off",
