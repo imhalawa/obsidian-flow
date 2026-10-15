@@ -1,3 +1,4 @@
+import { codeFolding } from '@codemirror/language';
 import {
 	EditorSelection,
 	EditorState,
@@ -6,6 +7,7 @@ import {
 } from '@codemirror/state';
 import { zoomField } from '../../src/editor/zoom-field';
 import { zoomEditFilter } from '../../src/editor/zoom-filter';
+import { zoomFoldGuard } from '../../src/editor/zoom-fold-guard';
 import { zoomHistoryField } from '../../src/editor/zoom-history-field';
 import type { ZoomTarget } from '../../src/editor/zoom-control';
 
@@ -17,7 +19,7 @@ export class FakeZoomTarget implements ZoomTarget {
 		this.state = EditorState.create({
 			doc,
 			selection: EditorSelection.cursor(caret),
-			extensions: [zoomField, zoomHistoryField, zoomEditFilter],
+			extensions: [codeFolding(), zoomField, zoomHistoryField, zoomEditFilter, zoomFoldGuard],
 		});
 	}
 
