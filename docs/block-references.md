@@ -15,3 +15,11 @@ Findings from a spike in real Obsidian 1.14.4 on Linux, and the design that foll
 - A note that uses the same id twice shows "This block id is used more than once in the note." and the link is still copied.
 - Ids are never removed automatically.
 - The setting "Hide block ids" hides the id away from the cursor line. The hidden range is atomic, so the cursor skips over it. The text in the note is unchanged.
+
+## Item suggester
+
+- Typing `((` opens a list of items from the vault. The list comes from an index of list items that is built on the first use and reads a note again only when its modified time changes.
+- Choosing an item writes its block id into the target note if it has none, then inserts the link. A note other than the open one is changed with `Vault.process`, and the open note in one editor transaction.
+- Obsidian auto pairs `(` into `()`, so typing `((` leaves `))` after the cursor. The suggester replaces that pair together with the query.
+- The setting "Suggest items after ((" switches the suggester off.
+- Logseq `id::` and `collapsed::` properties are not read yet, because nothing consumes them. They come with a feature that needs them.

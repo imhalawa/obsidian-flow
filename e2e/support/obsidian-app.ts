@@ -73,12 +73,25 @@ export class ObsidianApp {
 		await app.evaluate(
 			`(async () => { await app.plugins.setEnable(true); await app.plugins.enablePlugin(${JSON.stringify(PLUGIN_ID)}); })()`,
 		);
+		await app.dismissTrustPrompt();
 		return app;
 	}
 
 	/** Evaluates an expression inside the Obsidian window. */
 	evaluate<T>(expression: string): Promise<T> {
 		return this.connection.evaluate<T>(expression);
+	}
+
+	/** Closes the prompt that asks whether to trust the vault, which appears shortly after the window opens. */
+	private async dismissTrustPrompt(): Promise<void> {
+		await this.evaluate(
+			`new Promise((resolve) => { let tries = 0; const check = () => { if (activeDocument.querySelector(".modal-container")) { activeDocument.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })); resolve(true); } else if (tries > 40) resolve(false); else { tries += 1; setTimeout(check, 100); } }; check(); })`,
+		);
+	}
+
+	/** Types text into the focused editor one character at a time. */
+	typeText(text: string): Promise<void> {
+		return this.connection.insertText(text);
 	}
 
 	/** Stops Obsidian and removes the throwaway vault. */
@@ -88,6 +101,15 @@ export class ObsidianApp {
 		this.process.kill('SIGKILL');
 		this.display.kill('SIGKILL');
 		await exited;
-		rmSync(this.workspace, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
+		try {
+			rmSync(this.workspace, {
+				recursive: true,
+				force: true,
+				maxRetries: 10,
+				retryDelay: 200,
+			});
+		} catch {
+			return;
+		}
 	}
 }
