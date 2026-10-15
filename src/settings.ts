@@ -1,38 +1,23 @@
-import { App, PluginSettingTab, Setting } from 'obsidian';
-import MyPlugin from './main';
+import { App, PluginSettingTab } from 'obsidian';
+import type FlowPlugin from './main';
 
-export interface MyPluginSettings {
-	mySetting: string;
+export interface FlowSettings {
+	enabled: boolean;
 }
 
-export const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default',
+export const DEFAULT_SETTINGS: FlowSettings = {
+	enabled: true,
 };
 
-export class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
-
-	constructor(app: App, plugin: MyPlugin) {
+export class FlowSettingTab extends PluginSettingTab {
+	constructor(
+		app: App,
+		private readonly plugin: FlowPlugin,
+	) {
 		super(app, plugin);
-		this.plugin = plugin;
 	}
 
 	display(): void {
-		const { containerEl } = this;
-
-		containerEl.empty();
-
-		new Setting(containerEl)
-			.setName('Settings #1')
-			.setDesc("It's a secret")
-			.addText((text) =>
-				text
-					.setPlaceholder('Enter your secret')
-					.setValue(this.plugin.settings.mySetting)
-					.onChange(async (value) => {
-						this.plugin.settings.mySetting = value;
-						await this.plugin.saveSettings();
-					}),
-			);
+		this.containerEl.empty();
 	}
 }
