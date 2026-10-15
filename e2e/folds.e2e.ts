@@ -1,0 +1,110 @@
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { NoteEditor } from './support/note-editor';
+import { ObsidianApp } from './support/obsidian-app';
+
+let app: ObsidianApp;
+
+beforeAll(async () => {
+	app = await ObsidianApp.start();
+});
+
+afterAll(async () => {
+	await app.stop();
+});
+
+const NOTE = 'intro\n- a\n\t- b\n\t\t- c\n\t- d\n- e\n\t- f';
+
+describe('folds in real Obsidian', () => {
+	it('folds an item exactly the way Obsidian folds it', async () => {
+		const own = await NoteEditor.open(app, NOTE);
+		await own.caret(1, 3);
+		await own.exec('toggleFold');
+		const expected = await own.folds();
+		const editor = await NoteEditor.open(app, NOTE);
+		await editor.caret(1, 3);
+		await editor.runCommand('fold-item');
+		expect(await editor.folds()).toEqual(expected);
+		expect(await editor.visibleLines()).toEqual(['intro', '- a…', '- e', '\t- f']);
+	});
+
+	it('unfolds an item that Obsidian folded', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		await editor.caret(1, 3);
+		await editor.exec('toggleFold');
+		await editor.runCommand('unfold-item');
+		expect(await editor.folds()).toEqual([]);
+		expect(await editor.visibleLines()).toEqual(NOTE.split('\n'));
+	});
+
+	it('folds and unfolds every item', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		await editor.caret(0, 0);
+		await editor.runCommand('fold-all');
+		expect((await editor.folds()).length).toBe(3);
+		expect(await editor.visibleLines()).toEqual(['intro', '- a…', '- e…']);
+		await editor.runCommand('unfold-all');
+		expect(await editor.folds()).toEqual([]);
+	});
+
+	it('keeps folds when the note is closed and opened again', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		await editor.caret(1, 3);
+		await editor.runCommand('fold-item');
+		const folded = await editor.folds();
+		await editor.reopen();
+		await new Promise((resolve) => setTimeout(resolve, 800));
+		expect(await editor.folds()).toEqual(folded);
+	});
+
+	it('explains that a leaf has no children to fold', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		await editor.caret(4, 4);
+		await editor.runCommand('fold-item');
+		expect(await editor.notices()).toContain('This item has no children to fold.');
+	});
+
+	it('keeps folds made while zoomed after zooming out', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		await editor.caret(2, 3);
+		await editor.runCommand('zoom-in');
+		await editor.runCommand('fold-item');
+		expect(await editor.visibleLines()).toEqual(['\t- b…']);
+		await editor.runCommand('zoom-reset');
+		expect(await editor.visibleLines()).toEqual([
+			'intro',
+			'- a',
+			'\t- b…',
+			'\t- d',
+			'- e',
+			'\t- f',
+		]);
+	});
+
+	it('shows a folded item again as folded when zooming into it', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		await editor.caret(2, 3);
+		await editor.runCommand('fold-item');
+		await editor.runCommand('zoom-in');
+		expect(await editor.visibleLines()).toEqual(['\t- b…']);
+	});
+
+	it('keeps the zoomed item visible when Obsidian folds everything', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		await editor.caret(3, 4);
+		await editor.runCommand('zoom-in');
+		await editor.exec('foldAll');
+		expect(await editor.visibleLines()).toEqual(['\t\t- c']);
+	});
+
+	it('unfolds a parent that hides the item when stepping back into a zoom', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		await editor.caret(3, 4);
+		await editor.runCommand('zoom-in');
+		await editor.runCommand('zoom-reset');
+		await editor.caret(1, 3);
+		await editor.runCommand('fold-item');
+		await editor.runCommand('zoom-history-back');
+		expect(await editor.visibleLines()).toEqual(['\t\t- c']);
+		expect(await editor.folds()).toEqual([]);
+	});
+});
