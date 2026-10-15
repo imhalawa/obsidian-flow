@@ -9,6 +9,11 @@ export interface FlowSettings {
 	clickBulletToZoom: boolean;
 	clickThreadLineToFold: boolean;
 	useMouseHistory: boolean;
+	enterOutdentsEmptyItem: boolean;
+	backspaceMergesItem: boolean;
+	homeStaysInItem: boolean;
+	selectAllStaysInItem: boolean;
+	tabIndentsItem: boolean;
 }
 
 export const DEFAULT_SETTINGS: FlowSettings = {
@@ -19,7 +24,16 @@ export const DEFAULT_SETTINGS: FlowSettings = {
 	clickBulletToZoom: true,
 	clickThreadLineToFold: true,
 	useMouseHistory: true,
+	enterOutdentsEmptyItem: true,
+	backspaceMergesItem: true,
+	homeStaysInItem: true,
+	selectAllStaysInItem: true,
+	tabIndentsItem: false,
 };
+
+type ToggleKey = {
+	[Key in keyof FlowSettings]: FlowSettings[Key] extends boolean ? Key : never;
+}[keyof FlowSettings];
 
 export class FlowSettingTab extends PluginSettingTab {
 	constructor(
@@ -31,66 +45,90 @@ export class FlowSettingTab extends PluginSettingTab {
 
 	display(): void {
 		this.containerEl.empty();
-		new Setting(this.containerEl)
-			.setName('Remember zoom per note')
-			.setDesc('Reopen each note at the item you zoomed into.')
-			.addToggle((toggle) =>
-				toggle.setValue(this.plugin.settings.rememberZoom).onChange(async (value) => {
-					this.plugin.settings.rememberZoom = value;
-					await this.plugin.saveSettings();
-				}),
-			);
-		new Setting(this.containerEl)
-			.setName('Hide block ids')
-			.setDesc('Hide the id at the end of an item unless the cursor is on its line.')
-			.addToggle((toggle) =>
-				toggle.setValue(this.plugin.settings.hideBlockIds).onChange(async (value) => {
-					this.plugin.settings.hideBlockIds = value;
-					await this.plugin.saveSettings();
-					this.app.workspace.updateOptions();
-				}),
-			);
-		new Setting(this.containerEl)
-			.setName('Suggest items after ((')
-			.setDesc('Type (( to search the items of your notes and insert a link to one.')
-			.addToggle((toggle) =>
-				toggle.setValue(this.plugin.settings.itemSuggester).onChange(async (value) => {
-					this.plugin.settings.itemSuggester = value;
-					await this.plugin.saveSettings();
-				}),
-			);
+		this.addToggle(
+			'Remember zoom per note',
+			'Reopen each note at the item you zoomed into.',
+			'rememberZoom',
+			null,
+		);
+		this.addToggle(
+			'Hide block ids',
+			'Hide the id at the end of an item unless the cursor is on its line.',
+			'hideBlockIds',
+			() => this.app.workspace.updateOptions(),
+		);
+		this.addToggle(
+			'Suggest items after ((',
+			'Type (( to search the items of your notes and insert a link to one.',
+			'itemSuggester',
+			null,
+		);
 		new Setting(this.containerEl).setName('Bullets and thread lines').setHeading();
+		this.addToggle(
+			'Click bullet to zoom',
+			'Select a bullet to zoom into that item.',
+			'clickBulletToZoom',
+			null,
+		);
+		this.addToggle(
+			'Click thread line to fold',
+			'Select a thread line to fold its branch. Hold Alt to fold every descendant too.',
+			'clickThreadLineToFold',
+			null,
+		);
+		this.addToggle(
+			'Use mouse back and forward for zoom',
+			"Step through zoom levels first. When none are left, Obsidian's own back and forward apply.",
+			'useMouseHistory',
+			null,
+		);
+		new Setting(this.containerEl).setName('List editing').setHeading();
+		this.addToggle(
+			'Enter on an empty item outdents it',
+			'Outdent an empty item, or end the list when it is at the top level.',
+			'enterOutdentsEmptyItem',
+			null,
+		);
+		this.addToggle(
+			'Backspace at the start of an item merges it',
+			'Join the item with the one above instead of deleting the bullet.',
+			'backspaceMergesItem',
+			null,
+		);
+		this.addToggle(
+			'Home stays inside the item text',
+			'Move to the start of the item text before moving to the start of the line.',
+			'homeStaysInItem',
+			null,
+		);
+		this.addToggle(
+			'Select all starts with the item text',
+			'Select the text of the item first. Select all again to select the whole note.',
+			'selectAllStaysInItem',
+			null,
+		);
+		this.addToggle(
+			'Tab and Shift-Tab move whole items',
+			'Indent and outdent the item with its children. Turn this on to replace the editor keys.',
+			'tabIndentsItem',
+			null,
+		);
+	}
+
+	private addToggle(
+		name: string,
+		description: string,
+		key: ToggleKey,
+		afterChange: (() => void) | null,
+	): void {
 		new Setting(this.containerEl)
-			.setName('Click bullet to zoom')
-			.setDesc('Select a bullet to zoom into that item.')
+			.setName(name)
+			.setDesc(description)
 			.addToggle((toggle) =>
-				toggle.setValue(this.plugin.settings.clickBulletToZoom).onChange(async (value) => {
-					this.plugin.settings.clickBulletToZoom = value;
+				toggle.setValue(this.plugin.settings[key]).onChange(async (value) => {
+					this.plugin.settings[key] = value;
 					await this.plugin.saveSettings();
-				}),
-			);
-		new Setting(this.containerEl)
-			.setName('Click thread line to fold')
-			.setDesc(
-				'Select a thread line to fold its branch. Hold Alt to fold every descendant too.',
-			)
-			.addToggle((toggle) =>
-				toggle
-					.setValue(this.plugin.settings.clickThreadLineToFold)
-					.onChange(async (value) => {
-						this.plugin.settings.clickThreadLineToFold = value;
-						await this.plugin.saveSettings();
-					}),
-			);
-		new Setting(this.containerEl)
-			.setName('Use mouse back and forward for zoom')
-			.setDesc(
-				"Step through zoom levels first. When none are left, Obsidian's own back and forward apply.",
-			)
-			.addToggle((toggle) =>
-				toggle.setValue(this.plugin.settings.useMouseHistory).onChange(async (value) => {
-					this.plugin.settings.useMouseHistory = value;
-					await this.plugin.saveSettings();
+					afterChange?.();
 				}),
 			);
 	}

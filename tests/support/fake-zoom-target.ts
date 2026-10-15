@@ -19,7 +19,14 @@ export class FakeZoomTarget implements ZoomTarget {
 		this.state = EditorState.create({
 			doc,
 			selection: EditorSelection.cursor(caret),
-			extensions: [codeFolding(), zoomField, zoomHistoryField, zoomEditFilter, zoomFoldGuard],
+			extensions: [
+				EditorState.allowMultipleSelections.of(true),
+				codeFolding(),
+				zoomField,
+				zoomHistoryField,
+				zoomEditFilter,
+				zoomFoldGuard,
+			],
 		});
 	}
 
@@ -51,6 +58,15 @@ export class FakeZoomTarget implements ZoomTarget {
 
 	get text(): string {
 		return this.state.doc.toString();
+	}
+
+	select(anchor: number, head: number): void {
+		this.state = this.state.update({ selection: EditorSelection.range(anchor, head) }).state;
+	}
+
+	get selected(): { from: number; to: number } {
+		const { from, to } = this.state.selection.main;
+		return { from, to };
 	}
 
 	get caret(): number {
