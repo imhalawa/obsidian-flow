@@ -25,6 +25,11 @@ describe('plugin in real Obsidian', () => {
 			'flow-outliner:move-item-down',
 			'flow-outliner:move-item-up',
 			'flow-outliner:outdent-item',
+			'flow-outliner:zoom-history-back',
+			'flow-outliner:zoom-history-forward',
+			'flow-outliner:zoom-in',
+			'flow-outliner:zoom-out',
+			'flow-outliner:zoom-reset',
 		]);
 	});
 });

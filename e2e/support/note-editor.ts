@@ -89,4 +89,39 @@ export class NoteEditor {
 			'Array.from(activeDocument.querySelectorAll(".notice")).map((el) => el.textContent)',
 		);
 	}
+
+	/** Returns the text of the lines the editor draws, which excludes hidden lines. */
+	visibleLines(): Promise<string[]> {
+		return this.app.evaluate<string[]>(
+			'Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .cm-content .cm-line")).map((el) => el.textContent)',
+		);
+	}
+
+	/** Returns the labels of the breadcrumb trail on screen. */
+	crumbs(): Promise<string[]> {
+		return this.app.evaluate<string[]>(
+			'Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .flow-breadcrumbs__crumb")).map((el) => el.textContent)',
+		);
+	}
+
+	/** Clicks the breadcrumb with the given label. */
+	async clickCrumb(label: string): Promise<void> {
+		await this.app.evaluate(
+			`Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .flow-breadcrumbs__crumb")).find((el) => el.textContent === ${JSON.stringify(label)}).click()`,
+		);
+	}
+
+	/** Inserts text at a position as a user edit, the way typing does. */
+	async type(position: Position, text: string): Promise<void> {
+		await this.app.evaluate(
+			`(() => { const cm = app.workspace.activeEditor.editor.cm; const at = cm.state.doc.line(${position.line + 1}).from + ${position.ch}; cm.dispatch({ changes: { from: at, insert: ${JSON.stringify(text)} }, userEvent: "input.type" }); return true; })()`,
+		);
+	}
+
+	/** Replaces a range inside one line as a user edit. */
+	async replace(line: number, fromCh: number, toCh: number, text: string): Promise<void> {
+		await this.app.evaluate(
+			`(() => { const cm = app.workspace.activeEditor.editor.cm; const start = cm.state.doc.line(${line + 1}).from; cm.dispatch({ changes: { from: start + ${fromCh}, to: start + ${toCh}, insert: ${JSON.stringify(text)} }, userEvent: "input.type" }); return true; })()`,
+		);
+	}
 }
