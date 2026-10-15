@@ -29,6 +29,15 @@ describe('edit lists', () => {
 		});
 	});
 
+	it('leaves the numbers of other ordered items alone', () => {
+		expect(indented(['5. x', '- a', '10. b', '7. z'], spaces2, 2)).toEqual([
+			'5. x',
+			'- a',
+			'  1. b',
+			'7. z',
+		]);
+	});
+
 	it('does not renumber text that only looks like a marker', () => {
 		expect(indented(['- a', '- 2. b'], spaces2, 1)).toEqual(['- a', '  - 2. b']);
 	});

@@ -1,6 +1,6 @@
 import { itemAtLine } from './item-lookup';
 import { reindentLines, type IndentStyle } from './indent-style';
-import { refuse, type EditResult, type LineEdit } from './line-edit';
+import { applyEdits, refuse, type EditResult, type LineEdit } from './line-edit';
 import { parseOutline, type OutlineNode } from './outline-tree';
 import { guardedEdits, nodeDepth } from './structure-guard';
 
@@ -13,16 +13,18 @@ function childIndentColumns(parent: OutlineNode, style: IndentStyle): number {
 	return Math.max(parent.indentColumns + style.unitColumns, parent.contentColumn);
 }
 
-/** Rewrites the number of an ordered item to 1, keeping its delimiter. */
+/** Rewrites the number of an ordered item to 1, keeping its delimiter and the other edits. */
 function renumberToOne(lines: readonly string[], edits: LineEdit[], lineIndex: number): LineEdit[] {
-	const current =
-		edits.find((edit) => edit.lineIndex === lineIndex)?.text ?? lines[lineIndex] ?? '';
-	const text = current.replace(
-		ORDERED_MARKER,
-		(_match, indent: string, delimiter: string) => `${indent}1${delimiter}`,
-	);
-	if (text === current) return edits;
-	return [...edits.filter((edit) => edit.lineIndex !== lineIndex), { lineIndex, text }];
+	return applyEdits(lines, edits).flatMap((text, index) => {
+		const final =
+			index === lineIndex
+				? text.replace(
+						ORDERED_MARKER,
+						(_match, indent: string, delimiter: string) => `${indent}1${delimiter}`,
+					)
+				: text;
+		return final === lines[index] ? [] : [{ lineIndex: index, text: final }];
+	});
 }
 
 /** Expected depths after moving a subtree and its descendants by `change` levels. */

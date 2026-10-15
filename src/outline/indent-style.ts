@@ -13,6 +13,14 @@ export function writeIndent(columns: number, style: IndentStyle): string {
 	return '\t'.repeat(Math.floor(columns / style.tabSize)) + ' '.repeat(columns % style.tabSize);
 }
 
+/** Shifts the leading whitespace of a line by a column delta, leaving blank lines alone. */
+export function shiftIndent(line: string, delta: number, style: IndentStyle): string {
+	if (line.trim() === '') return line;
+	const body = line.trimStart();
+	const width = visualWidth(line.slice(0, line.length - body.length), style.tabSize);
+	return writeIndent(Math.max(0, width + delta), style) + body;
+}
+
 /** Shifts the leading whitespace of each non blank line in a range by a column delta. */
 export function reindentLines(
 	lines: readonly string[],
@@ -22,13 +30,9 @@ export function reindentLines(
 	style: IndentStyle,
 ): LineEdit[] {
 	const edits: LineEdit[] = [];
-	for (let lineIndex = fromLine; lineIndex <= toLine; lineIndex += 1) {
-		const line = lines[lineIndex] ?? '';
-		if (line.trim() === '') continue;
-		const body = line.trimStart();
-		const width = visualWidth(line.slice(0, line.length - body.length), style.tabSize);
-		const text = writeIndent(Math.max(0, width + delta), style) + body;
-		if (text !== line) edits.push({ lineIndex, text });
-	}
+	lines.slice(fromLine, toLine + 1).forEach((line, offset) => {
+		const text = shiftIndent(line, delta, style);
+		if (text !== line) edits.push({ lineIndex: fromLine + offset, text });
+	});
 	return edits;
 }

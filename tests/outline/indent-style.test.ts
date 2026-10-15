@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { reindentLines, writeIndent, type IndentStyle } from '../../src/outline/indent-style';
+import {
+	reindentLines,
+	shiftIndent,
+	writeIndent,
+	type IndentStyle,
+} from '../../src/outline/indent-style';
 
 const spaces2: IndentStyle = { useTabs: false, unitColumns: 2, tabSize: 4 };
 const tabs: IndentStyle = { useTabs: true, unitColumns: 4, tabSize: 4 };
@@ -56,5 +61,18 @@ describe('reindentLines', () => {
 	it('only touches lines inside the range', () => {
 		const edited = reindentLines(lines, 1, 1, 2, spaces2).map((edit) => edit.lineIndex);
 		expect(edited).toEqual([1]);
+	});
+});
+
+describe('shiftIndent', () => {
+	it.each([
+		['- a', 2, '  - a'],
+		['  - a', -2, '- a'],
+		['  - a', -5, '- a'],
+		['', 3, ''],
+		['   ', 3, '   '],
+		['\t- a', 2, '      - a'],
+	])('shifts %j by %i columns to %j', (line, delta, expected) => {
+		expect(shiftIndent(line, delta, spaces2)).toBe(expected);
 	});
 });
