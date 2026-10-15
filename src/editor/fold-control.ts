@@ -1,6 +1,8 @@
 import { foldEffect, foldedRanges, unfoldEffect } from '@codemirror/language';
 import { EditorSelection, type EditorState, type StateEffect } from '@codemirror/state';
 import { allFoldSpans, foldLookup, type FoldSpan } from '../outline/fold';
+import { itemStartingAt } from '../outline/item-lookup';
+import { parseOutline } from '../outline/outline-tree';
 import type { ZoomRange } from '../outline/zoom';
 import type { ZoomTarget } from './zoom-control';
 import { zoomField } from './zoom-field';
@@ -101,4 +103,36 @@ export function unfoldAll(target: ZoomTarget): FoldOutcome {
 	});
 	if (effects.length > 0) target.dispatch({ effects });
 	return 'done';
+}
+
+/** Folds an item that starts on a line, or unfolds it when it is folded; deep acts on its descendants too. */
+export function toggleBranch(target: ZoomTarget, startLine: number, deep: boolean): FoldOutcome {
+	const state = target.state;
+	const tree = parseOutline(state.doc.toJSON(), state.tabSize);
+	const item = itemStartingAt(tree, startLine);
+	if (!item) return 'not-a-list-item';
+	if (item.children.length === 0) return 'no-children';
+	const span = { fromLine: item.startLine, toLine: item.endLine };
+	const folded = isFolded(state, startLine);
+	const spans = deep ? allFoldSpans(state.doc.toJSON(), state.tabSize, span) : [span];
+	if (!folded) {
+		foldRanges(
+			target,
+			spans.map((each) => rangeOf(state, each)),
+		);
+		return 'done';
+	}
+	const effects = spans.flatMap((each) =>
+		foldsStartingAt(state, rangeOf(state, each).from).map((fold) => unfoldEffect.of(fold)),
+	);
+	if (effects.length > 0) target.dispatch({ effects });
+	return 'done';
+}
+
+/** Tells whether the item that starts on a line has its children folded. */
+export function isFolded(state: EditorState, startLine: number): boolean {
+	const item = itemStartingAt(parseOutline(state.doc.toJSON(), state.tabSize), startLine);
+	if (!item || item.children.length === 0) return false;
+	const span = { fromLine: item.startLine, toLine: item.endLine };
+	return foldsStartingAt(state, rangeOf(state, span).from).length > 0;
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ensureBlockId } from '../../src/editor/block-link';
+import { ensureBlockId, ensureBlockIdOnLine } from '../../src/editor/block-link';
 import { zoomIn } from '../../src/editor/zoom-control';
 import { FakeZoomTarget } from '../support/fake-zoom-target';
 
@@ -69,5 +69,21 @@ describe('ensureBlockId', () => {
 		zoomIn(target);
 		ensureBlockId(target, halfway);
 		expect(target.text).toBe(NOTE.replace('- b', '- b ^i00000'));
+	});
+});
+
+describe('ensureBlockIdOnLine', () => {
+	it('gives the item on the given line an id wherever the cursor is', () => {
+		const target = new FakeZoomTarget(NOTE, 0);
+		expect(ensureBlockIdOnLine(target, 3, halfway)).toMatchObject({
+			id: 'i00000',
+			added: true,
+		});
+		expect(target.text).toBe(NOTE.replace('- b', '- b ^i00000'));
+	});
+
+	it('reports a line that is not in a list item', () => {
+		const target = new FakeZoomTarget(NOTE, at('b'));
+		expect(ensureBlockIdOnLine(target, 0, halfway)).toEqual({ kind: 'not-a-list-item' });
 	});
 });
