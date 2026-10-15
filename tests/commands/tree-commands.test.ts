@@ -31,6 +31,10 @@ describe('tree commands', () => {
 			['zoom-reset', 'Show the whole note'],
 			['zoom-history-back', 'Zoom back'],
 			['zoom-history-forward', 'Zoom forward'],
+			['fold-item', 'Fold item'],
+			['unfold-item', 'Unfold item'],
+			['fold-all', 'Fold all items'],
+			['unfold-all', 'Unfold all items'],
 		]);
 	});
 

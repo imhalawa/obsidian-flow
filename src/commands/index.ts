@@ -1,4 +1,5 @@
 import type { Plugin } from 'obsidian';
+import { registerFoldCommands } from './fold-commands';
 import { registerIndentItem } from './indent-item';
 import { registerMoveItemDown } from './move-item-down';
 import { registerMoveItemUp } from './move-item-up';
@@ -12,4 +13,5 @@ export function registerCommands(plugin: Plugin): void {
 	registerMoveItemUp(plugin);
 	registerMoveItemDown(plugin);
 	registerZoomCommands(plugin);
+	registerFoldCommands(plugin);
 }
