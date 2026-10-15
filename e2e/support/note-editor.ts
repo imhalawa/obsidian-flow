@@ -124,4 +124,45 @@ export class NoteEditor {
 			`(() => { const cm = app.workspace.activeEditor.editor.cm; const start = cm.state.doc.line(${line + 1}).from; cm.dispatch({ changes: { from: start + ${fromCh}, to: start + ${toCh}, insert: ${JSON.stringify(text)} }, userEvent: "input.type" }); return true; })()`,
 		);
 	}
+
+	/** Opens another note in the same pane and then comes back to this one. */
+	async reopen(): Promise<void> {
+		await this.reopenAfter('null');
+	}
+
+	/** Rewrites this note on disk while another note is open, then comes back to it. */
+	async reopenAfterRewriting(text: string): Promise<void> {
+		await this.reopenAfter(JSON.stringify(text));
+	}
+
+	private async reopenAfter(rewrittenText: string): Promise<void> {
+		await this.app.evaluate(
+			`(async () => {
+				const file = app.workspace.getActiveFile();
+				const other = await app.vault.create('other-' + Date.now() + '.md', 'x');
+				const leaf = app.workspace.getLeaf(false);
+				await leaf.openFile(other);
+				const text = ${rewrittenText};
+				if (text !== null) await app.vault.modify(file, text);
+				await leaf.openFile(file);
+				return true;
+			})()`,
+		);
+	}
+
+	/** Waits until the breadcrumb trail is on screen and returns it; returns an empty trail on timeout. */
+	async waitForCrumbs(timeoutMs: number): Promise<string[]> {
+		const deadline = Date.now() + timeoutMs;
+		let crumbs = await this.crumbs();
+		while (crumbs.length === 0 && Date.now() < deadline) {
+			await new Promise((resolve) => setTimeout(resolve, 100));
+			crumbs = await this.crumbs();
+		}
+		return crumbs;
+	}
+
+	/** Returns the path of the open note. */
+	path(): Promise<string> {
+		return this.app.evaluate<string>('app.workspace.getActiveFile().path');
+	}
 }

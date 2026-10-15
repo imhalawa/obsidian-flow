@@ -1,9 +1,17 @@
+import { StateField } from '@codemirror/state';
+
+export const editorInfoField = StateField.define<{ file: { path: string } | null }>({
+	create: () => ({ file: null }),
+	update: (value) => value,
+});
+
 export class Plugin {
 	app: unknown;
 	private stored: unknown = null;
 	readonly settingTabs: unknown[] = [];
 	readonly commands: Command[] = [];
 	readonly editorExtensions: unknown[] = [];
+	readonly events: unknown[] = [];
 
 	constructor(app: unknown = {}) {
 		this.app = app;
@@ -16,6 +24,9 @@ export class Plugin {
 	}
 	addSettingTab(tab: unknown): void {
 		this.settingTabs.push(tab);
+	}
+	registerEvent(reference: unknown): void {
+		this.events.push(reference);
 	}
 	registerEditorExtension(extension: unknown): void {
 		this.editorExtensions.push(extension);
@@ -48,3 +59,39 @@ export class Notice {
 }
 
 export type App = unknown;
+
+export class ToggleStub {
+	value = false;
+	handler: ((value: boolean) => unknown) | null = null;
+	setValue(value: boolean): this {
+		this.value = value;
+		return this;
+	}
+	onChange(handler: (value: boolean) => unknown): this {
+		this.handler = handler;
+		return this;
+	}
+}
+
+export class Setting {
+	static readonly created: Setting[] = [];
+	name = '';
+	description = '';
+	toggle: ToggleStub | null = null;
+	constructor(readonly containerEl: unknown) {
+		Setting.created.push(this);
+	}
+	setName(name: string): this {
+		this.name = name;
+		return this;
+	}
+	setDesc(description: string): this {
+		this.description = description;
+		return this;
+	}
+	addToggle(configure: (toggle: ToggleStub) => unknown): this {
+		this.toggle = new ToggleStub();
+		configure(this.toggle);
+		return this;
+	}
+}

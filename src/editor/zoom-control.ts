@@ -55,7 +55,7 @@ export function clampSelection(selection: EditorSelection, zoom: ZoomState): Edi
 }
 
 /** Zooms into the item on a line (or out to the whole note) and keeps the cursor inside. */
-function dispatchZoom(
+export function dispatchZoom(
 	target: ZoomTarget,
 	startLine: number | null,
 	navigation: ZoomNavigation,

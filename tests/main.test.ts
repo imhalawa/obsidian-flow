@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import FlowPlugin from '../src/main';
 import { DEFAULT_SETTINGS, FlowSettingTab } from '../src/settings';
+import { FakeApp } from './support/fake-app';
 
-const makePlugin = () => new FlowPlugin({} as never, {} as never);
+const makePlugin = () => new FlowPlugin(new FakeApp() as never, {} as never);
 
 describe('FlowPlugin lifecycle', () => {
 	it('loads defaults when nothing is stored', async () => {
@@ -23,7 +24,7 @@ describe('FlowPlugin lifecycle', () => {
 		await plugin.onload();
 		plugin.settings.enabled = false;
 		await plugin.saveSettings();
-		expect(await plugin.loadData()).toEqual({ enabled: false });
+		expect(await plugin.loadData()).toEqual({ ...DEFAULT_SETTINGS, enabled: false });
 	});
 
 	it('registers the settings tab', async () => {

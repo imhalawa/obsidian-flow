@@ -1,4 +1,9 @@
-import { EditorSelection, EditorState, type TransactionSpec } from '@codemirror/state';
+import {
+	EditorSelection,
+	EditorState,
+	type Transaction,
+	type TransactionSpec,
+} from '@codemirror/state';
 import { zoomField } from '../../src/editor/zoom-field';
 import { zoomEditFilter } from '../../src/editor/zoom-filter';
 import { zoomHistoryField } from '../../src/editor/zoom-history-field';
@@ -16,8 +21,30 @@ export class FakeZoomTarget implements ZoomTarget {
 		});
 	}
 
+	private readonly listeners: ((
+		before: EditorState,
+		after: EditorState,
+		transactions: readonly Transaction[],
+	) => void)[] = [];
+
+	onUpdate(
+		listener: (
+			before: EditorState,
+			after: EditorState,
+			transactions: readonly Transaction[],
+		) => void,
+	): void {
+		this.listeners.push(listener);
+	}
+
+	readonly dispatched: TransactionSpec[] = [];
+
 	dispatch(spec: TransactionSpec): void {
-		this.state = this.state.update(spec).state;
+		this.dispatched.push(spec);
+		const before = this.state;
+		const transaction = before.update(spec);
+		this.state = transaction.state;
+		for (const listener of this.listeners) listener(before, this.state, [transaction]);
 	}
 
 	get text(): string {
