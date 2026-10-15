@@ -46,6 +46,11 @@ export class NoteEditor {
 		);
 	}
 
+	/** Gives the editor the keyboard focus. */
+	async focus(): Promise<void> {
+		await this.app.evaluate('(app.workspace.activeEditor.editor.focus(), true)');
+	}
+
 	/** Places a caret. */
 	caret(line: number, ch: number): Promise<void> {
 		const position = { line, ch };
