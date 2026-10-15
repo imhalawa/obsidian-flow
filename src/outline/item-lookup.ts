@@ -8,3 +8,8 @@ export function itemAtLine(tree: OutlineTree, lineIndex: number): OutlineNode | 
 	}
 	return found;
 }
+
+/** Returns the item that starts on the given line, or null. */
+export function itemStartingAt(tree: OutlineTree, lineIndex: number): OutlineNode | null {
+	return tree.nodes.find((node) => node.startLine === lineIndex) ?? null;
+}
