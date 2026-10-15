@@ -8,6 +8,7 @@ export type RefusalReason =
 	| 'no-previous-sibling'
 	| 'no-next-sibling'
 	| 'top-level'
+	| 'outside-zoom'
 	| 'structure-check-failed';
 
 export interface LineMove {

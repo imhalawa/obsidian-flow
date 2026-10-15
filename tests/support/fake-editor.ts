@@ -11,6 +11,7 @@ export class FakeEditor {
 	private lines: string[];
 	private selections: FakeSelection[];
 	readonly transactions: EditorTransaction[] = [];
+	cm: unknown = undefined;
 
 	constructor(text: string, selections: FakeSelection[]) {
 		this.lines = text.split('\n');

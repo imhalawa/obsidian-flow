@@ -5,6 +5,7 @@ import { lineAt, refuse, type Refusal } from '../outline/line-edit';
 import { mapPosition } from '../outline/position-map';
 import { selectedItemLines, type LineRange } from '../outline/selection';
 import { readIndentStyle } from './editor-indent-style';
+import { zoomedLines } from './zoom-window';
 
 export type TreeEditor = Pick<Editor, 'getValue' | 'listSelections' | 'transaction'>;
 
@@ -22,6 +23,18 @@ function coveredLines(selection: EditorSelection): LineRange {
 	const later = selection.anchor.line > selection.head.line ? selection.anchor : selection.head;
 	const endsAtLineStart = toLine > fromLine && later.ch === 0;
 	return { fromLine, toLine: endsAtLineStart ? toLine - 1 : toLine };
+}
+
+/** Tells whether any line outside a window differs between two versions of a note. */
+function changesOutside(
+	before: readonly string[],
+	after: readonly string[],
+	window: LineRange,
+): boolean {
+	return after.some(
+		(text, line) =>
+			text !== lineAt(before, line) && (line < window.fromLine || line > window.toLine),
+	);
 }
 
 /** Tells whether the selection touches at least one list item. */
@@ -46,6 +59,8 @@ export function runTreeEdit(
 	const itemLines = selectedItemLines(lines, style.tabSize, selections.map(coveredLines));
 	const result = runOnItems(lines, style, bottomUp ? itemLines.reverse() : itemLines, operation);
 	if (!result.ok) return refuse(result.reason);
+	const window = zoomedLines(editor);
+	if (window && changesOutside(lines, result.lines, window)) return refuse('outside-zoom');
 	const changes = result.lines.flatMap((text, line): EditorChange[] => {
 		const change = minimalChange(lineAt(lines, line), text);
 		if (change.insert === '' && change.from === change.to) return [];
