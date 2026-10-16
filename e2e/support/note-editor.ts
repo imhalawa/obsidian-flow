@@ -299,6 +299,17 @@ export class NoteEditor {
 		);
 	}
 
+	/** Returns the boxes of the highlighted thread lines the editor draws, in window coordinates. */
+	threadHighlights(): Promise<
+		{ left: number; right: number; top: number; bottom: number; background: string }[]
+	> {
+		return this.app.evaluate<
+			{ left: number; right: number; top: number; bottom: number; background: string }[]
+		>(
+			'Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .flow-thread-highlight")).map((el) => { const box = el.getBoundingClientRect(); return { left: box.left, right: box.right, top: box.top, bottom: box.bottom, background: getComputedStyle(el).backgroundColor }; })',
+		);
+	}
+
 	/** Returns the vertical middle of a line in window coordinates. */
 	linePoint(line: number): Promise<number> {
 		return this.app.evaluate<number>(

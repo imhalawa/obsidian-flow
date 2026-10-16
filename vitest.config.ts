@@ -24,6 +24,7 @@ export default defineConfig({
 				'src/editor/register-mouse-history.ts',
 				'src/editor/register-list-keys.ts',
 				'src/editor/fold-reveal.ts',
+				'src/editor/thread-highlight.ts',
 				'src/editor/drag-hover.ts',
 				'src/editor/item-drag.ts',
 				'src/editor/register-item-drag.ts',

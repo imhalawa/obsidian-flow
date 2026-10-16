@@ -9,6 +9,7 @@ import { registerListKeys } from './editor/register-list-keys';
 import { registerMouseHistory } from './editor/register-mouse-history';
 import { registerItemPointer } from './editor/register-item-pointer';
 import { registerZoom } from './editor/register-zoom';
+import { threadHighlight } from './editor/thread-highlight';
 import { registerZoomHeader } from './editor/zoom-header';
 import { DEFAULT_SETTINGS, FlowSettings, FlowSettingTab } from './settings';
 
@@ -25,6 +26,7 @@ export default class FlowPlugin extends Plugin {
 		registerCommands(this);
 		this.registerEditorExtension(blockIdHiding(() => this.settings.hideBlockIds));
 		this.registerEditorExtension(foldReveal());
+		this.registerEditorExtension(threadHighlight());
 		this.registerEditorSuggest(
 			new ItemSuggest(this.app, {
 				isEnabled: () => this.settings.itemSuggester,

@@ -136,6 +136,14 @@
 	color: var(--icon-color-hover);
 }
 
+.flow-thread-highlight {
+	width: var(--size-2-1);
+	transform: translateX(-50%);
+	border-radius: var(--radius-s);
+	background: var(--interactive-accent);
+	pointer-events: none;
+}
+
 .flow-is-dragging,
 .flow-is-dragging .cm-content,
 .flow-is-dragging .cm-line {
