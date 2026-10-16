@@ -4,7 +4,6 @@ import type { Breadcrumb } from '../outline/zoom';
 
 export interface HeaderCrumb {
 	label: string;
-	description: string;
 	targetLine: number;
 	current: boolean;
 }
@@ -18,7 +17,6 @@ export function headerCrumbs(path: readonly Breadcrumb[]): HeaderCrumb[] {
 		const label = text === '' ? EMPTY_LABEL : text;
 		return {
 			label,
-			description: `Zoom to ${label}`,
 			targetLine: crumb.startLine,
 			current: index === path.length - 1,
 		};

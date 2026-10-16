@@ -13,7 +13,7 @@
 .flow-crumbs {
 	--flow-crumb-max-width: 24em;
 	--flow-crumb-expanded-max-width: 100em;
-	--flow-crumb-chevron-width: 0.5em;
+	--flow-crumb-chevron-width: 0.75em;
 	display: flex;
 	flex: 0 1 auto;
 	align-items: center;
@@ -38,6 +38,7 @@
 	align-items: center;
 	min-width: 0;
 	max-width: var(--flow-crumb-max-width);
+	transition: max-width var(--anim-duration-fast) ease-out;
 	height: auto;
 	padding: var(--size-2-1) var(--size-4-1);
 	border: none;
@@ -61,7 +62,9 @@
 	flex: none;
 	width: var(--flow-crumb-chevron-width);
 	margin-right: var(--size-4-1);
-	color: var(--text-faint);
+	color: var(--text-muted);
+	font-size: 1.5em;
+	line-height: 1;
 	text-align: center;
 }
 
@@ -79,30 +82,10 @@
 	display: none;
 }
 
-.flow-crumbs__crumb.is-cut:hover::after,
-.flow-crumbs__crumb.is-cut:focus-visible::after {
-	content: attr(data-label);
-	position: absolute;
-	z-index: var(--layer-popover);
-	top: 0;
-	left: calc(var(--flow-crumb-chevron-width) + var(--size-4-1));
+.flow-crumbs__crumb.is-cut:hover,
+.flow-crumbs__crumb.is-cut:focus-visible {
+	flex-shrink: 0;
 	max-width: var(--flow-crumb-expanded-max-width);
-	overflow: hidden;
-	padding: var(--size-2-1) var(--size-4-1);
-	border-radius: var(--radius-s);
-	background: var(--background-primary);
-	box-shadow:
-		0 0 0 1px var(--background-modifier-border),
-		var(--shadow-s);
-	color: var(--text-normal);
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.flow-crumbs__crumb.is-current.is-cut:hover::after,
-.flow-crumbs__crumb.is-current.is-cut:focus-visible::after {
-	right: 0;
-	left: auto;
 }
 
 .flow-crumbs button.flow-crumbs__crumb {
