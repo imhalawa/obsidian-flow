@@ -185,8 +185,8 @@ describe('long and formatted crumb labels', () => {
 	});
 
 	const LONG =
-		'Once we start to do the actual resume tailoring, it brings bullets that either exaggerate my experience';
-	const NOTE_WITH_LONG = `- **Challenges I've encountered**\n\t- ${LONG}\n\t\t- short`;
+		'When we start to plant the actual seedlings, it brings trays that either crowd the bed or spill the soil';
+	const NOTE_WITH_LONG = `- **Garden tasks for spring**\n\t- ${LONG}\n\t\t- short`;
 
 	interface CrumbBox {
 		width: number;
@@ -259,11 +259,8 @@ describe('long and formatted crumb labels', () => {
 	});
 
 	it('shows nothing extra while the pointer is over a label that fits', async () => {
-		await hoverCrumb(
-			"- **Challenges I've encountered**\n\t- short",
-			"Challenges I've encountered",
-		);
-		const hovered = await crumbBox("Challenges I've encountered");
+		await hoverCrumb('- **Garden tasks for spring**\n\t- short', 'Garden tasks for spring');
+		const hovered = await crumbBox('Garden tasks for spring');
 		expect(hovered.cut).toBe(false);
 		expect(hovered.overlayText).toBeNull();
 	});
@@ -282,7 +279,7 @@ describe('long and formatted crumb labels', () => {
 		const editor = await openInFolder(NOTE_WITH_LONG);
 		await editor.caret(1, 4);
 		await editor.runCommand('zoom-in');
-		expect(await editor.crumbs()).toEqual(["Challenges I've encountered", LONG]);
+		expect(await editor.crumbs()).toEqual(['Garden tasks for spring', LONG]);
 	});
 });
 

@@ -14,13 +14,13 @@ afterAll(async () => {
 });
 
 const DEEP_PATH = [
-	'# Why I cannot land a single interview?',
-	'- Tackling the Problem (Scratch pad)',
-	'\t- Analyzing the Job Description',
-	'\t\t- Keep your work history up to date in a structured manner',
-	'\t\t\t- Consider this template',
-	'\t\t\t\t- Company',
-	'\t\t\t\t\t- How did you help the team to grow?',
+	'# How do we plan the garden this spring?',
+	'- Choosing the beds (Draft notes)',
+	'\t- Measuring the sunny corners',
+	'\t\t- Keep the watering schedule up to date in a clear and tidy way',
+	'\t\t\t- Consider this layout',
+	'\t\t\t\t- Beds',
+	'\t\t\t\t\t- Which seeds did you sow this week?',
 ].join('\n');
 
 let noteCounter = 0;
@@ -34,7 +34,7 @@ async function zoomedAt(width: number): Promise<NoteEditor> {
 	noteCounter += 1;
 	const editor = await NoteEditor.openAt(
 		app,
-		`Projects/Resume/Experience/Resume and Hiring Process in Tech ${noteCounter}.md`,
+		`Gardens/Spring/Allotments/Spring Garden Planning Process ${noteCounter}.md`,
 		DEEP_PATH,
 	);
 	await editor.caret(6, 12);
@@ -45,7 +45,7 @@ async function zoomedAt(width: number): Promise<NoteEditor> {
 
 describe('a long zoom path in a real window', () => {
 	it.each([
-		[1950, ['Keep your work history up to date in a structured manner']],
+		[1950, ['Keep the watering schedule up to date in a clear and tidy way']],
 		[1600, []],
 	])(
 		'cuts only the crumbs longer than the maximum width in a window %i px wide',
@@ -60,9 +60,9 @@ describe('a long zoom path in a real window', () => {
 		async (width) => {
 			const editor = await zoomedAt(width);
 			const crumbs = await editor.crumbs();
-			expect(crumbs[0]).toBe('Why I cannot land a single interview?');
+			expect(crumbs[0]).toBe('How do we plan the garden this spring?');
 			expect(crumbs[1]).toBe('…');
-			expect(crumbs[crumbs.length - 1]).toBe('How did you help the team to grow?');
+			expect(crumbs[crumbs.length - 1]).toBe('Which seeds did you sow this week?');
 		},
 	);
 
