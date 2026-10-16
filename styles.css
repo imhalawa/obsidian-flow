@@ -55,3 +55,62 @@ button.flow-breadcrumbs__crumb:focus-visible {
 .flow-over-item-control .cm-line {
 	cursor: pointer;
 }
+
+.flow-drag-handle {
+	position: relative;
+	display: inline-block;
+	width: 0;
+	height: 0;
+}
+
+.flow-drag-handle__grip {
+	position: absolute;
+	top: 0;
+	left: calc(var(--size-4-1) * -7);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--size-4-4);
+	height: var(--line-height-normal, 1.5em);
+	min-height: 24px;
+	opacity: 0;
+	color: var(--text-faint);
+	cursor: grab;
+	touch-action: none;
+	transform: translateY(-50%);
+}
+
+.flow-drag-handle__grip::before {
+	content: '\22EE\22EE';
+	letter-spacing: -0.4em;
+	font-size: var(--font-ui-medium);
+}
+
+.flow-list-line:hover .flow-drag-handle__grip,
+.flow-is-dragging .flow-drag-handle__grip {
+	opacity: 0.6;
+}
+
+.flow-drag-handle__grip:hover {
+	opacity: 1;
+	color: var(--text-normal);
+}
+
+.flow-is-dragging,
+.flow-is-dragging .cm-content,
+.flow-is-dragging .cm-line {
+	cursor: grabbing;
+	user-select: none;
+}
+
+.flow-drop-indicator {
+	border-radius: var(--radius-s);
+	background: var(--interactive-accent);
+	pointer-events: none;
+}
+
+@media (hover: none) {
+	.flow-drag-handle__grip {
+		opacity: 0.4;
+	}
+}

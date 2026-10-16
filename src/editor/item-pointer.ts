@@ -1,8 +1,8 @@
-import type { Extension, Text } from '@codemirror/state';
+import type { Extension } from '@codemirror/state';
 import { ViewPlugin, type EditorView } from '@codemirror/view';
 import { editorLivePreviewField } from 'obsidian';
 import { itemStartingAt } from '../outline/item-lookup';
-import { parseOutline, type OutlineNode, type OutlineTree } from '../outline/outline-tree';
+import type { OutlineNode } from '../outline/outline-tree';
 import {
 	bulletMarker,
 	containsX,
@@ -17,6 +17,7 @@ import {
 	type ItemMenuEntry,
 } from '../ui/item-menu-model';
 import { isFolded, toggleBranch } from './fold-control';
+import { outlineOfState } from './outline-of-state';
 import { dispatchZoom } from './zoom-control';
 import { zoomField } from './zoom-field';
 
@@ -31,17 +32,6 @@ type PointerHit = { kind: 'bullet'; startLine: number } | { kind: 'thread'; pare
 
 const MINIMUM_HIT_WIDTH = 24;
 const OVER_ITEM_CLASS = 'flow-over-item-control';
-const trees = new WeakMap<Text, OutlineTree>();
-
-/** Returns the outline of the note, parsed once for each version of the text. */
-function outlineOf(view: EditorView): OutlineTree {
-	const cached = trees.get(view.state.doc);
-	if (cached) return cached;
-	const tree = parseOutline(view.state.doc.toJSON(), view.state.tabSize);
-	trees.set(view.state.doc, tree);
-	return tree;
-}
-
 /** Returns the horizontal span of the marker of an item on its line, or null when it is not drawn. */
 function markerSpan(
 	view: EditorView,
@@ -71,7 +61,7 @@ function hitAt(view: EditorView, event: MouseEvent, host: ItemPointerHost): Poin
 	const offset = event.clientY - view.documentTop;
 	if (offset < block.top || offset > block.bottom) return null;
 	const lineIndex = view.state.doc.lineAt(position).number - 1;
-	const tree = outlineOf(view);
+	const tree = outlineOfState(view.state);
 	const marker = bulletMarker(tree, lineIndex);
 	const row = firstRow(view, lineIndex);
 	if (host.isBulletZoomEnabled() && marker && row && event.clientY <= row.bottom) {
@@ -113,7 +103,7 @@ function perform(
 
 /** Builds the menu entries of the item that starts on a line. */
 function menuEntries(view: EditorView, host: ItemPointerHost, startLine: number): ItemMenuEntry[] {
-	const item = itemStartingAt(outlineOf(view), startLine);
+	const item = itemStartingAt(outlineOfState(view.state), startLine);
 	if (!item) return [];
 	return itemMenuActions(item.children.length > 0, isFolded(view.state, startLine)).map(
 		(action) => ({

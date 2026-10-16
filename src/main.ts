@@ -3,6 +3,7 @@ import { registerCommands } from './commands';
 import { systemBlockLinkServices } from './commands/copy-item-link';
 import { blockIdHiding } from './editor/block-id-hiding';
 import { ItemSuggest } from './editor/item-suggest';
+import { registerItemDrag } from './editor/register-item-drag';
 import { registerListKeys } from './editor/register-list-keys';
 import { registerMouseHistory } from './editor/register-mouse-history';
 import { registerItemPointer } from './editor/register-item-pointer';
@@ -34,6 +35,11 @@ export default class FlowPlugin extends Plugin {
 				clickThreadLineToFold: () => this.settings.clickThreadLineToFold,
 			},
 			systemBlockLinkServices(),
+		);
+		registerItemDrag(
+			this,
+			{ dragItems: () => this.settings.dragItems },
+			(message) => new Notice(message),
 		);
 		registerListKeys(this, {
 			enterOutdentsEmptyItem: () => this.settings.enterOutdentsEmptyItem,
