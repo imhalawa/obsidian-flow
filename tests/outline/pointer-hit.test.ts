@@ -5,6 +5,7 @@ import {
 	bulletMarker,
 	containsX,
 	expandToMinimumWidth,
+	litInterval,
 	threadParent,
 } from '../../src/outline/pointer-hit';
 
@@ -55,6 +56,16 @@ describe('containsX', () => {
 		['right of it', 11, false],
 	])('says %s', (_name, x, expected) => {
 		expect(containsX({ left: 0, right: 10 }, x)).toBe(expected);
+	});
+});
+
+describe('litInterval', () => {
+	it.each([
+		['a narrow bullet', { left: 100, right: 104 }, 24, 48, { left: 42, right: 114 }],
+		['a wide bullet', { left: 100, right: 140 }, 24, 48, { left: 52, right: 140 }],
+		['no gutter', { left: 100, right: 104 }, 24, 0, { left: 90, right: 114 }],
+	])('reaches the gutter left of %s', (_name, span, minimum, gutter, expected) => {
+		expect(litInterval(span, minimum, gutter)).toEqual(expected);
 	});
 });
 

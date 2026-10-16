@@ -345,6 +345,27 @@ export class NoteEditor {
 		);
 	}
 
+	/** Returns the cursor style the window shows at a point. */
+	cursorAt(x: number, y: number): Promise<string> {
+		return this.app.evaluate<string>(
+			`getComputedStyle(activeDocument.elementFromPoint(${x}, ${y})).cursor`,
+		);
+	}
+
+	/** Returns the indexes of the lines whose bullet is lit. */
+	litBulletLines(): Promise<number[]> {
+		return this.app.evaluate<number[]>(
+			'(() => { const cm = app.workspace.activeEditor.editor.cm; return Array.from(cm.dom.querySelectorAll(".cm-line.flow-bullet-lit")).map((el) => cm.state.doc.lineAt(cm.posAtDOM(el)).number - 1); })()',
+		);
+	}
+
+	/** Returns the background color of the dot of the bullet on a line. */
+	bulletDotColor(line: number): Promise<string> {
+		return this.app.evaluate<string>(
+			`(() => { const cm = app.workspace.activeEditor.editor.cm; const el = Array.from(cm.dom.querySelectorAll(".cm-line")).find((row) => cm.state.doc.lineAt(cm.posAtDOM(row)).number - 1 === ${line}); return getComputedStyle(el.querySelector(".list-bullet"), "::after").backgroundColor; })()`,
+		);
+	}
+
 	/** Returns the labels of the entries of the open menu. */
 	menuEntries(): Promise<string[]> {
 		return this.app.evaluate<string[]>(

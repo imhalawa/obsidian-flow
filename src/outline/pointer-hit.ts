@@ -68,3 +68,9 @@ export function threadParent(
 	}
 	return best;
 }
+
+/** Returns the span where the pointer lights a bullet: its minimum width hit area plus a gutter to the left of it. */
+export function litInterval(span: Interval, minimum: number, gutter: number): Interval {
+	const hitArea = expandToMinimumWidth(span, minimum);
+	return { left: hitArea.left - gutter, right: hitArea.right };
+}
