@@ -1,5 +1,5 @@
 import type { EditorState, Transaction } from '@codemirror/state';
-import { makeAnchor, resolveAnchor } from '../outline/zoom-anchor';
+import { makeAnchor, resolveExactAnchor } from '../outline/zoom-anchor';
 import { dispatchZoom, type ZoomTarget } from './zoom-control';
 import { changeIn, zoomField } from './zoom-field';
 import type { ZoomMemoryPort } from './zoom-memory';
@@ -71,7 +71,7 @@ export class ZoomSession {
 		const anchor = this.memory.recall(this.path);
 		if (!anchor) return;
 		const state = this.target.state;
-		const startLine = resolveAnchor(state.doc.toJSON(), state.tabSize, anchor);
+		const startLine = resolveExactAnchor(state.doc.toJSON(), state.tabSize, anchor);
 		if (startLine !== null) dispatchZoom(this.target, startLine, 'visit');
 	}
 

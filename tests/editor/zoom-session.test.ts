@@ -97,12 +97,12 @@ describe('ZoomSession restore', () => {
 		expect(target.zoom).toBeNull();
 	});
 
-	it('falls back to the deepest ancestor that still exists', () => {
+	it('shows the whole note when the remembered item is gone', () => {
 		memory.stored.set(PATH, [...anchorOfBC, { text: 'gone', nth: 0 }]);
 		const target = new FakeZoomTarget(NOTE, 0);
 		sessionFor(target).start();
 		timers.runDeferred();
-		expect(crumbs(target)).toEqual(['a', 'b']);
+		expect(target.zoom).toBeNull();
 	});
 
 	it('shows the whole note when no part of the anchor matches', () => {

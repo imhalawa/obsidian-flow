@@ -123,24 +123,50 @@ function matchedEveryHeading(
 	return enclosingHeadings(headings, found.line).length + 1 === wanted;
 }
 
+interface Resolution {
+	line: number | null;
+	exact: boolean;
+}
+
+/** Follows an anchor and returns the deepest heading or item it matches, and whether every segment matched. */
+function resolve(lines: readonly string[], tabSize: number, anchor: Anchor): Resolution {
+	const headings = parseHeadings(lines);
+	const heading = resolveHeadings(headings, anchor);
+	if (!matchedEveryHeading(headings, heading, anchor)) {
+		return { line: heading ? heading.line : null, exact: false };
+	}
+	const tree = parseOutline(lines, tabSize);
+	let siblings = rootsUnder(tree, headings, heading);
+	let found: OutlineNode | null = null;
+	let exact = true;
+	for (const segment of anchor.filter((each) => each.heading !== true)) {
+		const equal = siblings.filter((sibling) => anchorText(sibling) === segment.text);
+		const pick: OutlineNode | undefined = equal[Math.min(segment.nth, equal.length - 1)];
+		if (!pick) {
+			exact = false;
+			break;
+		}
+		found = pick;
+		siblings = pick.children;
+	}
+	return { line: found ? found.startLine : (heading?.line ?? null), exact };
+}
+
 /** Returns the start line of the deepest heading or item an anchor still matches, or null when none matches. */
 export function resolveAnchor(
 	lines: readonly string[],
 	tabSize: number,
 	anchor: Anchor,
 ): number | null {
-	const headings = parseHeadings(lines);
-	const heading = resolveHeadings(headings, anchor);
-	if (!matchedEveryHeading(headings, heading, anchor)) return heading ? heading.line : null;
-	const tree = parseOutline(lines, tabSize);
-	let siblings = rootsUnder(tree, headings, heading);
-	let found: OutlineNode | null = null;
-	for (const segment of anchor.filter((each) => each.heading !== true)) {
-		const equal = siblings.filter((sibling) => anchorText(sibling) === segment.text);
-		const pick: OutlineNode | undefined = equal[Math.min(segment.nth, equal.length - 1)];
-		if (!pick) break;
-		found = pick;
-		siblings = pick.children;
-	}
-	return found ? found.startLine : (heading?.line ?? null);
+	return resolve(lines, tabSize, anchor).line;
+}
+
+/** Returns the start line of the item an anchor names, or null unless its whole path still exists. */
+export function resolveExactAnchor(
+	lines: readonly string[],
+	tabSize: number,
+	anchor: Anchor,
+): number | null {
+	const resolution = resolve(lines, tabSize, anchor);
+	return resolution.exact ? resolution.line : null;
 }
