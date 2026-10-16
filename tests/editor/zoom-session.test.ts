@@ -1,3 +1,4 @@
+import { EditorState } from '@codemirror/state';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { zoomIn, zoomReset } from '../../src/editor/zoom-control';
 import type { ZoomMemoryPort } from '../../src/editor/zoom-memory';
@@ -275,5 +276,16 @@ describe('ZoomSession remember', () => {
 		memory.stored.clear();
 		session.destroy();
 		expect(memory.stored.size).toBe(0);
+	});
+
+	it('keeps what is remembered when the zoom extension is removed from the view', () => {
+		const target = new FakeZoomTarget(NOTE, at('b'));
+		const session = settledSession(target);
+		zoomIn(target);
+		target.dispatch({ changes: { from: at('b') + 1, insert: 'x' } });
+		memory.stored.set(PATH, anchorOfBC);
+		target.state = EditorState.create({ doc: NOTE });
+		expect(() => session.destroy()).not.toThrow();
+		expect(memory.stored.get(PATH)).toEqual(anchorOfBC);
 	});
 });

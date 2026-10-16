@@ -49,8 +49,19 @@ export class ObsidianApp {
 		private readonly workspace: string,
 	) {}
 
-	/** Starts Obsidian under a virtual display with the built plugin installed. */
+	/** Starts Obsidian under a virtual display with the built plugin installed and enabled. */
 	static async start(): Promise<ObsidianApp> {
+		const app = await ObsidianApp.launch();
+		await app.enablePlugin();
+		return app;
+	}
+
+	/** Starts Obsidian with the built plugin installed but not enabled yet. */
+	static startWithoutPlugin(): Promise<ObsidianApp> {
+		return ObsidianApp.launch();
+	}
+
+	private static async launch(): Promise<ObsidianApp> {
 		const workspace = mkdtempSync(join(tmpdir(), 'flow-e2e-'));
 		const vault = join(workspace, 'vault');
 		const pluginDirectory = join(vault, '.obsidian', 'plugins', PLUGIN_ID);
@@ -90,12 +101,28 @@ export class ObsidianApp {
 			return ready ? opened : null;
 		});
 		const app = new ObsidianApp(child, display, connection, workspace);
-		await app.evaluate(
-			`(async () => { await app.plugins.setEnable(true); await app.plugins.enablePlugin(${JSON.stringify(PLUGIN_ID)}); })()`,
-		);
 		await app.dismissTrustPrompt();
 		await app.resizeWindow(DEFAULT_WINDOW.width, DEFAULT_WINDOW.height);
 		return app;
+	}
+
+	/** Turns community plugins on and enables the plugin, as a user does in the settings. */
+	async enablePlugin(): Promise<void> {
+		await this.evaluate(
+			`(async () => { await app.plugins.setEnable(true); await app.plugins.enablePlugin(${JSON.stringify(PLUGIN_ID)}); })()`,
+		);
+	}
+
+	/** Disables the plugin, as a user does in the settings. */
+	async disablePlugin(): Promise<void> {
+		await this.evaluate(
+			`(async () => { await app.plugins.disablePlugin(${JSON.stringify(PLUGIN_ID)}); })()`,
+		);
+	}
+
+	/** Returns the errors the window has logged or thrown since it started. */
+	consoleErrors(): string[] {
+		return this.connection.consoleErrors();
 	}
 
 	/** Evaluates an expression inside the Obsidian window. */

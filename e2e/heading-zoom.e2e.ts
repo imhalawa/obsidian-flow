@@ -116,4 +116,14 @@ describe('heading zoom in real Obsidian', () => {
 		await editor.reopen();
 		expect(await editor.waitForCrumbs(3000)).toEqual(['Launch plan', 'Roadmap']);
 	});
+
+	it('offers Zoom in when a heading is right-clicked', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		const heading = await editor.bulletPoint(2);
+		await app.rightClick(heading.x + 30, heading.y);
+		await wait(300);
+		expect(await editor.menuEntries()).toContain('Zoom in');
+		await editor.chooseMenuEntry('Zoom in');
+		expect(await editor.crumbs()).toEqual(['Launch plan', 'Roadmap']);
+	});
 });

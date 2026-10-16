@@ -75,6 +75,13 @@ function entryLine(state: EditorState, entry: ZoomEntry): number | null {
 	return entry === null ? null : state.doc.lineAt(Math.min(entry, state.doc.length)).number - 1;
 }
 
+/** Tells whether the cursor is on an item or heading that can be zoomed into. */
+export function canZoomIn(target: ZoomTarget): boolean {
+	const state = target.state;
+	const cursorLine = state.doc.lineAt(state.selection.main.head).number - 1;
+	return zoomInTarget(state.doc.toJSON(), state.tabSize, cursorLine) !== null;
+}
+
 /** Zooms into the deepest item at the cursor, or into the heading section it is in. */
 export function zoomIn(target: ZoomTarget): ZoomOutcome {
 	const state = target.state;

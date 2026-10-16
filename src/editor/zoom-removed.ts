@@ -9,7 +9,10 @@ export function zoomWasRemoved(
 	transactions: readonly Transaction[],
 ): boolean {
 	const asked = transactions.some((transaction) => changeIn(transaction) !== null);
-	return !asked && before.field(zoomField) !== null && after.field(zoomField) === null;
+	const zoomBefore = before.field(zoomField, false);
+	const zoomAfter = after.field(zoomField, false);
+	if (zoomBefore === undefined || zoomAfter === undefined) return false;
+	return !asked && zoomBefore !== null && zoomAfter === null;
 }
 
 /** Calls back once whenever edits remove the item a view is zoomed into. */
