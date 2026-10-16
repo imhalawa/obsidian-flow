@@ -3,7 +3,7 @@
 	"name": "Flow Outliner",
 	"version": "0.1.0",
 	"minAppVersion": "1.12.0",
-	"description": "Outliner experience for Obsidian, inspired by RemNote, Roam Research and Logseq.",
+	"description": "Edit lists as an outline with zoom, folds, drag and drop and block links, inspired by RemNote, Roam Research and Logseq.",
 	"author": "imhalawa",
 	"authorUrl": "https://github.com/imhalawa",
 	"isDesktopOnly": false
