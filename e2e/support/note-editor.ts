@@ -136,6 +136,13 @@ export class NoteEditor {
 		);
 	}
 
+	/** Returns the texts in the note header that are cut short, folder names and visible crumbs alike. */
+	clippedHeaderTexts(): Promise<string[]> {
+		return this.app.evaluate<string[]>(
+			`Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .view-header-title-container .view-header-breadcrumb, .workspace-leaf.mod-active .view-header-title-container .flow-crumbs__crumb:not(.is-hidden)")).filter((el) => el.scrollWidth > el.clientWidth).map((el) => el.textContent)`,
+		);
+	}
+
 	/** Limits the width of the header title area, in pixels, to make the path overflow. */
 	async limitHeaderWidth(pixels: number): Promise<void> {
 		await this.app.evaluate(

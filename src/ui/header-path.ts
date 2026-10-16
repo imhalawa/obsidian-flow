@@ -7,6 +7,8 @@ export const MORE_CLASS = 'flow-crumbs__more';
 export const HIDDEN_CLASS = 'is-hidden';
 export const CURRENT_CLASS = 'is-current';
 export const CONTAINER_CLASS = 'flow-has-crumbs';
+const ABSENT_CLASS = 'is-absent';
+const NATURAL_CLASS = 'is-natural';
 const MORE_LABEL = '…';
 const MORE_DESCRIPTION = 'Show the hidden levels';
 const SIGNATURE_ATTRIBUTE = 'data-flow-signature';
@@ -102,6 +104,26 @@ export function removeHeaderPath(container: HTMLElement): void {
 	container.classList.remove(CONTAINER_CLASS);
 }
 
+/** Returns the pixels of a computed length, or zero when the length is not a number of pixels. */
+function pixels(length: string): number {
+	const value = Number.parseFloat(length);
+	return Number.isNaN(value) ? 0 : value;
+}
+
+/** Returns the width the path may take: what the container has right of the title parts at their natural size. */
+function roomForPath(container: HTMLElement, path: HTMLElement): number {
+	path.classList.add(ABSENT_CLASS);
+	const others = Array.from(container.children).filter((child) => child !== path);
+	const last = others[others.length - 1];
+	const style = container.ownerDocument.defaultView?.getComputedStyle(container);
+	const box = container.getBoundingClientRect();
+	path.classList.remove(ABSENT_CLASS);
+	if (!last || !style) return container.clientWidth;
+	const contentRight =
+		box.left + container.clientLeft + container.clientWidth - pixels(style.paddingRight);
+	return contentRight - last.getBoundingClientRect().right - pixels(style.columnGap);
+}
+
 /** Hides the middle levels, from the second one on, until the path fits in the room the title leaves. */
 export function fitHeaderPath(container: HTMLElement): void {
 	const path = pathIn(container);
@@ -111,17 +133,15 @@ export function fitHeaderPath(container: HTMLElement): void {
 		path.querySelectorAll<HTMLElement>(`.${CRUMB_CLASS}:not(.${MORE_CLASS})`),
 	);
 	if (!more) return;
+	const room = roomForPath(container, path);
 	for (const level of levels) level.classList.remove(HIDDEN_CLASS);
 	more.classList.remove(HIDDEN_CLASS);
-	const ellipsisWidth = more.scrollWidth;
+	path.classList.add(NATURAL_CLASS);
+	const ellipsisWidth = more.offsetWidth;
+	const widths = levels.map((level) => level.offsetWidth);
+	path.classList.remove(NATURAL_CLASS);
 	more.classList.add(HIDDEN_CLASS);
-	const others = Array.from(container.children).filter((child) => child !== path);
-	const taken = others.reduce((sum, child) => sum + child.scrollWidth, 0);
-	const hidden = hiddenCrumbs(
-		levels.map((level) => level.scrollWidth),
-		ellipsisWidth,
-		container.clientWidth - taken,
-	);
+	const hidden = hiddenCrumbs(widths, ellipsisWidth, room);
 	for (const index of hidden) levels[index]?.classList.add(HIDDEN_CLASS);
 	more.classList.toggle(HIDDEN_CLASS, hidden.length === 0);
 }
