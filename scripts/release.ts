@@ -13,7 +13,10 @@ function writeJson(path: string, value: object): void {
 }
 
 function git(args: string[]): string {
-	return execFileSync('git', args, { encoding: 'utf8' }).trim();
+	return execFileSync('git', args, {
+		encoding: 'utf8',
+		stdio: ['ignore', 'pipe', 'pipe'],
+	}).trim();
 }
 
 function requireArgument(value: string | undefined, usage: string): string {
@@ -49,22 +52,22 @@ function verify(tag: string): void {
 	}
 }
 
-function findPreviousTag(tag: string): string | null {
+function findPreviousTag(endRef: string): string | null {
 	try {
-		return git(['describe', '--tags', '--abbrev=0', `${tag}^`]);
+		return git(['describe', '--tags', '--abbrev=0', `${endRef}^`]);
 	} catch {
 		return null;
 	}
 }
 
-function notes(tag: string, repositoryUrl: string): void {
-	const previousTag = findPreviousTag(tag);
-	const range = previousTag === null ? tag : `${previousTag}..${tag}`;
+function notes(tag: string, repositoryUrl: string, endRef: string): void {
+	const previousTag = findPreviousTag(endRef);
+	const range = previousTag === null ? endRef : `${previousTag}..${endRef}`;
 	const subjects = git(['log', '--format=%s', range]).split('\n');
 	process.stdout.write(renderReleaseNotes({ tag, previousTag, repositoryUrl, subjects }));
 }
 
-const [command, firstArgument, secondArgument] = process.argv.slice(2);
+const [command, firstArgument, secondArgument, thirdArgument] = process.argv.slice(2);
 
 switch (command) {
 	case 'bump':
@@ -75,8 +78,9 @@ switch (command) {
 		break;
 	case 'notes':
 		notes(
-			requireArgument(firstArgument, 'release.ts notes <tag> <repository-url>'),
-			requireArgument(secondArgument, 'release.ts notes <tag> <repository-url>'),
+			requireArgument(firstArgument, 'release.ts notes <tag> <repository-url> <end-ref>'),
+			requireArgument(secondArgument, 'release.ts notes <tag> <repository-url> <end-ref>'),
+			requireArgument(thirdArgument, 'release.ts notes <tag> <repository-url> <end-ref>'),
 		);
 		break;
 	default:

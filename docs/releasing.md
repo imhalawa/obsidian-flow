@@ -7,14 +7,14 @@ A release is a tag. The tag workflow checks, builds and drafts a GitHub release.
 1. Make sure `master` is green and `minAppVersion` in `manifest.json` is the oldest Obsidian the code needs.
 2. On a branch, run `npm version patch`, `npm version minor` or `npm version major`. The `version` script copies the new version into `manifest.json` and adds it to `versions.json`, and npm commits the change. The commit message is the bare version, so reword it to `chore(release): 1.2.3` before opening the pull request.
 3. Merge the pull request into `master`.
-4. Tag the merge commit with the version, without a leading `v`, and push the tag: `git tag 1.2.3 && git push origin 1.2.3`.
-5. Open the draft release, read the notes and select **Publish release**.
+4. Tag the merge commit with the version, without a leading `v`, and push the tag: `git tag 1.2.3 && git push origin 1.2.3`. If you cannot push tags, open **Actions → Release Obsidian plugin → Run workflow** on `master` instead. It reads the version from `manifest.json` and refuses if that tag already exists.
+5. Open the draft release, read the notes and select **Publish release**. GitHub creates the tag on the release commit when a draft made by the manual run is published.
 
 The first release, 0.1.0, is already set in the version files, so it needs only steps 4 and 5.
 
 ## What the tag workflow does
 
-Defined in `.github/workflows/release.yml`. It runs for tags that look like `1.2.3` and stops at the first failure:
+Defined in `.github/workflows/release.yml`. It runs for tags that look like `1.2.3`, or by hand, and stops at the first failure:
 
 1. Checks the tagged commit is on the default branch.
 2. Checks the tag equals the versions in `package.json` and `manifest.json` and that `versions.json` maps it to `minAppVersion` (`npm run release:verify`).
@@ -29,10 +29,10 @@ Release notes list `feat`, `fix`, `perf` and `revert` commits, and any commit ma
 
 ```bash
 npm run release:verify -- 1.2.3
-npm run release:notes -- 1.2.3 https://github.com/imhalawa/obsidian-flow
+npm run release:notes -- 1.2.3 https://github.com/imhalawa/obsidian-flow HEAD
 ```
 
-The notes command needs the tag to exist locally.
+The last argument is the commit the notes end at. Notes start after the latest tag reachable from it.
 
 ## Submit to the community list
 
