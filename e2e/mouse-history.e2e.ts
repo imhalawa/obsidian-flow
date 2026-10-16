@@ -49,6 +49,29 @@ describe('mouse back and forward in real Obsidian', () => {
 		expect(await editor.crumbs()).toEqual(['a', 'b']);
 	});
 
+	it('steps back through zoom levels reached by clicking bullets', async () => {
+		await useMouseHistory(true);
+		const editor = await NoteEditor.open(app, NOTE);
+		const parent = await editor.bulletPoint(1);
+		await app.click(parent.x, parent.y, false);
+		const child = await editor.bulletPoint(2);
+		await app.click(child.x, child.y, false);
+		expect(await editor.crumbs()).toEqual(['a', 'b']);
+		app.pressSideButton(POINTER.x, POINTER.y, 'back');
+		expect(await editor.crumbs()).toEqual(['a']);
+	});
+
+	it('steps back to the level that was left by clicking a breadcrumb', async () => {
+		await useMouseHistory(true);
+		const editor = await NoteEditor.open(app, NOTE);
+		await editor.caret(3, 4);
+		await editor.runCommand('zoom-in');
+		await editor.clickCrumb('a');
+		expect(await editor.crumbs()).toEqual(['a']);
+		app.pressSideButton(POINTER.x, POINTER.y, 'back');
+		expect(await editor.crumbs()).toEqual(['a', 'b', 'c']);
+	});
+
 	it('keeps the note open while it steps through zoom levels', async () => {
 		await useMouseHistory(true);
 		const editor = await NoteEditor.open(app, NOTE);
