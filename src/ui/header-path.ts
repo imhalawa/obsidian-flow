@@ -7,6 +7,8 @@ export const MORE_CLASS = 'flow-crumbs__more';
 export const HIDDEN_CLASS = 'is-hidden';
 export const CURRENT_CLASS = 'is-current';
 export const CONTAINER_CLASS = 'flow-has-crumbs';
+export const TEXT_CLASS = 'flow-crumbs__text';
+export const CUT_CLASS = 'is-cut';
 const ABSENT_CLASS = 'is-absent';
 const NATURAL_CLASS = 'is-natural';
 const MORE_LABEL = '…';
@@ -28,20 +30,25 @@ function signature(crumbs: readonly HeaderCrumb[]): string {
 	return JSON.stringify(crumbs.map((crumb) => [crumb.label, crumb.targetLine]));
 }
 
-/** Builds the element of one level of the path. */
+/** Builds the element of one level of the path, with its text in a part that can be cut short. */
 function crumbElement(crumb: HeaderCrumb, host: HeaderPathHost): HTMLElement {
 	if (crumb.current) {
-		return createSpan({
+		const current = createSpan({
 			cls: `${CRUMB_CLASS} ${CURRENT_CLASS}`,
-			text: crumb.label,
-			attr: { 'aria-current': 'location', 'aria-label': crumb.label, title: crumb.label },
+			attr: {
+				'aria-current': 'location',
+				'aria-label': crumb.label,
+				'data-label': crumb.label,
+			},
 		});
+		current.createSpan({ cls: TEXT_CLASS, text: crumb.label });
+		return current;
 	}
 	const button = createEl('button', {
 		cls: CRUMB_CLASS,
-		text: crumb.label,
-		attr: { type: 'button', 'aria-label': crumb.description, title: crumb.label },
+		attr: { type: 'button', 'aria-label': crumb.description, 'data-label': crumb.label },
 	});
+	button.createSpan({ cls: TEXT_CLASS, text: crumb.label });
 	button.addEventListener('click', () => host.zoomTo(crumb.targetLine));
 	return button;
 }
@@ -144,4 +151,17 @@ export function fitHeaderPath(container: HTMLElement): void {
 	const hidden = hiddenCrumbs(widths, ellipsisWidth, room);
 	for (const index of hidden) levels[index]?.classList.add(HIDDEN_CLASS);
 	more.classList.toggle(HIDDEN_CLASS, hidden.length === 0);
+	markCutCrumbs(levels);
+}
+
+/** Marks the shown levels whose text is cut short, so hovering them can show it in full. */
+function markCutCrumbs(levels: readonly HTMLElement[]): void {
+	for (const level of levels) {
+		const text = level.querySelector<HTMLElement>(`.${TEXT_CLASS}`);
+		const cut =
+			!level.classList.contains(HIDDEN_CLASS) &&
+			!!text &&
+			text.scrollWidth > text.clientWidth;
+		level.classList.toggle(CUT_CLASS, cut);
+	}
 }

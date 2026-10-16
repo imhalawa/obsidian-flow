@@ -44,11 +44,14 @@ async function zoomedAt(width: number): Promise<NoteEditor> {
 }
 
 describe('a long zoom path in a real window', () => {
-	it.each([1950, 1600])(
-		'cuts no folder name or crumb short in a window %i px wide',
-		async (width) => {
+	it.each([
+		[1950, ['Keep your work history up to date in a structured manner']],
+		[1600, []],
+	])(
+		'cuts only the crumbs longer than the maximum width in a window %i px wide',
+		async (width, cut) => {
 			const editor = await zoomedAt(width);
-			expect(await editor.clippedHeaderTexts()).toEqual([]);
+			expect(await editor.clippedHeaderTexts()).toEqual(cut);
 		},
 	);
 

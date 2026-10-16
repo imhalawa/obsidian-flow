@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { NoteEditor } from './support/note-editor';
 import { ObsidianApp } from './support/obsidian-app';
 
@@ -159,7 +159,7 @@ describe('a path that does not fit the header', () => {
 		await editor.runCommand('zoom-in');
 		await editor.limitHeaderWidth(260);
 		const result = await app.evaluate<{ clipped: boolean; label: string | null }>(
-			`(() => { const crumb = activeDocument.querySelector(".workspace-leaf.mod-active .flow-crumbs__crumb.is-current"); return { clipped: crumb.scrollWidth > crumb.clientWidth, label: crumb.getAttribute("aria-label") }; })()`,
+			`(() => { const crumb = activeDocument.querySelector(".workspace-leaf.mod-active .flow-crumbs__crumb.is-current"); const text = crumb.querySelector(".flow-crumbs__text"); return { clipped: text.scrollWidth > text.clientWidth, label: crumb.getAttribute("aria-label") }; })()`,
 		);
 		expect(result.clipped).toBe(true);
 		expect(result.label).toBe('a very long current item title that cannot fit either');
@@ -172,6 +172,117 @@ describe('a path that does not fit the header', () => {
 		await editor.limitHeaderWidth(200);
 		await editor.limitHeaderWidth(900);
 		expect(await editor.crumbs()).toEqual(['alpha', 'bravo', 'charlie', 'delta', 'echo']);
+	});
+});
+
+describe('long and formatted crumb labels', () => {
+	beforeAll(async () => {
+		await app.evaluate('(app.workspace.leftSplit.collapse(), true)');
+	});
+
+	beforeEach(async () => {
+		await app.movePointer(5, 600);
+	});
+
+	const LONG =
+		'Once we start to do the actual resume tailoring, it brings bullets that either exaggerate my experience';
+	const NOTE_WITH_LONG = `- **Challenges I've encountered**\n\t- ${LONG}\n\t\t- short`;
+
+	interface CrumbBox {
+		width: number;
+		cut: boolean;
+		overlayText: string | null;
+		overlayWidth: number;
+	}
+
+	/** Reads the visible crumb with a label: its width, whether its text is cut and what it shows while hovered. */
+	const crumbBox = (label: string) =>
+		app.evaluate<CrumbBox>(
+			`(() => { const crumb = Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .flow-crumbs__crumb:not(.is-hidden)")).find((el) => el.textContent === ${JSON.stringify(label)}); const text = crumb.querySelector(".flow-crumbs__text"); const overlay = getComputedStyle(crumb, "::after"); const shown = overlay.content !== "none" && overlay.content !== "normal"; return { width: crumb.getBoundingClientRect().width, cut: text.scrollWidth > text.clientWidth, overlayText: shown ? overlay.content : null, overlayWidth: shown ? Number.parseFloat(overlay.width) : 0 }; })()`,
+		);
+
+	/** Returns the left edge of every visible crumb. */
+	const crumbEdges = () =>
+		app.evaluate<number[]>(
+			'Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .flow-crumbs__crumb:not(.is-hidden)")).map((el) => el.getBoundingClientRect().left)',
+		);
+
+	/** Zooms to the second item of a note and moves the pointer over the crumb with a label. */
+	async function hoverCrumb(text: string, label: string): Promise<NoteEditor> {
+		const editor = await openInFolder(text);
+		await editor.caret(1, 4);
+		await editor.runCommand('zoom-in');
+		const point = await editor.crumbPoint(label);
+		await app.movePointer(point.x, point.y);
+		await wait(400);
+		return editor;
+	}
+
+	it('cuts a long label with an ellipsis instead of showing it in full', async () => {
+		const editor = await openInFolder(NOTE_WITH_LONG);
+		await editor.caret(1, 4);
+		await editor.runCommand('zoom-in');
+		const box = await crumbBox(LONG);
+		expect(box.cut).toBe(true);
+		expect(box.width).toBeLessThan(420);
+		expect(box.overlayText).toBeNull();
+	});
+
+	it('shows the full text of the current crumb while the pointer is over it', async () => {
+		await hoverCrumb(NOTE_WITH_LONG, LONG);
+		const hovered = await crumbBox(LONG);
+		expect(hovered.overlayText).toBe(`"${LONG}"`);
+		expect(hovered.overlayWidth).toBeGreaterThan(420);
+	});
+
+	it('shows the full text of a level above the current item while the pointer is over it', async () => {
+		await hoverCrumb(`- ${LONG}\n\t- short`, LONG);
+		expect((await crumbBox(LONG)).overlayText).toBe(`"${LONG}"`);
+	});
+
+	it('moves no crumb while a cut label is shown in full', async () => {
+		const editor = await openInFolder(NOTE_WITH_LONG);
+		await editor.caret(1, 4);
+		await editor.runCommand('zoom-in');
+		const before = await crumbEdges();
+		const point = await editor.crumbPoint(LONG);
+		await app.movePointer(point.x, point.y);
+		await wait(400);
+		expect(await crumbEdges()).toEqual(before);
+	});
+
+	it('cuts the label again when the pointer leaves it', async () => {
+		await hoverCrumb(NOTE_WITH_LONG, LONG);
+		await app.movePointer(5, 600);
+		await wait(400);
+		expect((await crumbBox(LONG)).overlayText).toBeNull();
+	});
+
+	it('shows nothing extra while the pointer is over a label that fits', async () => {
+		await hoverCrumb(
+			"- **Challenges I've encountered**\n\t- short",
+			"Challenges I've encountered",
+		);
+		const hovered = await crumbBox("Challenges I've encountered");
+		expect(hovered.cut).toBe(false);
+		expect(hovered.overlayText).toBeNull();
+	});
+
+	it('keeps the full text as the accessible label of a cut crumb', async () => {
+		const editor = await openInFolder(`- ${LONG}\n\t- short`);
+		await editor.caret(1, 4);
+		await editor.runCommand('zoom-in');
+		const label = await app.evaluate<string | null>(
+			'activeDocument.querySelector(".workspace-leaf.mod-active .flow-crumbs__crumb:not(.is-current)").getAttribute("aria-label")',
+		);
+		expect(label).toBe(`Zoom to ${LONG}`);
+	});
+
+	it('shows a level without its markdown markers', async () => {
+		const editor = await openInFolder(NOTE_WITH_LONG);
+		await editor.caret(1, 4);
+		await editor.runCommand('zoom-in');
+		expect(await editor.crumbs()).toEqual(["Challenges I've encountered", LONG]);
 	});
 });
 

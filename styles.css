@@ -11,6 +11,9 @@
 }
 
 .flow-crumbs {
+	--flow-crumb-max-width: 24em;
+	--flow-crumb-expanded-max-width: 100em;
+	--flow-crumb-chevron-width: 0.5em;
 	display: flex;
 	flex: 0 1 auto;
 	align-items: center;
@@ -29,10 +32,13 @@
 }
 
 .flow-crumbs__crumb {
+	position: relative;
+	display: flex;
 	flex: 0 2 auto;
+	align-items: center;
 	min-width: 0;
+	max-width: var(--flow-crumb-max-width);
 	height: auto;
-	overflow: hidden;
 	padding: var(--size-2-1) var(--size-4-1);
 	border: none;
 	border-radius: var(--radius-s);
@@ -40,14 +46,23 @@
 	box-shadow: none;
 	color: inherit;
 	font-size: inherit;
+	white-space: nowrap;
+}
+
+.flow-crumbs__text {
+	min-width: 0;
+	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
 .flow-crumbs__crumb::before {
 	content: '\203A';
+	flex: none;
+	width: var(--flow-crumb-chevron-width);
 	margin-right: var(--size-4-1);
 	color: var(--text-faint);
+	text-align: center;
 }
 
 .flow-crumbs__crumb:first-child {
@@ -62,6 +77,32 @@
 
 .flow-crumbs__crumb.is-hidden {
 	display: none;
+}
+
+.flow-crumbs__crumb.is-cut:hover::after,
+.flow-crumbs__crumb.is-cut:focus-visible::after {
+	content: attr(data-label);
+	position: absolute;
+	z-index: var(--layer-popover);
+	top: 0;
+	left: calc(var(--flow-crumb-chevron-width) + var(--size-4-1));
+	max-width: var(--flow-crumb-expanded-max-width);
+	overflow: hidden;
+	padding: var(--size-2-1) var(--size-4-1);
+	border-radius: var(--radius-s);
+	background: var(--background-primary);
+	box-shadow:
+		0 0 0 1px var(--background-modifier-border),
+		var(--shadow-s);
+	color: var(--text-normal);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.flow-crumbs__crumb.is-current.is-cut:hover::after,
+.flow-crumbs__crumb.is-current.is-cut:focus-visible::after {
+	right: 0;
+	left: auto;
 }
 
 .flow-crumbs button.flow-crumbs__crumb {
