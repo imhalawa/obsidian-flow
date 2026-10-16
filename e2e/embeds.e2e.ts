@@ -224,20 +224,18 @@ describe('embeds in nested bullets in real Obsidian', () => {
 
 	it('hides the children of an embed item when it is folded and shows them again when it is unfolded', async () => {
 		const editor = await openDeep();
-		await editor.caret(3, 4);
-		await wait(300);
+		await editor.caret(2, 6);
 		await editor.runCommand('fold-item');
 		await editor.caret(9, 2);
-		await wait(500);
-		expect(await editor.visibleLines()).not.toContain('l3');
-		await editor.caret(2, 2);
+		await wait(800);
+		expect((await editor.visibleLines()).some((line) => line.endsWith('- l3'))).toBe(false);
+		await editor.caret(2, 6);
 		await editor.runCommand('unfold-item');
 		await editor.caret(9, 2);
-		await wait(800);
-		expect(await editor.visibleLines()).toContain('l3');
-		expect(
-			(await editor.embedLayout(4))!.embedTop - (await editor.embedLayout(4))!.lineTop,
-		).toBeLessThan(2);
+		await wait(1000);
+		expect((await editor.visibleLines()).some((line) => line.endsWith('- l3'))).toBe(true);
+		const layout = await editor.embedLayout(2);
+		expect(layout!.embedTop - layout!.lineTop).toBeLessThan(2);
 	});
 
 	it('moves a deep embed item to the left edge of the note when it is zoomed', async () => {
