@@ -39,8 +39,8 @@ describe('headerCrumbs', () => {
 
 describe('headerCrumbs formatting', () => {
 	it('shows a label without its markdown markers', () => {
-		const crumb = headerCrumbs([{ text: "**Challenges I've encountered**", startLine: 1 }])[0];
-		expect(crumb?.label).toBe("Challenges I've encountered");
+		const crumb = headerCrumbs([{ text: "**Risks we've identified**", startLine: 1 }])[0];
+		expect(crumb?.label).toBe("Risks we've identified");
 	});
 
 	it('describes the zoom with the cleaned label', () => {

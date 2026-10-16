@@ -185,8 +185,8 @@ describe('long and formatted crumb labels', () => {
 	});
 
 	const LONG =
-		'Once we start to do the actual resume tailoring, it brings bullets that either exaggerate my experience';
-	const NOTE_WITH_LONG = `- **Challenges I've encountered**\n\t- ${LONG}\n\t\t- short`;
+		'Once the planning phase is finished, the roadmap lists milestones that either overlap each other or leave gaps';
+	const NOTE_WITH_LONG = `- **Risks we've identified**\n\t- ${LONG}\n\t\t- short`;
 
 	interface CrumbBox {
 		width: number;
@@ -259,11 +259,8 @@ describe('long and formatted crumb labels', () => {
 	});
 
 	it('shows nothing extra while the pointer is over a label that fits', async () => {
-		await hoverCrumb(
-			"- **Challenges I've encountered**\n\t- short",
-			"Challenges I've encountered",
-		);
-		const hovered = await crumbBox("Challenges I've encountered");
+		await hoverCrumb("- **Risks we've identified**\n\t- short", "Risks we've identified");
+		const hovered = await crumbBox("Risks we've identified");
 		expect(hovered.cut).toBe(false);
 		expect(hovered.overlayText).toBeNull();
 	});
@@ -282,7 +279,7 @@ describe('long and formatted crumb labels', () => {
 		const editor = await openInFolder(NOTE_WITH_LONG);
 		await editor.caret(1, 4);
 		await editor.runCommand('zoom-in');
-		expect(await editor.crumbs()).toEqual(["Challenges I've encountered", LONG]);
+		expect(await editor.crumbs()).toEqual(["Risks we've identified", LONG]);
 	});
 });
 

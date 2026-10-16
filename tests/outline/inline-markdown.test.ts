@@ -3,7 +3,7 @@ import { stripInlineMarkdown } from '../../src/outline/inline-markdown';
 
 describe('stripInlineMarkdown', () => {
 	it.each([
-		["**Challenges I've encountered**", "Challenges I've encountered"],
+		["**Risks we've identified**", "Risks we've identified"],
 		['__bold__', 'bold'],
 		['*emphasis*', 'emphasis'],
 		['_emphasis_', 'emphasis'],
