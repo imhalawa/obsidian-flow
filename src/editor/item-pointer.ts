@@ -18,7 +18,9 @@ import {
 } from '../ui/item-menu-model';
 import { hasStartedDragging, isFinishedPress, type PressPoint } from './bullet-press';
 import { isFolded, toggleBranch } from './fold-control';
+import { isOverFoldIndicator } from './fold-indicator';
 import { outlineOfState } from './outline-of-state';
+import { setThreadHover, threadHoverField } from './thread-hover-field';
 import { dispatchZoom } from './zoom-control';
 import { zoomField } from './zoom-field';
 
@@ -31,7 +33,8 @@ export interface ItemPointerHost {
 	showMenu: (event: MouseEvent, entries: ItemMenuEntry[]) => void;
 }
 
-type PointerHit = { kind: 'bullet'; startLine: number } | { kind: 'thread'; parent: OutlineNode };
+type PointerHit =
+	{ kind: 'bullet'; startLine: number } | { kind: 'thread'; parent: OutlineNode; guideX: number };
 
 const MINIMUM_HIT_WIDTH = 24;
 const OVER_ITEM_CLASS = 'flow-over-item-control';
@@ -53,6 +56,17 @@ function markerSpan(
 function firstRow(view: EditorView, startLine: number): { top: number; bottom: number } | null {
 	const coords = view.coordsAtPos(view.state.doc.line(startLine + 1).from);
 	return coords ? { top: coords.top, bottom: coords.bottom } : null;
+}
+
+/** Returns the horizontal middle of the marker of an item, where its thread line runs, or null when it is not drawn. */
+function guideX(view: EditorView, item: OutlineNode): number | null {
+	const span = markerSpan(
+		view,
+		item.startLine,
+		item.indent.length,
+		item.indent.length + item.marker.length,
+	);
+	return span ? (span.left + span.right) / 2 : null;
 }
 
 /** Finds the bullet or thread line under the pointer, or null. */
@@ -78,23 +92,28 @@ function hitAt(view: EditorView, event: MouseEvent, host: ItemPointerHost): Poin
 			return { kind: 'bullet', startLine: lineIndex };
 		}
 	}
-	if (!host.isThreadFoldEnabled()) return null;
+	if (!host.isThreadFoldEnabled() || isOverFoldIndicator(event.target)) return null;
 	const parent = threadParent(
 		tree,
 		lineIndex,
 		event.clientX,
-		(candidate) => {
-			const span = markerSpan(
-				view,
-				candidate.startLine,
-				candidate.indent.length,
-				candidate.indent.length + candidate.marker.length,
-			);
-			return span ? (span.left + span.right) / 2 : null;
-		},
+		(candidate) => guideX(view, candidate),
 		MINIMUM_HIT_WIDTH / 2,
 	);
-	return parent ? { kind: 'thread', parent } : null;
+	const guide = parent ? guideX(view, parent) : null;
+	return parent && guide !== null ? { kind: 'thread', parent, guideX: guide } : null;
+}
+
+/** Highlights the thread line of a hit, or clears the highlight when there is none; does nothing when it is already shown. */
+function showThreadHover(
+	view: EditorView,
+	hit: Extract<PointerHit, { kind: 'thread' }> | null,
+): void {
+	const next = hit ? { startLine: hit.parent.startLine, x: hit.guideX } : null;
+	const current = view.state.field(threadHoverField, false);
+	if (current === undefined) return;
+	if (current?.startLine === next?.startLine && current?.x === next?.x) return;
+	view.dispatch({ effects: setThreadHover.of(next) });
 }
 
 /** Runs one action of the item menu on the item that starts on a line. */
@@ -197,11 +216,13 @@ export function itemPointer(host: ItemPointerHost): Extension {
 				host.showMenu(event, menuEntries(view, host, hit.startLine));
 			},
 			mousemove(event) {
-				const over = event.buttons === 0 && hitAt(view, event, host) !== null;
-				view.dom.classList.toggle(OVER_ITEM_CLASS, over);
+				const hit = event.buttons === 0 ? hitAt(view, event, host) : null;
+				view.dom.classList.toggle(OVER_ITEM_CLASS, hit !== null);
+				showThreadHover(view, hit?.kind === 'thread' ? hit : null);
 			},
 			mouseleave() {
 				view.dom.classList.remove(OVER_ITEM_CLASS);
+				showThreadHover(view, null);
 			},
 		};
 		for (const [type, listener] of Object.entries(listeners)) {

@@ -15,3 +15,4 @@ Findings from a spike in real Obsidian 1.14.4 on Linux, and the design that foll
 - Fold state lives in the editor, not in the zoom, so folds made while zoomed are still there after zooming out, and a folded item is still folded when zoomed into.
 - A fold that would hide the zoomed item is dropped (for example Obsidian's own fold all while zoomed), and zooming into an item unfolds the folds that hide it.
 - Fold all and unfold all act on the visible lines when zoomed.
+- Lines that an unfold shows again are marked with `flow-line-revealed` for 600 ms and fade in with Obsidian's animation variables. Folding cannot animate the same way, because CodeMirror removes the hidden lines at once. The marks and the arrow transitions are off when the user prefers reduced motion.

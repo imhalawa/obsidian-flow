@@ -56,6 +56,38 @@ describe('folds in real Obsidian', () => {
 		expect(await editor.folds()).toEqual(folded);
 	});
 
+	it('animates the lines that an unfold shows and stops marking them afterwards', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		await editor.caret(1, 3);
+		await editor.runCommand('fold-item');
+		await editor.runCommand('unfold-item');
+		expect(await editor.revealedLines()).toEqual([
+			{ text: '\t- b', animation: 'flow-line-reveal' },
+			{ text: '\t\t- c', animation: 'flow-line-reveal' },
+			{ text: '\t- d', animation: 'flow-line-reveal' },
+		]);
+		await new Promise((resolve) => setTimeout(resolve, 900));
+		expect(await editor.revealedLines()).toEqual([]);
+	});
+
+	it('does not animate an unfold when the user prefers reduced motion', async () => {
+		await app.emulateReducedMotion(true);
+		const editor = await NoteEditor.open(app, NOTE);
+		await editor.caret(1, 3);
+		await editor.runCommand('fold-item');
+		await editor.runCommand('unfold-item');
+		const animations = (await editor.revealedLines()).map((line) => line.animation);
+		await app.emulateReducedMotion(false);
+		expect(animations).toEqual(['none', 'none', 'none']);
+	});
+
+	it('does not mark any line when an item is folded', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		await editor.caret(1, 3);
+		await editor.runCommand('fold-item');
+		expect(await editor.revealedLines()).toEqual([]);
+	});
+
 	it('explains that a leaf has no children to fold', async () => {
 		const editor = await NoteEditor.open(app, NOTE);
 		await editor.caret(4, 4);

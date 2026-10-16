@@ -167,6 +167,11 @@ export class ObsidianApp {
 		writeFileSync(path, Buffer.from(await this.connection.screenshot(), 'base64'));
 	}
 
+	/** Makes the window report that the user prefers reduced motion, or stop reporting it. */
+	emulateReducedMotion(reduced: boolean): Promise<void> {
+		return this.connection.emulateReducedMotion(reduced);
+	}
+
 	/** Types text into the focused editor one character at a time. */
 	typeText(text: string): Promise<void> {
 		return this.connection.insertText(text);
