@@ -22,6 +22,8 @@
 		"!src/editor/drop-indicator.ts",
 		"!src/editor/item-geometry.ts"
 	],
+	"incremental": true,
+	"incrementalFile": "reports/stryker-incremental.json",
 	"reporters": ["clear-text", "progress"],
 	"thresholds": { "high": 90, "low": 80, "break": 80 },
 	"coverageAnalysis": "off",
