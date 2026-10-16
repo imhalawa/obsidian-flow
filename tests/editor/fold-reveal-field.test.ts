@@ -25,7 +25,7 @@ const revealedStarts = (state: EditorState) => {
 const revealedClasses = (state: EditorState) => {
 	const classes: string[] = [];
 	state.field(revealField).between(0, state.doc.length, (_from, _to, decoration) => {
-		classes.push(decoration.spec.class as string);
+		classes.push((decoration.spec as { class: string }).class);
 	});
 	return classes;
 };
