@@ -20,6 +20,14 @@
 	white-space: nowrap;
 }
 
+.flow-crumbs.is-absent {
+	display: none;
+}
+
+.flow-crumbs.is-natural .flow-crumbs__crumb {
+	flex: none;
+}
+
 .flow-crumbs__crumb {
 	flex: 0 2 auto;
 	min-width: 0;

@@ -6,6 +6,8 @@ import { DevtoolsConnection } from './devtools';
 import { ensureObsidian } from './install-obsidian';
 
 const DISPLAY = ':99';
+const SCREEN_SIZE = '2560x1000x24';
+const DEFAULT_WINDOW = { width: 1280, height: 900 };
 const DEBUG_PORT = 9222;
 const PLUGIN_ID = 'flow-outliner';
 const PLUGIN_FILES = ['main.js', 'manifest.json', 'styles.css'];
@@ -66,7 +68,7 @@ export class ObsidianApp {
 			join(userData, 'obsidian.json'),
 			JSON.stringify({ vaults: { flow: { path: vault, ts: 1, open: true } } }),
 		);
-		const display = spawn('Xvfb', [DISPLAY, '-screen', '0', '1280x900x24'], {
+		const display = spawn('Xvfb', [DISPLAY, '-screen', '0', SCREEN_SIZE], {
 			stdio: 'ignore',
 		});
 		const env = { ...process.env, DISPLAY };
@@ -92,6 +94,7 @@ export class ObsidianApp {
 			`(async () => { await app.plugins.setEnable(true); await app.plugins.enablePlugin(${JSON.stringify(PLUGIN_ID)}); })()`,
 		);
 		await app.dismissTrustPrompt();
+		await app.resizeWindow(DEFAULT_WINDOW.width, DEFAULT_WINDOW.height);
 		return app;
 	}
 
@@ -150,6 +153,13 @@ export class ObsidianApp {
 		execFileSync('xdotool', ['mousemove', String(x), String(y), 'click', code], {
 			env: { ...process.env, DISPLAY },
 		});
+	}
+
+	/** Sets the size of the Obsidian window in pixels. */
+	async resizeWindow(width: number, height: number): Promise<void> {
+		await this.evaluate(
+			`(electronWindow.setBounds({ x: 0, y: 0, width: ${width}, height: ${height} }), true)`,
+		);
 	}
 
 	/** Saves a screenshot of the window as a PNG file. */
