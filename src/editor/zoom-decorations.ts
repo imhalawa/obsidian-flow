@@ -9,9 +9,11 @@ function aboveRange(zoom: ZoomState): Range<Decoration> | null {
 	return zoom.from > 1 ? hiddenLines.range(0, zoom.from - 1) : null;
 }
 
-/** Returns the range of the lines hidden below the zoom, or null when the zoom ends the note. */
+/** Returns the range of the lines hidden below the zoom, starting on the next line so no hidden range touches the end of the last zoomed line, or null when the zoom ends the note. */
 function belowRange(zoom: ZoomState, docLength: number): Range<Decoration> | null {
-	return zoom.to < docLength ? hiddenLines.range(zoom.to, docLength) : null;
+	if (zoom.to >= docLength) return null;
+	const start = zoom.to + 1 < docLength ? zoom.to + 1 : zoom.to;
+	return hiddenLines.range(start, docLength);
 }
 
 /** Returns the replacements that hide everything outside the zoomed range. */
