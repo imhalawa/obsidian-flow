@@ -19,6 +19,11 @@ export function cacheDirectory(): string {
 
 /** Returns the path of the Obsidian binary, downloading and unpacking it on first use. */
 export function ensureObsidian(): string {
+	if (process.platform === 'win32')
+		return (
+			process.env['FLOW_E2E_OBSIDIAN'] ??
+			join(process.env['LOCALAPPDATA'] ?? '', 'Programs', 'Obsidian', 'Obsidian.exe')
+		);
 	const cache = cacheDirectory();
 	const binary = join(cache, 'app', 'app', 'obsidian');
 	if (existsSync(binary)) return binary;

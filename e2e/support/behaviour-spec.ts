@@ -45,7 +45,7 @@ function readBlock(lines: readonly string[], start: number): { text: string; nex
 
 /** Parses a Markdown file of behaviour specs: a title line, then steps written as bullet fields and fenced states. */
 export function parseSpecs(source: string): BehaviourSpec[] {
-	const lines = source.split('\n');
+	const lines = source.split(/\r?\n/);
 	const specs: BehaviourSpec[] = [];
 	let current: BehaviourSpec | null = null;
 	let line = 0;
