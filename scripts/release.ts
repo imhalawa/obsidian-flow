@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { bumpVersionFiles, type PluginManifest } from './lib/bump-version';
 import { renderReleaseNotes } from './lib/release-notes';
+import { isPrerelease } from './lib/semver';
 import { findReleaseProblems } from './lib/verify-release';
 
 function readJson<T>(path: string): T {
@@ -52,6 +53,10 @@ function verify(tag: string): void {
 	}
 }
 
+function printPrerelease(tag: string): void {
+	process.stdout.write(`${isPrerelease(tag)}\n`);
+}
+
 function findPreviousTag(endRef: string): string | null {
 	try {
 		return git(['describe', '--tags', '--abbrev=0', `${endRef}^`]);
@@ -76,6 +81,9 @@ switch (command) {
 	case 'verify':
 		verify(requireArgument(firstArgument, 'release.ts verify <tag>'));
 		break;
+	case 'prerelease':
+		printPrerelease(requireArgument(firstArgument, 'release.ts prerelease <tag>'));
+		break;
 	case 'notes':
 		notes(
 			requireArgument(firstArgument, 'release.ts notes <tag> <repository-url> <end-ref>'),
@@ -84,5 +92,5 @@ switch (command) {
 		);
 		break;
 	default:
-		throw new Error('Usage: release.ts <bump|verify|notes>');
+		throw new Error('Usage: release.ts <bump|verify|prerelease|notes>');
 }

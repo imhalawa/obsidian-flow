@@ -45,16 +45,30 @@ describe('bumpVersionFiles', () => {
 		expect(versions).toEqual({ '0.1.0': '1.12.0' });
 	});
 
-	it.each(['10.20.30', '0.0.0', '12.0.100'])('accepts the version "%s"', (version) => {
-		expect(bumpVersionFiles({ manifest, versions, version }).manifest.version).toBe(version);
-	});
-
-	it.each(['', '1', '1.2', '1.2.3.4', 'v1.2.3', '1.2.x', '01.2.3', '1.2.3-beta'])(
-		'rejects the version "%s"',
+	it.each(['10.20.30', '0.0.0', '12.0.100', '0.1.0-beta.1', '1.0.0-rc.12', '2.0.0-alpha'])(
+		'accepts the version "%s"',
 		(version) => {
-			expect(() => bumpVersionFiles({ manifest, versions, version })).toThrow(
-				`Invalid version "${version}".`,
+			expect(bumpVersionFiles({ manifest, versions, version }).manifest.version).toBe(
+				version,
 			);
 		},
 	);
+
+	it.each([
+		'',
+		'1',
+		'1.2',
+		'1.2.3.4',
+		'v1.2.3',
+		'1.2.x',
+		'01.2.3',
+		'1.2.3-',
+		'1.2.3-beta..1',
+		'1.2.3-01',
+		'1.2.3-be ta',
+	])('rejects the version "%s"', (version) => {
+		expect(() => bumpVersionFiles({ manifest, versions, version })).toThrow(
+			`Invalid version "${version}".`,
+		);
+	});
 });
