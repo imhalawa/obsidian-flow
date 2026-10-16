@@ -34,6 +34,11 @@ export class NoteEditor {
 		return new NoteEditor(app);
 	}
 
+	/** Drives the editor of the note that is already active, wherever its window is. */
+	static attach(app: ObsidianApp): NoteEditor {
+		return new NoteEditor(app);
+	}
+
 	/** Places the selection; a caret has the same anchor and head. */
 	async select(selection: Selection): Promise<void> {
 		await this.app.evaluate(

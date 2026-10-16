@@ -3,6 +3,7 @@ import { registerCommands } from './commands';
 import { systemBlockLinkServices } from './commands/copy-item-link';
 import { blockIdHiding } from './editor/block-id-hiding';
 import { ItemSuggest } from './editor/item-suggest';
+import { registerMouseHistory } from './editor/register-mouse-history';
 import { registerItemPointer } from './editor/register-item-pointer';
 import { registerZoom } from './editor/register-zoom';
 import { DEFAULT_SETTINGS, FlowSettings, FlowSettingTab } from './settings';
@@ -33,6 +34,7 @@ export default class FlowPlugin extends Plugin {
 			},
 			systemBlockLinkServices(),
 		);
+		registerMouseHistory(this, { isEnabled: () => this.settings.useMouseHistory });
 		registerZoom(this, {
 			rememberZoom: () => this.settings.rememberZoom,
 			notify: (message) => new Notice(message),

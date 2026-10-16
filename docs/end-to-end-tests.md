@@ -6,7 +6,7 @@ Run them with `npm run test:e2e`. They are not part of `npm run check`.
 
 ## Prerequisites
 
-- `curl`, `squashfs-tools` (for `unsquashfs`) and `xvfb`. Install them with `apt-get install -y curl squashfs-tools xvfb`.
+- `curl`, `squashfs-tools` (for `unsquashfs`), `xvfb` and `xdotool` (the mouse button tests press the real side buttons). Install them with `apt-get install -y curl squashfs-tools xvfb xdotool`.
 - Network access to the Snap store (`api.snapcraft.io`). github.com release downloads are not needed.
 
 ## How it works
