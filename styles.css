@@ -237,3 +237,7 @@
 .view-header-title.flow-title-link:focus-visible {
 	box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
 }
+
+.markdown-source-view.mod-cm6 .cm-fold-indicator.flow-chevron-hover svg.svg-icon {
+	color: var(--icon-color-hover);
+}

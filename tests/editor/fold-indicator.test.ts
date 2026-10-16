@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { EditorView } from '@codemirror/view';
-import { foldIndicatorCenter, isOverFoldIndicator } from '../../src/editor/fold-indicator';
+import {
+	foldIndicatorCenter,
+	foldIndicatorOf,
+	isOverFoldIndicator,
+} from '../../src/editor/fold-indicator';
 
 const insideIndicator = {
 	closest: (selector: string) => (selector === '.cm-fold-indicator' ? {} : null),
@@ -70,5 +74,30 @@ describe('foldIndicatorCenter', () => {
 
 	it('returns null when the line has no arrow', () => {
 		expect(foldIndicatorCenter(viewWithArrow(null, false), 0)).toBeNull();
+	});
+});
+
+describe('foldIndicatorOf', () => {
+	beforeEach(() => vi.stubGlobal('Element', FakeElement));
+	afterEach(() => vi.unstubAllGlobals());
+
+	const viewWithIndicator = (indicator: object | null): EditorView => {
+		const line = {
+			querySelector: (selector: string) =>
+				selector === '.cm-fold-indicator' ? indicator : null,
+		};
+		const element = Object.assign(new FakeElement(), {
+			closest: (selector: string) => (selector === '.cm-line' ? line : null),
+		});
+		return { domAtPos: () => ({ node: element }) } as unknown as EditorView;
+	};
+
+	it('returns the fold arrow element of the line', () => {
+		const indicator = {};
+		expect(foldIndicatorOf(viewWithIndicator(indicator), 0)).toBe(indicator);
+	});
+
+	it('returns null when the line has no arrow', () => {
+		expect(foldIndicatorOf(viewWithIndicator(null), 0)).toBeNull();
 	});
 });

@@ -109,6 +109,19 @@ describe('folds in real Obsidian', () => {
 		expect(await editor.crumbs()).toEqual([]);
 	});
 
+	it('does not mark the last zoomed item as folded when a fold is hidden below the zoom', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		await editor.caret(5, 3);
+		await editor.runCommand('fold-item');
+		await editor.caret(1, 3);
+		await editor.runCommand('zoom-in');
+		await new Promise((resolve) => setTimeout(resolve, 300));
+		const collapsed = await app.evaluate<number>(
+			'activeDocument.querySelectorAll(".workspace-leaf.mod-active .cm-fold-indicator.is-collapsed").length',
+		);
+		expect(collapsed).toBe(0);
+	});
+
 	it('keeps folds made while zoomed after zooming out', async () => {
 		const editor = await NoteEditor.open(app, NOTE);
 		await editor.caret(2, 3);

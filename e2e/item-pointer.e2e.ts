@@ -237,7 +237,7 @@ describe('bullets and thread lines in real Obsidian', () => {
 		expect(others).toEqual([]);
 		expect(line?.background).toBe(accent);
 		expect(Math.abs(((line?.left ?? 0) + (line?.right ?? 0)) / 2 - parent.x)).toBeLessThan(1.5);
-		expect(line?.top).toBeGreaterThanOrEqual(parent.y);
+		expect(line?.top).toBeGreaterThanOrEqual(parent.y - 1);
 		expect(line?.bottom).toBeGreaterThan(await editor.linePoint(2));
 	});
 

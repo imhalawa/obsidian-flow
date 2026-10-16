@@ -15,6 +15,7 @@ export interface Interval {
 export interface HitSizes {
 	bulletMinimum: number;
 	threadHalf: number;
+	threadCore: number;
 	chevronHalf: number;
 	gutter: number;
 }
@@ -22,6 +23,7 @@ export interface HitSizes {
 const BULLET = /^[-*+]$/;
 const BULLET_EMS = 1.5;
 const THREAD_HALF_EMS = 0.75;
+const THREAD_CORE_EMS = 0.25;
 const CHEVRON_HALF_EMS = 0.75;
 const GUTTER_EMS = 3;
 
@@ -30,6 +32,7 @@ export function hitSizes(fontSize: number): HitSizes {
 	return {
 		bulletMinimum: fontSize * BULLET_EMS,
 		threadHalf: fontSize * THREAD_HALF_EMS,
+		threadCore: fontSize * THREAD_CORE_EMS,
 		chevronHalf: fontSize * CHEVRON_HALF_EMS,
 		gutter: fontSize * GUTTER_EMS,
 	};
