@@ -1,0 +1,40 @@
+name: Obsidian compatibility
+
+on:
+    schedule:
+        - cron: '0 5 * * *'
+    workflow_dispatch:
+
+permissions:
+    contents: read
+    issues: write
+
+jobs:
+    latest:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v6
+            - uses: actions/setup-node@v6
+              with:
+                  node-version: 22
+                  cache: 'npm'
+            - run: sudo apt-get update && sudo apt-get install -y squashfs-tools xvfb xdotool
+            - run: npm ci
+            - run: npm run build
+            - name: Run the compatibility tests against the latest Obsidian
+              run: npx vitest run --config vitest.e2e.config.ts e2e/obsidian-contract.e2e.ts e2e/guest-behavior.e2e.ts e2e/open-notes.e2e.ts e2e/mouse-history.e2e.ts
+            - name: Open an issue when the latest Obsidian breaks the plugin
+              if: failure()
+              uses: actions/github-script@v7
+              with:
+                  script: |
+                      const title = 'Latest Obsidian breaks the plugin';
+                      const body = `The nightly compatibility run failed: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+                      const open = await github.rest.issues.listForRepo({ ...context.repo, state: 'open', per_page: 100 });
+                      const existing = open.data.find((issue) => issue.title === title);
+                      if (existing) {
+                        await github.rest.issues.createComment({ ...context.repo, issue_number: existing.number, body });
+                      } else {
+                        await github.rest.issues.create({ ...context.repo, title, body });
+                      }
