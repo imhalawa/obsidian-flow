@@ -6,3 +6,4 @@ reports
 package-lock.json
 .e2e-cache
 .claude/settings.local.json
+.claude/worktrees
