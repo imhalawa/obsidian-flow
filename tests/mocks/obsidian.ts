@@ -37,6 +37,10 @@ export class Plugin {
 	registerEditorExtension(extension: unknown): void {
 		this.editorExtensions.push(extension);
 	}
+	readonly cleanups: (() => void)[] = [];
+	register(cleanup: () => void): void {
+		this.cleanups.push(cleanup);
+	}
 	registerEditorSuggest(suggest: unknown): void {
 		this.editorSuggests.push(suggest);
 	}

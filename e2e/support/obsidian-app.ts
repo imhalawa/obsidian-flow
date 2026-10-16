@@ -1,4 +1,4 @@
-import { spawn, type ChildProcess } from 'node:child_process';
+import { execFileSync, spawn, type ChildProcess } from 'node:child_process';
 import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -102,6 +102,14 @@ export class ObsidianApp {
 	/** Right-clicks at a point of the window. */
 	rightClick(x: number, y: number): Promise<void> {
 		return this.connection.pointer(x, y, 'click', 'right', 0);
+	}
+
+	/** Presses a side button of the mouse over a point of the screen, as a real mouse does. */
+	pressSideButton(x: number, y: number, button: 'back' | 'forward'): void {
+		const code = button === 'back' ? '8' : '9';
+		execFileSync('xdotool', ['mousemove', String(x), String(y), 'click', code], {
+			env: { ...process.env, DISPLAY },
+		});
 	}
 
 	/** Saves a screenshot of the window as a PNG file. */

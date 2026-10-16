@@ -38,7 +38,7 @@ jobs:
               with:
                   node-version: 22
                   cache: 'npm'
-            - run: sudo apt-get update && sudo apt-get install -y squashfs-tools xvfb
+            - run: sudo apt-get update && sudo apt-get install -y squashfs-tools xvfb xdotool
             - run: npm ci
             - run: npm run test:e2e
 

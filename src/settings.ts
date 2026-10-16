@@ -8,6 +8,7 @@ export interface FlowSettings {
 	itemSuggester: boolean;
 	clickBulletToZoom: boolean;
 	clickThreadLineToFold: boolean;
+	useMouseHistory: boolean;
 }
 
 export const DEFAULT_SETTINGS: FlowSettings = {
@@ -17,6 +18,7 @@ export const DEFAULT_SETTINGS: FlowSettings = {
 	itemSuggester: true,
 	clickBulletToZoom: true,
 	clickThreadLineToFold: true,
+	useMouseHistory: true,
 };
 
 export class FlowSettingTab extends PluginSettingTab {
@@ -79,6 +81,17 @@ export class FlowSettingTab extends PluginSettingTab {
 						this.plugin.settings.clickThreadLineToFold = value;
 						await this.plugin.saveSettings();
 					}),
+			);
+		new Setting(this.containerEl)
+			.setName('Use mouse back and forward for zoom')
+			.setDesc(
+				"Step through zoom levels first. When none are left, Obsidian's own back and forward apply.",
+			)
+			.addToggle((toggle) =>
+				toggle.setValue(this.plugin.settings.useMouseHistory).onChange(async (value) => {
+					this.plugin.settings.useMouseHistory = value;
+					await this.plugin.saveSettings();
+				}),
 			);
 	}
 }
