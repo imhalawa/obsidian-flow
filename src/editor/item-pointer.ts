@@ -7,6 +7,7 @@ import {
 	bulletMarker,
 	containsX,
 	expandToMinimumWidth,
+	hitSizes,
 	threadParent,
 	type Interval,
 } from '../outline/pointer-hit';
@@ -19,8 +20,8 @@ import {
 import { hasStartedDragging, isFinishedPress, type PressPoint } from './bullet-press';
 import { showLitBullet, litBulletAt } from './bullet-hover';
 import { isFolded, toggleBranch } from './fold-control';
-import { isOverFoldIndicator } from './fold-indicator';
-import { firstRow, markerSpan } from './item-geometry';
+import { foldIndicatorCenter, isOverFoldIndicator } from './fold-indicator';
+import { editorFontSize, firstRow, markerSpan } from './item-geometry';
 import { outlineOfState } from './outline-of-state';
 import { setThreadHover, threadHoverField } from './thread-hover-field';
 import { dispatchZoom } from './zoom-control';
@@ -36,9 +37,10 @@ export interface ItemPointerHost {
 }
 
 type PointerHit =
-	{ kind: 'bullet'; startLine: number } | { kind: 'thread'; parent: OutlineNode; guideX: number };
+	| { kind: 'bullet'; startLine: number }
+	| { kind: 'chevron'; startLine: number }
+	| { kind: 'thread'; parent: OutlineNode; guideX: number };
 
-const MINIMUM_HIT_WIDTH = 24;
 const OVER_ITEM_CLASS = 'flow-over-item-control';
 /** Returns the horizontal middle of the marker of an item, where its thread line runs, or null when it is not drawn. */
 function guideX(view: EditorView, item: OutlineNode): number | null {
@@ -63,6 +65,7 @@ function hitAt(view: EditorView, event: MouseEvent, host: ItemPointerHost): Poin
 	const tree = outlineOfState(view.state);
 	const marker = bulletMarker(tree, lineIndex);
 	const row = firstRow(view, lineIndex);
+	const sizes = hitSizes(editorFontSize(view));
 	if (
 		(host.isBulletZoomEnabled() || host.isBulletDragEnabled()) &&
 		marker &&
@@ -70,17 +73,25 @@ function hitAt(view: EditorView, event: MouseEvent, host: ItemPointerHost): Poin
 		event.clientY <= row.bottom
 	) {
 		const span = markerSpan(view, lineIndex, marker.from, marker.to);
-		if (span && containsX(expandToMinimumWidth(span, MINIMUM_HIT_WIDTH), event.clientX)) {
+		if (span && containsX(expandToMinimumWidth(span, sizes.bulletMinimum), event.clientX)) {
 			return { kind: 'bullet', startLine: lineIndex };
 		}
 	}
-	if (!host.isThreadFoldEnabled() || isOverFoldIndicator(event.target)) return null;
+	if (isOverFoldIndicator(event.target)) return null;
+	const arrowCenter =
+		row && event.clientY <= row.bottom
+			? foldIndicatorCenter(view, view.state.doc.line(lineIndex + 1).from)
+			: null;
+	if (arrowCenter !== null && Math.abs(event.clientX - arrowCenter) <= sizes.chevronHalf) {
+		return { kind: 'chevron', startLine: lineIndex };
+	}
+	if (!host.isThreadFoldEnabled()) return null;
 	const parent = threadParent(
 		tree,
 		lineIndex,
 		event.clientX,
 		(candidate) => guideX(view, candidate),
-		MINIMUM_HIT_WIDTH / 2,
+		sizes.threadHalf,
 	);
 	const guide = parent ? guideX(view, parent) : null;
 	return parent && guide !== null ? { kind: 'thread', parent, guideX: guide } : null;
@@ -180,6 +191,8 @@ export function itemPointer(host: ItemPointerHost): Extension {
 							y: event.clientY,
 						});
 					}
+				} else if (hit.kind === 'chevron') {
+					toggleBranch(view, hit.startLine, event.altKey);
 				} else {
 					toggleBranch(view, hit.parent.startLine, event.altKey);
 				}
