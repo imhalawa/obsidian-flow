@@ -17,8 +17,10 @@ import {
 	type ItemMenuEntry,
 } from '../ui/item-menu-model';
 import { hasStartedDragging, isFinishedPress, type PressPoint } from './bullet-press';
+import { showLitBullet, litBulletAt } from './bullet-hover';
 import { isFolded, toggleBranch } from './fold-control';
 import { isOverFoldIndicator } from './fold-indicator';
+import { firstRow, markerSpan } from './item-geometry';
 import { outlineOfState } from './outline-of-state';
 import { setThreadHover, threadHoverField } from './thread-hover-field';
 import { dispatchZoom } from './zoom-control';
@@ -38,26 +40,6 @@ type PointerHit =
 
 const MINIMUM_HIT_WIDTH = 24;
 const OVER_ITEM_CLASS = 'flow-over-item-control';
-/** Returns the horizontal span of the marker of an item on its line, or null when it is not drawn. */
-function markerSpan(
-	view: EditorView,
-	startLine: number,
-	from: number,
-	to: number,
-): Interval | null {
-	const line = view.state.doc.line(startLine + 1);
-	const start = view.coordsAtPos(line.from + from);
-	const end = view.coordsAtPos(line.from + to);
-	if (!start || !end) return null;
-	return { left: start.left, right: end.left };
-}
-
-/** Returns the vertical span of the first row of a line, or null when it is not drawn. */
-function firstRow(view: EditorView, startLine: number): { top: number; bottom: number } | null {
-	const coords = view.coordsAtPos(view.state.doc.line(startLine + 1).from);
-	return coords ? { top: coords.top, bottom: coords.bottom } : null;
-}
-
 /** Returns the horizontal middle of the marker of an item, where its thread line runs, or null when it is not drawn. */
 function guideX(view: EditorView, item: OutlineNode): number | null {
 	const span = markerSpan(
@@ -219,10 +201,15 @@ export function itemPointer(host: ItemPointerHost): Extension {
 				const hit = event.buttons === 0 ? hitAt(view, event, host) : null;
 				view.dom.classList.toggle(OVER_ITEM_CLASS, hit !== null);
 				showThreadHover(view, hit?.kind === 'thread' ? hit : null);
+				showLitBullet(
+					view,
+					hit?.kind === 'thread' || event.buttons !== 0 ? null : litBulletAt(view, event),
+				);
 			},
 			mouseleave() {
 				view.dom.classList.remove(OVER_ITEM_CLASS);
 				showThreadHover(view, null);
+				showLitBullet(view, null);
 			},
 		};
 		for (const [type, listener] of Object.entries(listeners)) {

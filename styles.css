@@ -164,3 +164,17 @@
 	background: var(--interactive-accent);
 	pointer-events: none;
 }
+
+.markdown-source-view.mod-cm6 .cm-line .cm-fold-indicator .collapse-indicator {
+	cursor: pointer;
+}
+
+.cm-line.flow-bullet-lit .list-bullet::after {
+	background-color: var(--list-marker-color-hover);
+	box-shadow: 0 0 0 4px var(--background-modifier-hover);
+}
+
+.cm-line.flow-bullet-lit .cm-fold-indicator.is-collapsed ~ .cm-formatting-list .list-bullet::after {
+	background-color: var(--list-marker-color-collapsed);
+	box-shadow: 0 0 0 4px var(--background-modifier-active-hover);
+}

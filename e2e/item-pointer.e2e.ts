@@ -94,6 +94,91 @@ describe('bullets and thread lines in real Obsidian', () => {
 		expect(await editor.pointerIsOverControl()).toBe(false);
 	});
 
+	it('shows the clickable cursor over the fold arrow', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		const arrow = await editor.foldArrowBox(1);
+		expect(await editor.cursorAt(arrow.left + 1, (arrow.top + arrow.bottom) / 2)).toBe(
+			'pointer',
+		);
+	});
+
+	it('shows the clickable cursor over the bullet of an item that is not being edited', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		const bullet = await editor.bulletPoint(1);
+		await app.movePointer(bullet.x, bullet.y);
+		expect(await editor.cursorAt(bullet.x, bullet.y)).toBe('pointer');
+	});
+
+	it('lights up the bullet when the pointer is over its fold arrow', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		const arrow = await editor.foldArrowBox(1);
+		await app.movePointer(arrow.left + 1, (arrow.top + arrow.bottom) / 2);
+		await wait(200);
+		expect(await editor.litBulletLines()).toEqual([1]);
+	});
+
+	it('keeps the bullet lit from its fold arrow until the pointer is on the bullet', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		const bullet = await editor.bulletPoint(1);
+		const arrow = await editor.foldArrowBox(1);
+		const row = bullet.y;
+		const lit: number[][] = [];
+		for (const x of [arrow.left + 1, arrow.right, bullet.x - 4, bullet.x]) {
+			await app.movePointer(x, row);
+			await wait(150);
+			lit.push(await editor.litBulletLines());
+		}
+		expect(lit).toEqual([[1], [1], [1], [1]]);
+	});
+
+	it('lights up the bullet of a top level item from the gutter at the left edge of the note', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		const bullet = await editor.bulletPoint(3);
+		await app.movePointer(bullet.x - 40, bullet.y);
+		await wait(200);
+		expect(await editor.litBulletLines()).toEqual([3]);
+	});
+
+	it('lights up the bullet like Obsidian does when its fold arrow is hovered', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		const bullet = await editor.bulletPoint(1);
+		await app.movePointer(5, 5);
+		await wait(300);
+		const resting = await editor.bulletDotColor(1);
+		await app.movePointer(bullet.x, bullet.y);
+		await wait(300);
+		expect(await editor.bulletDotColor(1)).not.toBe(resting);
+	});
+
+	it('does not light up a bullet when the pointer is over the text of its row', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		const bullet = await editor.bulletPoint(1);
+		await app.movePointer(bullet.x + 80, bullet.y);
+		await wait(200);
+		expect(await editor.litBulletLines()).toEqual([]);
+	});
+
+	it('lights up only the bullet of the row under the pointer', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		const arrow = await editor.foldArrowBox(1);
+		await app.movePointer(arrow.left + 1, (arrow.top + arrow.bottom) / 2);
+		await wait(200);
+		const next = await editor.bulletPoint(2);
+		await app.movePointer(next.x, next.y);
+		await wait(200);
+		expect(await editor.litBulletLines()).toEqual([2]);
+	});
+
+	it('puts the light out when the pointer leaves the editor', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		const bullet = await editor.bulletPoint(1);
+		await app.movePointer(bullet.x, bullet.y);
+		await wait(200);
+		await app.movePointer(5, 5);
+		await wait(200);
+		expect(await editor.litBulletLines()).toEqual([]);
+	});
+
 	it('folds a branch when its thread line is clicked', async () => {
 		const editor = await NoteEditor.open(app, NOTE);
 		const parent = await editor.bulletPoint(0);

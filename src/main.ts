@@ -2,6 +2,7 @@ import { Notice, Plugin } from 'obsidian';
 import { registerCommands } from './commands';
 import { registerZoomMenu } from './commands/zoom-menu';
 import { systemBlockLinkServices } from './commands/copy-item-link';
+import { bulletLight } from './editor/bullet-light-field';
 import { blockIdHiding } from './editor/block-id-hiding';
 import { foldReveal } from './editor/fold-reveal';
 import { ItemSuggest } from './editor/item-suggest';
@@ -29,6 +30,7 @@ export default class FlowPlugin extends Plugin {
 		this.registerEditorExtension(blockIdHiding(() => this.settings.hideBlockIds));
 		this.registerEditorExtension(foldReveal());
 		this.registerEditorExtension(threadHighlight());
+		this.registerEditorExtension(bulletLight());
 		this.registerEditorSuggest(
 			new ItemSuggest(this.app, {
 				isEnabled: () => this.settings.itemSuggester,
