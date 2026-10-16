@@ -4,6 +4,7 @@ on:
     push:
         tags:
             - '[0-9]+.[0-9]+.[0-9]+'
+    workflow_dispatch:
 
 jobs:
     release:
@@ -30,8 +31,22 @@ jobs:
 
             - run: npm ci
 
+            - name: Resolve the release tag
+              id: release
+              run: |
+                  if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+                    tag="$GITHUB_REF_NAME"
+                  else
+                    tag="$(node -p 'JSON.parse(require("fs").readFileSync("manifest.json", "utf8")).version')"
+                    if git rev-parse -q --verify "refs/tags/$tag" > /dev/null; then
+                      echo "Tag $tag already exists. Push the tag instead of running the workflow by hand." >&2
+                      exit 1
+                    fi
+                  fi
+                  echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
             - name: Check the tag against the version files
-              run: npm run release:verify -- "${GITHUB_REF_NAME}"
+              run: npm run release:verify -- "${{ steps.release.outputs.tag }}"
 
             - name: Check the code
               run: npm run check
@@ -54,15 +69,18 @@ jobs:
                       styles.css
 
             - name: Write release notes
-              run: npm run release:notes -- "${GITHUB_REF_NAME}" "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" > release-notes.md
+              run: npm run release:notes -- "${{ steps.release.outputs.tag }}" "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" "$GITHUB_SHA" > release-notes.md
 
             - name: Create draft release
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  TAG: ${{ steps.release.outputs.tag }}
+                  VERIFY_TAG: ${{ github.ref_type == 'tag' && '--verify-tag' || '' }}
               run: |
-                  gh release create "${GITHUB_REF_NAME}" \
-                    --title="${GITHUB_REF_NAME}" \
+                  gh release create "$TAG" \
+                    --title="$TAG" \
                     --notes-file release-notes.md \
-                    --verify-tag \
+                    --target "$GITHUB_SHA" \
+                    $VERIFY_TAG \
                     --draft \
                     main.js manifest.json styles.css
