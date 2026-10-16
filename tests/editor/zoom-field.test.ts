@@ -104,3 +104,51 @@ describe('zoomField through edits', () => {
 		expect(after.field(zoomField)).toBeNull();
 	});
 });
+
+describe('zoomField when the whole note is replaced', () => {
+	const ITEMS = '- a\n  - b\n    - c\n- d';
+	const replaceAll = (state: EditorState, text: string) =>
+		state.update({ changes: { from: 0, to: state.doc.length, insert: text } }).state;
+	const zoomedTexts = (state: EditorState) => {
+		const zoom = state.field(zoomField);
+		return zoom ? state.doc.sliceString(zoom.from, zoom.to) : null;
+	};
+
+	it.each([
+		['a line is added above', '- new\n- a\n  - b\n    - c\n- d'],
+		['an unrelated item is edited', '- a\n  - b\n    - c\n- d changed'],
+		['the note is reordered', '- d\n- a\n  - b\n    - c'],
+	])('keeps the zoom on the same item when %s', (_name, text) => {
+		const state = replaceAll(zoomed(ITEMS, 1), text);
+		expect(zoomedTexts(state)).toBe('  - b\n    - c');
+	});
+
+	it.each([
+		['the item was removed', '- x\n- y'],
+		['the item was renamed', '- a\n  - b renamed\n    - c\n- d'],
+		['an ancestor was renamed', '- a changed\n  - b\n    - c\n- d'],
+		['the note was emptied', ''],
+	])('leaves the zoom when %s', (_name, text) => {
+		expect(replaceAll(zoomed(ITEMS, 1), text).field(zoomField)).toBeNull();
+	});
+
+	it('leaves the zoom when the zoomed item is deleted from its first character', () => {
+		const state = zoomed(ITEMS, 1);
+		const from = state.field(zoomField)?.from ?? 0;
+		const to = ITEMS.indexOf('- d');
+		expect(state.update({ changes: { from, to } }).state.field(zoomField)).toBeNull();
+	});
+
+	it('still follows a line added above by a small edit', () => {
+		const state = zoomed(ITEMS, 1).update({ changes: { from: 0, insert: '- new\n' } }).state;
+		expect(zoomedTexts(state)).toBe('  - b\n    - c');
+	});
+
+	it('still follows an edit inside the zoomed item', () => {
+		const state = zoomed(ITEMS, 1);
+		const at = ITEMS.indexOf('c');
+		expect(zoomedTexts(state.update({ changes: { from: at, insert: 'x' } }).state)).toBe(
+			'  - b\n    - xc',
+		);
+	});
+});
