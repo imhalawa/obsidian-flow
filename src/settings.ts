@@ -6,6 +6,7 @@ export interface FlowSettings {
 	rememberZoom: boolean;
 	cleanZoom: boolean;
 	hideBlockIds: boolean;
+	hideEmbedTitles: boolean;
 	itemSuggester: boolean;
 	clickBulletToZoom: boolean;
 	clickThreadLineToFold: boolean;
@@ -23,6 +24,7 @@ export const DEFAULT_SETTINGS: FlowSettings = {
 	rememberZoom: true,
 	cleanZoom: true,
 	hideBlockIds: true,
+	hideEmbedTitles: true,
 	itemSuggester: true,
 	clickBulletToZoom: true,
 	clickThreadLineToFold: true,
@@ -72,6 +74,12 @@ export class FlowSettingTab extends PluginSettingTab {
 			'Type (( to search the items of your notes and insert a link to one.',
 			'itemSuggester',
 			null,
+		);
+		this.addToggle(
+			'Hide embed titles in bullets',
+			'Hide the title bar of a note embedded in a bullet, so the bullet lines up with the first line of the embed.',
+			'hideEmbedTitles',
+			() => this.app.workspace.updateOptions(),
 		);
 		new Setting(this.containerEl).setName('Bullets and thread lines').setHeading();
 		this.addToggle(

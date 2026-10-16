@@ -5,6 +5,18 @@ export interface Position {
 	ch: number;
 }
 
+export interface EmbedLayout {
+	marked: boolean;
+	lineTop: number;
+	lineBottom: number;
+	embedTop: number;
+	embedBottom: number;
+	embedLeft: number;
+	embedRight: number;
+	bulletTop: number;
+	bulletRight: number;
+}
+
 export interface Selection {
 	anchor: Position;
 	head: Position;
@@ -301,6 +313,13 @@ export class NoteEditor {
 	readNote(path: string): Promise<string> {
 		return this.app.evaluate<string>(
 			`app.vault.read(app.vault.getFileByPath(${JSON.stringify(path)}))`,
+		);
+	}
+
+	/** Returns the boxes of an item's line, its embed and its bullet in window coordinates, or null when the line draws no embed. */
+	embedLayout(line: number): Promise<EmbedLayout | null> {
+		return this.app.evaluate<EmbedLayout | null>(
+			`(() => { const cm = app.workspace.activeEditor.editor.cm; const row = cm.domAtPos(cm.state.doc.line(${line + 1}).from).node; const lineEl = (row.nodeType === 1 ? row : row.parentElement).closest(".cm-line"); const embed = lineEl.querySelector(".internal-embed"); const bullet = lineEl.querySelector(".list-bullet"); if (!embed || !bullet) return null; const l = lineEl.getBoundingClientRect(); const e = embed.getBoundingClientRect(); const b = bullet.getBoundingClientRect(); return { marked: lineEl.classList.contains("flow-embed-line"), lineTop: l.top, lineBottom: l.bottom, embedTop: e.top, embedBottom: e.bottom, embedLeft: e.left, embedRight: e.right, bulletTop: b.top, bulletRight: b.right }; })()`,
 		);
 	}
 

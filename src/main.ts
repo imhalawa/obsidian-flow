@@ -4,6 +4,7 @@ import { registerZoomMenu } from './commands/zoom-menu';
 import { systemBlockLinkServices } from './commands/copy-item-link';
 import { bulletLight } from './editor/bullet-light-field';
 import { blockIdHiding } from './editor/block-id-hiding';
+import { embedLines } from './editor/embed-lines';
 import { foldReveal } from './editor/fold-reveal';
 import { ItemSuggest } from './editor/item-suggest';
 import { registerItemDrag } from './editor/register-item-drag';
@@ -31,6 +32,7 @@ export default class FlowPlugin extends Plugin {
 		this.registerEditorExtension(foldReveal());
 		this.registerEditorExtension(threadHighlight());
 		this.registerEditorExtension(bulletLight());
+		this.registerEditorExtension(embedLines(() => this.settings.hideEmbedTitles));
 		this.registerEditorSuggest(
 			new ItemSuggest(this.app, {
 				isEnabled: () => this.settings.itemSuggester,
