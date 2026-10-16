@@ -1,8 +1,5 @@
-import { Notice, type Plugin } from 'obsidian';
+import type { Plugin } from 'obsidian';
 import { canZoomIn, zoomIn, zoomTargetOf } from '../editor/zoom-control';
-import { zoomOutcomeMessage } from '../ui/zoom-messages';
-
-export const ZOOM_MENU_TITLE = 'Zoom in';
 
 /** Adds Zoom in to the menu of the editor when the cursor is on a list item or a heading. */
 export function registerZoomMenu(plugin: Plugin): void {
@@ -12,12 +9,9 @@ export function registerZoomMenu(plugin: Plugin): void {
 			if (!target || !canZoomIn(target)) return;
 			menu.addItem((item) =>
 				item
-					.setTitle(ZOOM_MENU_TITLE)
+					.setTitle('Zoom in')
 					.setIcon('zoom-in')
-					.onClick(() => {
-						const message = zoomOutcomeMessage(zoomIn(target));
-						if (message) new Notice(message);
-					}),
+					.onClick(() => zoomIn(target)),
 			);
 		}),
 	);

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { registerZoomMenu, ZOOM_MENU_TITLE } from '../../src/commands/zoom-menu';
-import { Notice, Plugin } from '../mocks/obsidian';
+import { registerZoomMenu } from '../../src/commands/zoom-menu';
+import { Plugin } from '../mocks/obsidian';
 import { FakeApp } from '../support/fake-app';
 import { FakeZoomTarget } from '../support/fake-zoom-target';
 
@@ -38,7 +38,6 @@ class FakeMenu {
 let app: FakeApp;
 
 beforeEach(() => {
-	Notice.shown.length = 0;
 	app = new FakeApp();
 	registerZoomMenu(new Plugin(app) as never);
 });
@@ -65,9 +64,7 @@ describe('zoom menu', () => {
 		['a nested list item', at('- b')],
 	])('offers Zoom in on %s', (_description, caret) => {
 		const menu = openMenu({ cm: new FakeZoomTarget(NOTE, caret) });
-		expect(menu.items.map((item) => [item.title, item.icon])).toEqual([
-			[ZOOM_MENU_TITLE, 'zoom-in'],
-		]);
+		expect(menu.items.map((item) => [item.title, item.icon])).toEqual([['Zoom in', 'zoom-in']]);
 	});
 
 	it('offers nothing in an editor without the zoom extension', () => {
