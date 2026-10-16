@@ -15,6 +15,7 @@ interface Target {
 export class DevtoolsConnection {
 	private nextId = 1;
 	private readonly pending = new Map<number, PendingCall>();
+	private readonly errors: string[] = [];
 
 	private constructor(private readonly socket: WebSocket) {
 		socket.on('message', (data) => {
@@ -22,7 +23,26 @@ export class DevtoolsConnection {
 				id?: number;
 				result?: unknown;
 				error?: { message: string };
+				method?: string;
+				params?: {
+					type?: string;
+					args?: { value?: unknown; description?: string }[];
+					exceptionDetails?: { text?: string; exception?: { description?: string } };
+				};
 			};
+			if (message.method === 'Runtime.consoleAPICalled' && message.params?.type === 'error') {
+				this.errors.push(
+					(message.params.args ?? [])
+						.map((arg) =>
+							typeof arg.value === 'string' ? arg.value : (arg.description ?? ''),
+						)
+						.join(' '),
+				);
+			}
+			if (message.method === 'Runtime.exceptionThrown') {
+				const details = message.params?.exceptionDetails;
+				this.errors.push(details?.exception?.description ?? details?.text ?? 'Exception');
+			}
 			if (message.id === undefined) return;
 			const call = this.pending.get(message.id);
 			this.pending.delete(message.id);
@@ -42,7 +62,14 @@ export class DevtoolsConnection {
 			socket.once('open', () => resolve());
 			socket.once('error', reject);
 		});
-		return new DevtoolsConnection(socket);
+		const connection = new DevtoolsConnection(socket);
+		await connection.send('Runtime.enable', {});
+		return connection;
+	}
+
+	/** Returns the errors the window has logged or thrown since the connection opened. */
+	consoleErrors(): string[] {
+		return [...this.errors];
 	}
 
 	/** Evaluates an expression in the window and returns its value. */
