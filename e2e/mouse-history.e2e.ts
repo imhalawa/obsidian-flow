@@ -35,9 +35,9 @@ describe('mouse back and forward in real Obsidian', () => {
 		await useMouseHistory(true);
 		const editor = await NoteEditor.open(app, NOTE);
 		await zoomTwice(editor);
-		expect(await editor.crumbs()).toEqual(['Home', 'a', 'b']);
+		expect(await editor.crumbs()).toEqual(['a', 'b']);
 		app.pressSideButton(POINTER.x, POINTER.y, 'back');
-		expect(await editor.crumbs()).toEqual(['Home', 'a']);
+		expect(await editor.crumbs()).toEqual(['a']);
 	});
 
 	it('steps forward through zoom levels with the forward button', async () => {
@@ -46,7 +46,7 @@ describe('mouse back and forward in real Obsidian', () => {
 		await zoomTwice(editor);
 		app.pressSideButton(POINTER.x, POINTER.y, 'back');
 		app.pressSideButton(POINTER.x, POINTER.y, 'forward');
-		expect(await editor.crumbs()).toEqual(['Home', 'a', 'b']);
+		expect(await editor.crumbs()).toEqual(['a', 'b']);
 	});
 
 	it('keeps the note open while it steps through zoom levels', async () => {
@@ -99,10 +99,10 @@ describe('mouse back and forward in real Obsidian', () => {
 		await popoutEditor.runCommand('zoom-in');
 		const crumbs = () =>
 			app.evaluate<string[]>(
-				'Array.from(window.__popoutLeaf.view.containerEl.querySelectorAll(".flow-breadcrumbs__crumb")).map((el) => el.textContent)',
+				'Array.from(window.__popoutLeaf.view.containerEl.querySelectorAll(".flow-crumbs__crumb:not(.is-hidden)")).map((el) => el.textContent)',
 			);
-		expect(await crumbs()).toEqual(['Home', 'a', 'b']);
+		expect(await crumbs()).toEqual(['a', 'b']);
 		app.pressSideButton(popout.x, popout.y, 'back');
-		expect(await crumbs()).toEqual(['Home', 'a']);
+		expect(await crumbs()).toEqual(['a']);
 	});
 });

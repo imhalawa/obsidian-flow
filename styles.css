@@ -1,17 +1,31 @@
-.flow-breadcrumbs {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: var(--size-2-1);
-	margin-bottom: var(--size-4-2);
-	color: var(--text-muted);
-	font-size: var(--font-ui-small);
+.flow-has-crumbs {
+	min-width: 0;
+	overflow: hidden;
 }
 
-.flow-breadcrumbs__crumb {
-	max-width: 20ch;
+.flow-has-crumbs > .view-header-title-parent {
+	min-width: 0;
+	flex-shrink: 8;
 	overflow: hidden;
-	padding: var(--size-2-1) var(--size-4-2);
+	text-overflow: ellipsis;
+}
+
+.flow-crumbs {
+	display: flex;
+	flex: 0 1 auto;
+	align-items: center;
+	min-width: 0;
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+	white-space: nowrap;
+}
+
+.flow-crumbs__crumb {
+	flex: 0 2 auto;
+	min-width: 0;
+	height: auto;
+	overflow: hidden;
+	padding: var(--size-2-1) var(--size-4-1);
 	border: none;
 	border-radius: var(--radius-s);
 	background: transparent;
@@ -22,28 +36,45 @@
 	white-space: nowrap;
 }
 
-button.flow-breadcrumbs__crumb {
+.flow-crumbs__crumb::before {
+	content: '\203A';
+	margin-right: var(--size-4-1);
+	color: var(--text-faint);
+}
+
+.flow-crumbs__crumb:first-child {
+	flex-shrink: 4;
+}
+
+.flow-crumbs__crumb.is-current {
+	flex-shrink: 1;
+	color: var(--text-normal);
+	font-weight: var(--font-semibold);
+}
+
+.flow-crumbs__crumb.is-hidden {
+	display: none;
+}
+
+.flow-crumbs button.flow-crumbs__crumb {
+	height: auto;
+	border: none;
+	background: transparent;
+	box-shadow: none;
 	cursor: pointer;
 }
 
-button.flow-breadcrumbs__crumb:hover {
+.flow-crumbs button.flow-crumbs__crumb:hover {
 	background: var(--background-modifier-hover);
 	color: var(--text-normal);
 }
 
-button.flow-breadcrumbs__crumb:focus-visible {
+.flow-crumbs button.flow-crumbs__crumb:focus-visible {
 	box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
 }
 
-.flow-breadcrumbs__crumb + .flow-breadcrumbs__crumb::before {
-	content: '\203A';
-	margin-right: var(--size-4-2);
-	color: var(--text-faint);
-}
-
-.flow-breadcrumbs__crumb.is-current {
-	color: var(--text-normal);
-	font-weight: var(--font-semibold);
+.flow-crumbs__more {
+	flex-shrink: 0;
 }
 
 .flow-item-suggest-path {
@@ -56,44 +87,15 @@ button.flow-breadcrumbs__crumb:focus-visible {
 	cursor: pointer;
 }
 
-.flow-drag-handle {
+.flow-zoom-line {
 	position: relative;
-	display: inline-block;
-	width: 0;
-	height: 0;
+	inset-inline-start: calc(var(--flow-zoom-levels) * var(--flow-zoom-level-px, 0px) * -1);
+	clip-path: inset(0 0 0 calc(var(--flow-zoom-levels) * var(--flow-zoom-level-px, 0px)));
 }
 
-.flow-drag-handle__grip {
-	position: absolute;
-	top: 0;
-	left: calc(var(--size-4-1) * -7);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: var(--size-4-4);
-	height: var(--line-height-normal, 1.5em);
-	min-height: 24px;
-	opacity: 0;
-	color: var(--text-faint);
-	cursor: grab;
-	touch-action: none;
-	transform: translateY(-50%);
-}
-
-.flow-drag-handle__grip::before {
-	content: '\22EE\22EE';
-	letter-spacing: -0.4em;
-	font-size: var(--font-ui-medium);
-}
-
-.flow-list-line:hover .flow-drag-handle__grip,
-.flow-is-dragging .flow-drag-handle__grip {
-	opacity: 0.6;
-}
-
-.flow-drag-handle__grip:hover {
-	opacity: 1;
-	color: var(--text-normal);
+.flow-zoomed .cm-selectionLayer,
+.flow-zoomed .cm-cursorLayer {
+	transform: translateX(calc(var(--flow-zoom-shift, 0px) * -1));
 }
 
 .flow-is-dragging,
@@ -107,10 +109,4 @@ button.flow-breadcrumbs__crumb:focus-visible {
 	border-radius: var(--radius-s);
 	background: var(--interactive-accent);
 	pointer-events: none;
-}
-
-@media (hover: none) {
-	.flow-drag-handle__grip {
-		opacity: 0.4;
-	}
 }

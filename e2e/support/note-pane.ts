@@ -37,16 +37,9 @@ export class NotePane {
 		return this.evaluate<string>('cm.state.doc.toString()');
 	}
 
-	/** Returns the middle of the drag handle of the item that starts on a line, or null when there is none. */
-	gripPoint(line: number): Promise<Point | null> {
-		return this.evaluate<Point | null>(
-			`(() => { for (const grip of cm.dom.querySelectorAll(".flow-drag-handle__grip")) { if (cm.state.doc.lineAt(cm.posAtDOM(grip)).number === ${line + 1}) { const box = grip.getBoundingClientRect(); return { x: box.left + box.width / 2, y: box.top + box.height / 2 }; } } return null; })()`,
-		);
-	}
-
-	/** Returns the number of drag handles the editor draws. */
-	gripCount(): Promise<number> {
-		return this.evaluate<number>('cm.dom.querySelectorAll(".flow-drag-handle__grip").length');
+	/** Returns the number of drag handles the editor draws, which is none. */
+	handleCount(): Promise<number> {
+		return this.evaluate<number>('cm.dom.querySelectorAll(".flow-drag-handle").length');
 	}
 
 	/** Returns the box of the first row of a line in window coordinates. */

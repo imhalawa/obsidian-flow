@@ -21,13 +21,14 @@ describe('settings tab', () => {
 		await showTab();
 		expect(Setting.created.map((setting) => setting.name)).toEqual([
 			'Remember zoom per note',
+			'Show the zoomed item at the left edge',
 			'Hide block ids',
 			'Suggest items after ((',
 			'Bullets and thread lines',
 			'Click bullet to zoom',
 			'Click thread line to fold',
 			'Use mouse back and forward for zoom',
-			'Drag items by their handle',
+			'Drag items by their bullet',
 			'List editing',
 			'Enter on an empty item outdents it',
 			'Backspace at the start of an item merges it',
@@ -41,13 +42,14 @@ describe('settings tab', () => {
 		await showTab();
 		expect(Setting.created.map((setting) => setting.description)).toEqual([
 			'Reopen each note at the item you zoomed into.',
+			'Move the zoomed item to the left edge of the note and hide the indent guides of the levels above it.',
 			'Hide the id at the end of an item unless the cursor is on its line.',
 			'Type (( to search the items of your notes and insert a link to one.',
 			'',
 			'Select a bullet to zoom into that item.',
 			'Select a thread line to fold its branch. Hold Alt to fold every descendant too.',
 			"Step through zoom levels first. When none are left, Obsidian's own back and forward apply.",
-			'Show a handle at the start of each item. Drag it to move the item and its children, also to another open note.',
+			'Press a bullet and move to drag the item and its children, also to another open note. A click on the bullet still zooms.',
 			'',
 			'Outdent an empty item, or end the list when it is at the top level.',
 			'Join the item with the one above instead of deleting the bullet.',
@@ -61,6 +63,7 @@ describe('settings tab', () => {
 		const { plugin } = await showTab();
 		expect(Setting.created.map((setting) => setting.toggle?.value)).toEqual([
 			plugin.settings.rememberZoom,
+			plugin.settings.cleanZoom,
 			plugin.settings.hideBlockIds,
 			plugin.settings.itemSuggester,
 			undefined,
@@ -84,9 +87,17 @@ describe('settings tab', () => {
 		expect(await plugin.loadData()).toMatchObject({ rememberZoom: false });
 	});
 
-	it('saves hide block ids and refreshes the editors when its toggle changes', async () => {
+	it('saves show the zoomed item at the left edge and refreshes the editors when its toggle changes', async () => {
 		const { app, plugin } = await showTab();
 		await Setting.created[1]?.toggle?.handler?.(false);
+		expect(plugin.settings.cleanZoom).toBe(false);
+		expect(await plugin.loadData()).toMatchObject({ cleanZoom: false });
+		expect(app.updateOptionsCalls).toBe(1);
+	});
+
+	it('saves hide block ids and refreshes the editors when its toggle changes', async () => {
+		const { app, plugin } = await showTab();
+		await Setting.created[2]?.toggle?.handler?.(false);
 		expect(plugin.settings.hideBlockIds).toBe(false);
 		expect(await plugin.loadData()).toMatchObject({ hideBlockIds: false });
 		expect(app.updateOptionsCalls).toBe(1);
@@ -94,38 +105,38 @@ describe('settings tab', () => {
 
 	it('saves the item suggester setting when its toggle changes', async () => {
 		const { plugin } = await showTab();
-		await Setting.created[2]?.toggle?.handler?.(false);
+		await Setting.created[3]?.toggle?.handler?.(false);
 		expect(plugin.settings.itemSuggester).toBe(false);
 		expect(await plugin.loadData()).toMatchObject({ itemSuggester: false });
 	});
 
 	it('saves click bullet to zoom when its toggle changes', async () => {
 		const { plugin } = await showTab();
-		await Setting.created[4]?.toggle?.handler?.(false);
+		await Setting.created[5]?.toggle?.handler?.(false);
 		expect(plugin.settings.clickBulletToZoom).toBe(false);
 		expect(await plugin.loadData()).toMatchObject({ clickBulletToZoom: false });
 	});
 
 	it('saves click thread line to fold when its toggle changes', async () => {
 		const { plugin } = await showTab();
-		await Setting.created[5]?.toggle?.handler?.(false);
+		await Setting.created[6]?.toggle?.handler?.(false);
 		expect(plugin.settings.clickThreadLineToFold).toBe(false);
 		expect(await plugin.loadData()).toMatchObject({ clickThreadLineToFold: false });
 	});
 
 	it('saves use mouse back and forward for zoom when its toggle changes', async () => {
 		const { plugin } = await showTab();
-		await Setting.created[6]?.toggle?.handler?.(false);
+		await Setting.created[7]?.toggle?.handler?.(false);
 		expect(plugin.settings.useMouseHistory).toBe(false);
 		expect(await plugin.loadData()).toMatchObject({ useMouseHistory: false });
 	});
 
 	it.each([
-		[8 + 1, 'enterOutdentsEmptyItem', true],
-		[8 + 2, 'backspaceMergesItem', true],
-		[8 + 3, 'homeStaysInItem', true],
-		[8 + 4, 'selectAllStaysInItem', true],
-		[8 + 5, 'tabIndentsItem', false],
+		[9 + 1, 'enterOutdentsEmptyItem', true],
+		[9 + 2, 'backspaceMergesItem', true],
+		[9 + 3, 'homeStaysInItem', true],
+		[9 + 4, 'selectAllStaysInItem', true],
+		[9 + 5, 'tabIndentsItem', false],
 	] as const)(
 		'saves list editing setting %i (%s) when its toggle changes',
 		async (index, key, initial) => {
@@ -139,7 +150,7 @@ describe('settings tab', () => {
 
 	it('saves drag items and refreshes the editors when its toggle changes', async () => {
 		const { app, plugin } = await showTab();
-		await Setting.created[7]?.toggle?.handler?.(false);
+		await Setting.created[8]?.toggle?.handler?.(false);
 		expect(plugin.settings.dragItems).toBe(false);
 		expect(await plugin.loadData()).toMatchObject({ dragItems: false });
 		expect(app.updateOptionsCalls).toBe(1);

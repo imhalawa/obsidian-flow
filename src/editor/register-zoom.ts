@@ -1,5 +1,6 @@
 import type { Plugin } from 'obsidian';
 import { ZOOM_REMOVED_MESSAGE } from '../ui/zoom-messages';
+import { cleanZoom } from './clean-zoom';
 import { zoomExtension } from './zoom-extension';
 import { ZoomMemory } from './zoom-memory';
 import { zoomPersistence } from './zoom-persistence';
@@ -8,6 +9,7 @@ export const ZOOM_STORAGE_KEY = 'flow-outliner-zoom';
 
 export interface ZoomPluginHost {
 	rememberZoom(): boolean;
+	cleanZoom(): boolean;
 	notify(message: string): void;
 }
 
@@ -25,6 +27,7 @@ export function registerZoom(plugin: Plugin, host: ZoomPluginHost): ZoomMemory {
 	plugin.registerEditorExtension([
 		zoomExtension(() => host.notify(ZOOM_REMOVED_MESSAGE)),
 		zoomPersistence(memory),
+		cleanZoom(() => host.cleanZoom()),
 	]);
 	plugin.registerEvent(
 		app.vault.on('rename', (file, oldPath) => memory.rename(oldPath, file.path)),

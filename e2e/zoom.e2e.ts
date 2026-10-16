@@ -20,16 +20,16 @@ describe('zoom in real Obsidian', () => {
 		await editor.caret(2, 3);
 		expect(await editor.runCommand('zoom-in')).toBe(true);
 		expect(await editor.visibleLines()).toEqual(['\t- b', '\t\t- c']);
-		expect(await editor.crumbs()).toEqual(['Home', 'a', 'b']);
+		expect(await editor.crumbs()).toEqual(['a', 'b']);
 	});
 
 	it('zooms out one level and back to the whole note', async () => {
 		const editor = await NoteEditor.open(app, NOTE);
 		await editor.caret(3, 4);
 		await editor.runCommand('zoom-in');
-		expect(await editor.crumbs()).toEqual(['Home', 'a', 'b', 'c']);
+		expect(await editor.crumbs()).toEqual(['a', 'b', 'c']);
 		await editor.runCommand('zoom-out');
-		expect(await editor.crumbs()).toEqual(['Home', 'a', 'b']);
+		expect(await editor.crumbs()).toEqual(['a', 'b']);
 		await editor.runCommand('zoom-reset');
 		expect(await editor.crumbs()).toEqual([]);
 		expect(await editor.visibleLines()).toEqual(NOTE.split('\n'));
@@ -40,9 +40,7 @@ describe('zoom in real Obsidian', () => {
 		await editor.caret(3, 4);
 		await editor.runCommand('zoom-in');
 		await editor.clickCrumb('a');
-		expect(await editor.crumbs()).toEqual(['Home', 'a']);
-		await editor.clickCrumb('Home');
-		expect(await editor.crumbs()).toEqual([]);
+		expect(await editor.crumbs()).toEqual(['a']);
 	});
 
 	it('edits inside the zoom and keeps the note intact after zooming out', async () => {
@@ -50,7 +48,7 @@ describe('zoom in real Obsidian', () => {
 		await editor.caret(2, 3);
 		await editor.runCommand('zoom-in');
 		await editor.type({ line: 2, ch: 4 }, 'X');
-		expect(await editor.crumbs()).toEqual(['Home', 'a', 'bX']);
+		expect(await editor.crumbs()).toEqual(['a', 'bX']);
 		await editor.runCommand('zoom-reset');
 		expect(await editor.text()).toBe('intro\n- a\n\t- bX\n\t\t- c\n\t- d\n- e');
 	});
@@ -70,18 +68,20 @@ describe('zoom in real Obsidian', () => {
 		await editor.runCommand('zoom-in');
 		await editor.caret(3, 4);
 		await editor.runCommand('zoom-in');
-		expect(await editor.crumbs()).toEqual(['Home', 'a', 'b', 'c']);
+		expect(await editor.crumbs()).toEqual(['a', 'b', 'c']);
 		await editor.runCommand('zoom-history-back');
-		expect(await editor.crumbs()).toEqual(['Home', 'a']);
+		expect(await editor.crumbs()).toEqual(['a']);
 		await editor.runCommand('zoom-history-forward');
-		expect(await editor.crumbs()).toEqual(['Home', 'a', 'b', 'c']);
+		expect(await editor.crumbs()).toEqual(['a', 'b', 'c']);
 	});
 
 	it('explains a zoom request outside a list item', async () => {
 		const editor = await NoteEditor.open(app, NOTE);
 		await editor.caret(0, 2);
 		await editor.runCommand('zoom-in');
-		expect(await editor.notices()).toContain('Place the cursor in a list item to zoom.');
+		expect(await editor.notices()).toContain(
+			'Place the cursor in a list item or a heading to zoom.',
+		);
 		expect(await editor.crumbs()).toEqual([]);
 	});
 

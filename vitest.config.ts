@@ -12,7 +12,9 @@ export default defineConfig({
 			provider: 'v8',
 			include: ['src/**/*.ts'],
 			exclude: [
-				'src/ui/breadcrumb-widget.ts',
+				'src/ui/header-path.ts',
+				'src/editor/zoom-header.ts',
+				'src/editor/clean-zoom.ts',
 				'src/editor/zoom-persistence.ts',
 				'src/editor/block-id-hiding.ts',
 				'src/editor/item-suggest.ts',
@@ -21,7 +23,6 @@ export default defineConfig({
 				'src/ui/item-menu.ts',
 				'src/editor/register-mouse-history.ts',
 				'src/editor/register-list-keys.ts',
-				'src/editor/drag-handles.ts',
 				'src/editor/drag-hover.ts',
 				'src/editor/item-drag.ts',
 				'src/editor/register-item-drag.ts',
