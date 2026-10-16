@@ -12,7 +12,28 @@ export interface Interval {
 	right: number;
 }
 
+export interface HitSizes {
+	bulletMinimum: number;
+	threadHalf: number;
+	chevronHalf: number;
+	gutter: number;
+}
+
 const BULLET = /^[-*+]$/;
+const BULLET_EMS = 1.5;
+const THREAD_HALF_EMS = 0.75;
+const CHEVRON_HALF_EMS = 0.75;
+const GUTTER_EMS = 3;
+
+/** Returns how wide the clickable areas of bullets, thread lines and fold arrows and the gutter are for a font size. */
+export function hitSizes(fontSize: number): HitSizes {
+	return {
+		bulletMinimum: fontSize * BULLET_EMS,
+		threadHalf: fontSize * THREAD_HALF_EMS,
+		chevronHalf: fontSize * CHEVRON_HALF_EMS,
+		gutter: fontSize * GUTTER_EMS,
+	};
+}
 
 /** Returns where the bullet of the item that starts on a line sits in the line, or null if it shows none. */
 export function bulletMarker(tree: OutlineTree, lineIndex: number): BulletMarker | null {

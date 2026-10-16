@@ -1,13 +1,10 @@
 import type { EditorView } from '@codemirror/view';
 import { editorLivePreviewField } from 'obsidian';
-import { bulletMarker, containsX, litInterval } from '../outline/pointer-hit';
+import { bulletMarker, containsX, hitSizes, litInterval } from '../outline/pointer-hit';
 import { bulletLightField, setLitBullet } from './bullet-light-field';
-import { firstRow, markerSpan } from './item-geometry';
+import { editorFontSize, firstRow, markerSpan } from './item-geometry';
 import { outlineOfState } from './outline-of-state';
 import { zoomField } from './zoom-field';
-
-const MINIMUM_HIT_WIDTH = 24;
-const GUTTER_WIDTH = 48;
 
 /** Finds the line of the item whose bullet the pointer is on or beside in the first row, or null. */
 export function litBulletAt(view: EditorView, event: MouseEvent): number | null {
@@ -20,7 +17,8 @@ export function litBulletAt(view: EditorView, event: MouseEvent): number | null 
 	if (!marker || !row || event.clientY < row.top || event.clientY > row.bottom) return null;
 	const span = markerSpan(view, lineIndex, marker.from, marker.to);
 	if (!span) return null;
-	const zone = litInterval(span, MINIMUM_HIT_WIDTH, GUTTER_WIDTH);
+	const sizes = hitSizes(editorFontSize(view));
+	const zone = litInterval(span, sizes.bulletMinimum, sizes.gutter);
 	return containsX(zone, event.clientX) ? lineIndex : null;
 }
 
