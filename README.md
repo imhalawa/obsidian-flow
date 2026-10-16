@@ -70,7 +70,7 @@ The plugin makes no network requests, collects nothing and reads and writes only
 
 ## Install
 
-Until the plugin is in the community list, download `main.js`, `manifest.json` and `styles.css` from a release and copy them to `<Vault>/.obsidian/plugins/flow-outliner/`. Then enable it in **Settings → Community plugins**.
+To try a beta, add `imhalawa/obsidian-flow` in the [BRAT](https://github.com/TfTHacker/obsidian42-brat) plugin with **Add beta plugin**. Otherwise, until the plugin is in the community list, download `main.js`, `manifest.json` and `styles.css` from a release and copy them to `<Vault>/.obsidian/plugins/flow-outliner/`. Then enable it in **Settings → Community plugins**.
 
 ## Development
 

@@ -13,14 +13,27 @@ describe('findReleaseProblems', () => {
 		expect(findReleaseProblems(consistent)).toEqual([]);
 	});
 
-	it.each(['v0.2.0', '0.2', '0.2.0-beta', 'latest'])(
-		'reports the tag "%s" as not a plain version',
+	it.each(['v0.2.0', '0.2', '0.2.0-', 'latest'])(
+		'reports the tag "%s" as not a version',
 		(tag) => {
 			expect(findReleaseProblems({ ...consistent, tag })).toContain(
-				`Tag "${tag}" is not a plain version like 1.2.3 without a leading v.`,
+				`Tag "${tag}" is not a version like 1.2.3 or 1.2.3-beta.1 without a leading v.`,
 			);
 		},
 	);
+
+	it('finds no problem for a consistent pre-release version', () => {
+		const beta = '0.2.0-beta.1';
+
+		expect(
+			findReleaseProblems({
+				tag: beta,
+				packageVersion: beta,
+				manifest: { version: beta, minAppVersion: '1.12.0' },
+				versions: { [beta]: '1.12.0' },
+			}),
+		).toEqual([]);
+	});
 
 	it('reports a tag that differs from the manifest version', () => {
 		const problems = findReleaseProblems({ ...consistent, tag: '0.3.0' });
