@@ -1,4 +1,4 @@
-import { isPlainVersion } from './semver';
+import { isSemanticVersion } from './semver';
 
 export interface PluginManifest {
 	version: string;
@@ -17,7 +17,7 @@ export interface BumpInput extends VersionFiles {
 
 /** Returns the manifest and versions map for a new plugin version without changing the inputs. */
 export function bumpVersionFiles(input: BumpInput): VersionFiles {
-	if (!isPlainVersion(input.version)) {
+	if (!isSemanticVersion(input.version)) {
 		throw new Error(`Invalid version "${input.version}".`);
 	}
 	const manifest = { ...input.manifest, version: input.version };

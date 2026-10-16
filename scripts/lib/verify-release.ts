@@ -1,4 +1,4 @@
-import { isPlainVersion } from './semver';
+import { isSemanticVersion } from './semver';
 
 export interface ReleaseState {
 	tag: string;
@@ -11,8 +11,10 @@ export interface ReleaseState {
 export function findReleaseProblems(state: ReleaseState): string[] {
 	const problems: string[] = [];
 	const { tag, packageVersion, manifest, versions } = state;
-	if (!isPlainVersion(tag)) {
-		problems.push(`Tag "${tag}" is not a plain version like 1.2.3 without a leading v.`);
+	if (!isSemanticVersion(tag)) {
+		problems.push(
+			`Tag "${tag}" is not a version like 1.2.3 or 1.2.3-beta.1 without a leading v.`,
+		);
 	}
 	if (tag !== manifest.version) {
 		problems.push(`Tag ${tag} does not match manifest.json version ${manifest.version}.`);

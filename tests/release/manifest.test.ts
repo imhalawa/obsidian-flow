@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { isSemanticVersion } from '../../scripts/lib/semver';
 
 interface Manifest {
 	id: string;
@@ -42,7 +43,7 @@ describe('manifest.json', () => {
 	});
 
 	it('has a semantic version and a minimum app version', () => {
-		expect(manifest.version).toMatch(/^\d+\.\d+\.\d+$/);
+		expect(isSemanticVersion(manifest.version)).toBe(true);
 		expect(manifest.minAppVersion).toMatch(/^\d+\.\d+\.\d+$/);
 	});
 
