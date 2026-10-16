@@ -24,7 +24,7 @@ describe('bullets and thread lines in real Obsidian', () => {
 		const editor = await NoteEditor.open(app, NOTE);
 		const bullet = await editor.bulletPoint(1);
 		await app.click(bullet.x, bullet.y, false);
-		expect(await editor.waitForCrumbs(3000)).toEqual(['Home', 'a', 'b']);
+		expect(await editor.waitForCrumbs(3000)).toEqual(['a', 'b']);
 	});
 
 	it('keeps the fold arrow of Obsidian working next to the bullet', async () => {

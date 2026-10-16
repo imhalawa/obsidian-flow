@@ -16,6 +16,7 @@ import {
 	type ItemMenuAction,
 	type ItemMenuEntry,
 } from '../ui/item-menu-model';
+import { hasStartedDragging, type PressPoint } from './bullet-press';
 import { isFolded, toggleBranch } from './fold-control';
 import { outlineOfState } from './outline-of-state';
 import { dispatchZoom } from './zoom-control';
@@ -23,7 +24,9 @@ import { zoomField } from './zoom-field';
 
 export interface ItemPointerHost {
 	isBulletZoomEnabled: () => boolean;
+	isBulletDragEnabled: () => boolean;
 	isThreadFoldEnabled: () => boolean;
+	beginDrag: (view: EditorView, startLine: number, first: PointerEvent) => void;
 	copyLink: (view: EditorView, startLine: number) => void;
 	showMenu: (event: MouseEvent, entries: ItemMenuEntry[]) => void;
 }
@@ -64,7 +67,12 @@ function hitAt(view: EditorView, event: MouseEvent, host: ItemPointerHost): Poin
 	const tree = outlineOfState(view.state);
 	const marker = bulletMarker(tree, lineIndex);
 	const row = firstRow(view, lineIndex);
-	if (host.isBulletZoomEnabled() && marker && row && event.clientY <= row.bottom) {
+	if (
+		(host.isBulletZoomEnabled() || host.isBulletDragEnabled()) &&
+		marker &&
+		row &&
+		event.clientY <= row.bottom
+	) {
 		const span = markerSpan(view, lineIndex, marker.from, marker.to);
 		if (span && containsX(expandToMinimumWidth(span, MINIMUM_HIT_WIDTH), event.clientX)) {
 			return { kind: 'bullet', startLine: lineIndex };
@@ -113,7 +121,35 @@ function menuEntries(view: EditorView, host: ItemPointerHost, startLine: number)
 	);
 }
 
-/** Returns the extension that zooms on a bullet click, folds on a thread line click and opens the item menu. */
+/** Follows a press on a bullet: a drag once the pointer moves far enough, otherwise a zoom when the button is released. */
+function followBulletPress(
+	view: EditorView,
+	host: ItemPointerHost,
+	startLine: number,
+	start: PressPoint,
+): void {
+	const document = view.dom.ownerDocument;
+	const stop = () => {
+		document.removeEventListener('pointermove', move);
+		document.removeEventListener('pointerup', release);
+		document.removeEventListener('pointercancel', stop);
+	};
+	const move = (moved: PointerEvent) => {
+		if (moved.pointerType === 'touch' || !host.isBulletDragEnabled()) return;
+		if (!hasStartedDragging(start, { x: moved.clientX, y: moved.clientY })) return;
+		stop();
+		host.beginDrag(view, startLine, moved);
+	};
+	const release = () => {
+		stop();
+		if (host.isBulletZoomEnabled()) dispatchZoom(view, startLine, 'visit');
+	};
+	document.addEventListener('pointermove', move);
+	document.addEventListener('pointerup', release);
+	document.addEventListener('pointercancel', stop);
+}
+
+/** Returns the extension that zooms on a bullet click, starts a drag on a bullet press, folds on a thread line click and opens the item menu. */
 export function itemPointer(host: ItemPointerHost): Extension {
 	return ViewPlugin.define((view) => {
 		let claimedPress = false;
@@ -131,7 +167,10 @@ export function itemPointer(host: ItemPointerHost): Extension {
 				if (!hit) return;
 				if (hit.kind === 'bullet') {
 					if (event.altKey) return;
-					dispatchZoom(view, hit.startLine, 'visit');
+					followBulletPress(view, host, hit.startLine, {
+						x: event.clientX,
+						y: event.clientY,
+					});
 				} else {
 					toggleBranch(view, hit.parent.startLine, event.altKey);
 				}
