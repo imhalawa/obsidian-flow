@@ -2,9 +2,13 @@ name: Node.js build
 
 on:
     push:
-        branches: ['**']
+        branches: [master]
     pull_request:
         branches: ['**']
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
     build:
@@ -27,7 +31,18 @@ jobs:
             - run: npm run lint
             - run: npm run format:check
             - run: npm run test:coverage
-            - run: npm run test:mutation
+            - name: Restore mutation results
+              if: matrix.node-version == '22.x'
+              uses: actions/cache@v4
+              with:
+                  path: reports/stryker-incremental.json
+                  key: stryker-${{ github.ref_name }}-${{ github.sha }}
+                  restore-keys: |
+                      stryker-${{ github.ref_name }}-
+                      stryker-master-
+            - name: Run mutation tests
+              if: matrix.node-version == '22.x'
+              run: npm run test:mutation
 
     e2e:
         runs-on: ubuntu-latest
@@ -38,6 +53,14 @@ jobs:
               with:
                   node-version: 22
                   cache: 'npm'
+            - name: Get the week number
+              id: week
+              run: echo "week=$(date +%G-%V)" >> "$GITHUB_OUTPUT"
+            - name: Restore the Obsidian download
+              uses: actions/cache@v4
+              with:
+                  path: .e2e-cache
+                  key: obsidian-${{ steps.week.outputs.week }}
             - run: sudo apt-get update && sudo apt-get install -y squashfs-tools xvfb xdotool
             - run: npm ci
             - run: npm run test:e2e
