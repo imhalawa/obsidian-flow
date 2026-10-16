@@ -4,12 +4,19 @@ import { Notice, type Plugin } from 'obsidian';
 import { indentItem, outdentItem } from '../outline/indent';
 import type { Operation } from '../outline/batch';
 import { refusalMessage } from '../ui/refusal-messages';
-import { backspaceInItem, enterInEmptyItem, homeInItem, selectItemText } from './list-keys';
+import {
+	backspaceInItem,
+	enterInEmptyItem,
+	enterInParentItem,
+	homeInItem,
+	selectItemText,
+} from './list-keys';
 import { hasTreeTarget, runTreeEdit } from './tree-edit';
 import { zoomTargetOf } from './zoom-control';
 
 export interface ListKeysHost {
 	enterOutdentsEmptyItem: () => boolean;
+	enterAddsFirstChild: () => boolean;
 	backspaceMergesItem: () => boolean;
 	homeStaysInItem: () => boolean;
 	selectAllStaysInItem: () => boolean;
@@ -40,7 +47,12 @@ export function registerListKeys(plugin: Plugin, host: ListKeysHost): void {
 		});
 	};
 	const bindings: KeyBinding[] = [
-		{ key: 'Enter', run: guarded(host.enterOutdentsEmptyItem, enterInEmptyItem) },
+		{
+			key: 'Enter',
+			run: (view) =>
+				guarded(host.enterOutdentsEmptyItem, enterInEmptyItem)(view) ||
+				guarded(host.enterAddsFirstChild, enterInParentItem)(view),
+		},
 		{ key: 'Backspace', run: guarded(host.backspaceMergesItem, backspaceInItem) },
 		{
 			key: 'Home',

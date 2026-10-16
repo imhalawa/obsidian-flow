@@ -52,6 +52,7 @@ export default class FlowPlugin extends Plugin {
 		);
 		registerListKeys(this, {
 			enterOutdentsEmptyItem: () => this.settings.enterOutdentsEmptyItem,
+			enterAddsFirstChild: () => this.settings.enterAddsFirstChild,
 			backspaceMergesItem: () => this.settings.backspaceMergesItem,
 			homeStaysInItem: () => this.settings.homeStaysInItem,
 			selectAllStaysInItem: () => this.settings.selectAllStaysInItem,

@@ -23,9 +23,6 @@ const SPEC_FILES: { file: string; settings: Record<string, boolean> }[] = [
 
 /** Roamer specs that Flow does not match yet; each is a missing outliner behavior, not a change to Obsidian. */
 const NOT_YET_MATCHING = new Set([
-	'enter should create new item on the child level if child exists and previous item has notes',
-	'enter should create new item on the child level if child exists',
-	'enter should create new item on the child level if child exists and item have notes',
 	"enter should delete list item if it's last item and it's on the top level",
 	"enter should delete list item if it's last item and it's on the top level and it's checkbox",
 	'enter should create new item on the same level and remove selection',

@@ -11,7 +11,7 @@ Needs Obsidian 1.12.0 or newer. It is built for desktop and mobile, but only des
 - **Folds.** Fold and unfold an item or the whole note. Folds survive zooming. See [docs/folds.md](docs/folds.md).
 - **Bullets and thread lines.** Select a bullet to zoom, select a thread line to fold its branch (hold Alt to fold every descendant). See [docs/bullets-and-thread-lines.md](docs/bullets-and-thread-lines.md).
 - **Block links.** Copy a link to an item, and type `((` to search items in your vault. The `^id` is written only when you ask for a link, and can be hidden away from the cursor line. See [docs/block-references.md](docs/block-references.md).
-- **List editing.** Enter on an empty item outdents it, Backspace at the start of an item merges it into the one above, Home and select all stay inside the item text, and optional Tab and Shift-Tab move whole items. See [docs/list-editing.md](docs/list-editing.md).
+- **List editing.** Enter on an empty item outdents it, Enter on an item with children adds its first child, Backspace at the start of an item merges it into the one above, Home and select all stay inside the item text, and optional Tab and Shift-Tab move whole items. See [docs/list-editing.md](docs/list-editing.md).
 - **Drag and drop.** Drag an item by its bullet, also into another open note. See [docs/drag-and-drop.md](docs/drag-and-drop.md).
 
 ## Commands
@@ -39,21 +39,22 @@ The plugin sets no default hotkeys. Every action is a command that you can bind 
 
 Under **Settings → Flow Outliner**. Every behavior can be switched off.
 
-| Setting                                     | Default |
-| ------------------------------------------- | ------- |
-| Remember zoom per note                      | On      |
-| Show the zoomed item at the left edge       | On      |
-| Hide block ids                              | On      |
-| Suggest items after `((`                    | On      |
-| Click bullet to zoom                        | On      |
-| Click thread line to fold                   | On      |
-| Use mouse back and forward for zoom         | On      |
-| Drag items by their bullet                  | On      |
-| Enter on an empty item outdents it          | On      |
-| Backspace at the start of an item merges it | On      |
-| Home stays inside the item text             | On      |
-| Select all starts with the item text        | On      |
-| Tab and Shift-Tab move whole items          | Off     |
+| Setting                                             | Default |
+| --------------------------------------------------- | ------- |
+| Remember zoom per note                              | On      |
+| Show the zoomed item at the left edge               | On      |
+| Hide block ids                                      | On      |
+| Suggest items after `((`                            | On      |
+| Click bullet to zoom                                | On      |
+| Click thread line to fold                           | On      |
+| Use mouse back and forward for zoom                 | On      |
+| Drag items by their bullet                          | On      |
+| Enter on an empty item outdents it                  | On      |
+| Enter on an item with children adds its first child | On      |
+| Backspace at the start of an item merges it         | On      |
+| Home stays inside the item text                     | On      |
+| Select all starts with the item text                | On      |
+| Tab and Shift-Tab move whole items                  | Off     |
 
 ## Limits
 
