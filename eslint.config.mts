@@ -10,7 +10,6 @@ export default defineConfig(
 		'dist',
 		'esbuild.config.mjs',
 		'commitlint.config.mjs',
-		'version-bump.mjs',
 		'versions.json',
 		'main.js',
 		'package.json',
@@ -47,7 +46,7 @@ export default defineConfig(
 		},
 	},
 	{
-		files: ['e2e/**/*.ts'],
+		files: ['e2e/**/*.ts', 'scripts/**/*.ts'],
 		languageOptions: { globals: { ...globals.node } },
 		rules: {
 			'obsidianmd/no-nodejs-modules': 'off',

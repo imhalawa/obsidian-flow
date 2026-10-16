@@ -95,9 +95,7 @@ Contributor and agent guidance: [AGENTS.md](AGENTS.md), [CLAUDE.md](CLAUDE.md), 
 
 ## Releasing
 
-1. Set the new version and `minAppVersion` in `manifest.json`, then run `npm version patch`, `npm version minor` or `npm version major`. It updates `package.json`, `manifest.json` and `versions.json`.
-2. Push a tag that equals the version, without a leading `v`.
-3. The release workflow checks the tag against `manifest.json` and `versions.json`, builds, and drafts a release with `main.js`, `manifest.json` and `styles.css`. Publish the draft.
+See [docs/releasing.md](docs/releasing.md).
 
 ## License
 

@@ -3,6 +3,7 @@
 	"testRunner": "vitest",
 	"mutate": [
 		"src/**/*.ts",
+		"scripts/lib/**/*.ts",
 		"!src/main.ts",
 		"!src/settings.ts",
 		"!src/ui/breadcrumb-widget.ts",
