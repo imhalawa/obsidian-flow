@@ -14,7 +14,7 @@ Flow Outliner combines two existing plugins into one and goes further. Both are 
 
 ## Licensing and attribution
 
-Both projects are MIT licensed (copyright 2021 Viacheslav Slinko). Reading their behavior is free. If code is copied or closely adapted, keep the MIT notice and copyright line for that code in a `THIRD_PARTY_NOTICES.md` and name the source file in the commit message. No code is ported yet.
+Both projects are MIT licensed (copyright 2021 Viacheslav Slinko). Reading their behavior is free. If code is copied or closely adapted, keep the MIT notice and copyright line for that code in a `THIRD_PARTY_NOTICES.md` and name the source file in the commit message. No code is copied or adapted, so there is no `THIRD_PARTY_NOTICES.md`. Add one before any code is ported.
 
 ## Open question
 

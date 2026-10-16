@@ -1,6 +1,75 @@
 # Flow Outliner
 
-Outliner experience for Obsidian, inspired by RemNote, Roam Research and Logseq. Early scaffolding: no user-facing features yet.
+Edit lists as an outline in Obsidian: zoom into an item, fold branches, move items with the keyboard or by dragging, and link to a single bullet. It follows the outliner experience of RemNote, Roam Research and Logseq and works on plain Markdown. Zoom and folds are view state, so your notes only ever contain text you would write yourself.
+
+Needs Obsidian 1.12.0 or newer. It is built for desktop and mobile, but only desktop (Linux) is tested; touch behavior has not been tried on a phone.
+
+## Features
+
+- **Move and indent.** Indent, outdent, and move an item up or down together with its children. Ordered lists keep their numbering and every change is checked against a re-parse before it is written.
+- **Zoom.** Zoom into an item and see only it and its children, with breadcrumbs back up. The mouse back and forward buttons step through zoom levels first. Zoom is remembered per note. See [docs/mouse-history.md](docs/mouse-history.md).
+- **Folds.** Fold and unfold an item or the whole note. Folds survive zooming. See [docs/folds.md](docs/folds.md).
+- **Bullets and thread lines.** Select a bullet to zoom, select a thread line to fold its branch (hold Alt to fold every descendant). See [docs/bullets-and-thread-lines.md](docs/bullets-and-thread-lines.md).
+- **Block links.** Copy a link to an item, and type `((` to search items in your vault. The `^id` is written only when you ask for a link, and can be hidden away from the cursor line. See [docs/block-references.md](docs/block-references.md).
+- **List editing.** Enter on an empty item outdents it, Backspace at the start of an item merges it into the one above, Home and select all stay inside the item text, and optional Tab and Shift-Tab move whole items. See [docs/list-editing.md](docs/list-editing.md).
+- **Drag and drop.** Drag an item by its handle, also into another open note. See [docs/drag-and-drop.md](docs/drag-and-drop.md).
+
+## Commands
+
+The plugin sets no default hotkeys. Every action is a command that you can bind in **Settings → Hotkeys**. Commands appear only where they apply.
+
+| Command             | What it does                                              |
+| ------------------- | --------------------------------------------------------- |
+| Indent item         | Indents the item with its children                        |
+| Outdent item        | Outdents the item with its children                       |
+| Move item up        | Swaps the item with the sibling above                     |
+| Move item down      | Swaps the item with the sibling below                     |
+| Zoom in             | Shows only the item at the cursor and its children        |
+| Zoom out            | Goes up one level                                         |
+| Show the whole note | Leaves the zoom                                           |
+| Zoom back           | Steps back through the zoom levels you visited            |
+| Zoom forward        | Steps forward through the zoom levels you visited         |
+| Fold item           | Folds the item at the cursor                              |
+| Unfold item         | Unfolds the item at the cursor                            |
+| Fold all items      | Folds every item that has children                        |
+| Unfold all items    | Unfolds every item                                        |
+| Copy link to item   | Adds a block id to the item if needed and copies the link |
+
+## Settings
+
+Under **Settings → Flow Outliner**. Every behavior can be switched off.
+
+| Setting                                     | Default |
+| ------------------------------------------- | ------- |
+| Remember zoom per note                      | On      |
+| Hide block ids                              | On      |
+| Suggest items after `((`                    | On      |
+| Click bullet to zoom                        | On      |
+| Click thread line to fold                   | On      |
+| Use mouse back and forward for zoom         | On      |
+| Drag items by their handle                  | On      |
+| Enter on an empty item outdents it          | On      |
+| Backspace at the start of an item merges it | On      |
+| Home stays inside the item text             | On      |
+| Select all starts with the item text        | On      |
+| Tab and Shift-Tab move whole items          | Off     |
+
+## Limits
+
+- The plugin changes list items only. Headings are not zoomed.
+- While you drag, the editor does not scroll. Folds of a subtree dragged into another note are not carried along.
+- When the zoomed item disappears, for example after an edit in another pane or by sync, the whole note is shown with the message "Zoomed item was removed. Showing the full note."
+- Zoom is stored in the local storage of the vault on the device, not in the note, so it does not sync.
+
+Each page in [docs](docs) lists the limits of its feature.
+
+## Privacy
+
+The plugin makes no network requests, collects nothing and reads and writes only notes in your vault.
+
+## Install
+
+Until the plugin is in the community list, download `main.js`, `manifest.json` and `styles.css` from a release and copy them to `<Vault>/.obsidian/plugins/flow-outliner/`. Then enable it in **Settings → Community plugins**.
 
 ## Development
 
@@ -12,78 +81,23 @@ npm run dev
 npm run check
 ```
 
-| Script                  | Purpose                                            |
-| ----------------------- | -------------------------------------------------- |
-| `npm run dev`           | Watch build to `main.js`                           |
-| `npm run build`         | Typecheck and production bundle                    |
-| `npm run check`         | Typecheck, lint, format check, tests with coverage |
-| `npm run test:mutation` | Mutation testing with Stryker                      |
-| `npm run format`        | Format with Prettier                               |
+| Script                  | Purpose                                                                                   |
+| ----------------------- | ----------------------------------------------------------------------------------------- |
+| `npm run dev`           | Watch build to `main.js`                                                                  |
+| `npm run build`         | Typecheck and production bundle                                                           |
+| `npm run check`         | Typecheck, lint, format check, tests with coverage                                        |
+| `npm run test:mutation` | Mutation testing with Stryker                                                             |
+| `npm run test:e2e`      | Tests in real Obsidian on Linux, see [docs/end-to-end-tests.md](docs/end-to-end-tests.md) |
+| `npm run format`        | Format with Prettier                                                                      |
 
-Copy `main.js`, `manifest.json` and `styles.css` into `<Vault>/.obsidian/plugins/flow-outliner/` to try it in Obsidian.
+Contributor and agent guidance: [AGENTS.md](AGENTS.md), [CLAUDE.md](CLAUDE.md), [docs/references.md](docs/references.md). The two plugins this one is modelled on are listed in [docs/reference-plugins.md](docs/reference-plugins.md).
 
-Contributor and agent guidance: [AGENTS.md](AGENTS.md), [CLAUDE.md](CLAUDE.md), [docs/references.md](docs/references.md).
+## Releasing
 
-## Releasing new releases
+1. Set the new version and `minAppVersion` in `manifest.json`, then run `npm version patch`, `npm version minor` or `npm version major`. It updates `package.json`, `manifest.json` and `versions.json`.
+2. Push a tag that equals the version, without a leading `v`.
+3. The release workflow checks the tag against `manifest.json` and `versions.json`, builds, and drafts a release with `main.js`, `manifest.json` and `styles.css`. Publish the draft.
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+## License
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
-
-## Adding your plugin to the community plugin list
-
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
-
-## How to use
-
-- Clone this repo.
-- Make sure your NodeJS is at least v18 (`node --version`).
-- `npm i` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
-
-## Manually installing the plugin
-
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
-
-## Improve code quality with eslint
-
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code.
-- This project already has eslint preconfigured, you can invoke a check by running`npm run lint`
-- Together with a custom eslint [plugin](https://github.com/obsidianmd/eslint-plugin) for Obsidan specific code guidelines.
-- A GitHub action is preconfigured to automatically lint every commit on all branches.
-
-## Funding URL
-
-You can include funding URLs where people who use your plugin can financially support it.
-
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
-
-```json
-{
-	"fundingUrl": "https://buymeacoffee.com"
-}
-```
-
-If you have multiple URLs, you can also do:
-
-```json
-{
-	"fundingUrl": {
-		"Buy Me a Coffee": "https://buymeacoffee.com",
-		"GitHub Sponsor": "https://github.com/sponsors",
-		"Patreon": "https://www.patreon.com/"
-	}
-}
-```
-
-## API Documentation
-
-See https://docs.obsidian.md
+See [LICENSE](LICENSE).
