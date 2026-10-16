@@ -28,8 +28,8 @@ Release notes list `feat`, `fix`, `perf` and `revert` commits, and any commit ma
 ## Check a release by hand
 
 ```bash
-npm run release:verify -- 1.2.3
-npm run release:notes -- 1.2.3 https://github.com/imhalawa/obsidian-flow HEAD
+npm run --silent release:verify -- 1.2.3
+npm run --silent release:notes -- 1.2.3 https://github.com/imhalawa/obsidian-flow HEAD
 ```
 
 The last argument is the commit the notes end at. Notes start after the latest tag reachable from it.

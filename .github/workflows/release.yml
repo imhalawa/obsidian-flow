@@ -69,7 +69,7 @@ jobs:
                       styles.css
 
             - name: Write release notes
-              run: npm run release:notes -- "${{ steps.release.outputs.tag }}" "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" "$GITHUB_SHA" > release-notes.md
+              run: npm run --silent release:notes -- "${{ steps.release.outputs.tag }}" "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" "$GITHUB_SHA" > release-notes.md
 
             - name: Create draft release
               env:
