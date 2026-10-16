@@ -1,6 +1,10 @@
 import { EditorState } from '@codemirror/state';
 import { describe, expect, it } from 'vitest';
-import { cleanZoomDecorations, ZOOM_LINE_CLASS } from '../../src/editor/clean-zoom-decorations';
+import {
+	cleanZoomDecorations,
+	ZOOM_LINE_CLASS,
+	ZOOM_ROOT_CLASS,
+} from '../../src/editor/clean-zoom-decorations';
 import { zoomChange, zoomField } from '../../src/editor/zoom-field';
 
 const NOTE = ['# T', '- a', '\t- b', '\t\t- c', '\t\t\t- d', '\t\t- e', '- f'].join('\n');
@@ -21,7 +25,11 @@ const markedLines = (state: EditorState) => {
 	return found;
 };
 
-const marked = (lines: number[]) => lines.map((line) => ({ line, className: ZOOM_LINE_CLASS }));
+const marked = (lines: number[]) =>
+	lines.map((line, index) => ({
+		line,
+		className: index === 0 ? `${ZOOM_LINE_CLASS} ${ZOOM_ROOT_CLASS}` : ZOOM_LINE_CLASS,
+	}));
 
 describe('cleanZoomDecorations', () => {
 	it.each([
