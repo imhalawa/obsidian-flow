@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { shiftedLines, zoomIndentColumns } from '../../src/outline/zoom-shift';
+import { parseOutline } from '../../src/outline/outline-tree';
 
 const NOTE = ['# T', '- a', '\t- b', '\t\t- c', '\t\t  more c', '\t- d', '- e'];
+const columnsAt = (lines: readonly string[], tabSize: number, startLine: number) =>
+	zoomIndentColumns(lines, parseOutline(lines, tabSize), tabSize, startLine);
 
 describe('zoomIndentColumns', () => {
 	it.each([
@@ -11,7 +14,7 @@ describe('zoomIndentColumns', () => {
 		['a heading', 0, 0],
 		['a line that is not zoomable', 4, 0],
 	])('counts the columns of %s', (_name, startLine, expected) => {
-		expect(zoomIndentColumns(NOTE, 4, startLine)).toBe(expected);
+		expect(columnsAt(NOTE, 4, startLine)).toBe(expected);
 	});
 
 	it.each([
@@ -20,7 +23,7 @@ describe('zoomIndentColumns', () => {
 		[['- a', '  - b'], 2, 2],
 		[['- a', '  - b', '    - c'], 4, 2],
 	])('counts the columns of spaces in %j at tab size %i', (lines, tabSize, expected) => {
-		expect(zoomIndentColumns(lines, tabSize, 1)).toBe(expected);
+		expect(columnsAt(lines, tabSize, 1)).toBe(expected);
 	});
 });
 

@@ -19,16 +19,26 @@ interface CachedNote {
 /** Lists the items of all notes, reading a note again only when it changed. */
 export class ItemIndex {
 	private cache = new Map<string, CachedNote>();
+	private lists: IndexedItem[][] = [];
+	private flat: IndexedItem[] = [];
 
 	constructor(private readonly source: IndexSource) {}
 
-	/** Returns the items of every note in the order the source lists its files. */
+	/** Returns the items of every note in the order the source lists its files, as the same array while no note changed. */
 	async items(): Promise<IndexedItem[]> {
 		const files = this.source.files();
 		const fresh = new Map<string, CachedNote>();
 		const lists = await Promise.all(files.map((file) => this.itemsOf(file, fresh)));
 		this.cache = fresh;
-		return lists.flat();
+		if (
+			lists.length === this.lists.length &&
+			lists.every((list, i) => list === this.lists[i])
+		) {
+			return this.flat;
+		}
+		this.lists = lists;
+		this.flat = lists.flat();
+		return this.flat;
 	}
 
 	private async itemsOf(

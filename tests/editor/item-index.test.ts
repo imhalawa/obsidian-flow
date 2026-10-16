@@ -46,6 +46,24 @@ describe('ItemIndex', () => {
 		expect(source.reads).toEqual(['a.md']);
 	});
 
+	it('returns the same array while no note changed', async () => {
+		const source = new FakeSource();
+		source.notes.set('a.md', { mtime: 1, text: '- one' });
+		const index = new ItemIndex(source);
+		expect(await index.items()).toBe(await index.items());
+	});
+
+	it('returns a new array when a note is added', async () => {
+		const source = new FakeSource();
+		source.notes.set('a.md', { mtime: 1, text: '- one' });
+		const index = new ItemIndex(source);
+		const before = await index.items();
+		source.notes.set('b.md', { mtime: 1, text: '- two' });
+		const after = await index.items();
+		expect(after).not.toBe(before);
+		expect(after.map((item) => item.text)).toEqual(['one', 'two']);
+	});
+
 	it('reads a note again when its modified time changes', async () => {
 		const source = new FakeSource();
 		source.notes.set('a.md', { mtime: 1, text: '- one' });

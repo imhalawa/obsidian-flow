@@ -1,17 +1,18 @@
 import { parseHeadings } from './headings';
 import { itemStartingAt } from './item-lookup';
 import { visualWidth } from './list-item';
-import { parseOutline } from './outline-tree';
+import type { OutlineTree } from './outline-tree';
 import type { ZoomRange } from './zoom';
 
 /** Returns how many columns the zoomed item is indented, which is how far it moves to the left edge; a heading does not move. */
 export function zoomIndentColumns(
 	lines: readonly string[],
+	tree: OutlineTree,
 	tabSize: number,
 	startLine: number,
 ): number {
 	if (parseHeadings(lines).some((heading) => heading.line === startLine)) return 0;
-	const item = itemStartingAt(parseOutline(lines, tabSize), startLine);
+	const item = itemStartingAt(tree, startLine);
 	return item ? visualWidth(item.indent, tabSize) : 0;
 }
 

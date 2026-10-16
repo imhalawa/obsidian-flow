@@ -105,7 +105,13 @@ export class ItemSuggest extends EditorSuggest<IndexedItem> {
 		}
 		let id: string | null = null;
 		await this.app.vault.process(target, (text) => {
-			const result = withBlockId(text, INDEX_TAB_SIZE, item.startLine, this.services.random);
+			const result = withBlockId(
+				text,
+				INDEX_TAB_SIZE,
+				item.startLine,
+				item.text,
+				this.services.random,
+			);
 			id = result?.id ?? null;
 			return result?.text ?? text;
 		});
@@ -123,6 +129,7 @@ export class ItemSuggest extends EditorSuggest<IndexedItem> {
 			editor.getValue().split('\n'),
 			INDEX_TAB_SIZE,
 			item.startLine,
+			item.text,
 			this.services.random,
 		);
 		if (!plan) throw new Error('The item is gone');
