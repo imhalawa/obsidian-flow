@@ -188,6 +188,15 @@ export class DevtoolsConnection {
 		await this.send('Input.dispatchKeyEvent', { type: 'keyUp', ...press });
 	}
 
+	/** Makes the window report that the user prefers reduced motion, or stop reporting it. */
+	async emulateReducedMotion(reduced: boolean): Promise<void> {
+		await this.send('Emulation.setEmulatedMedia', {
+			features: [
+				{ name: 'prefers-reduced-motion', value: reduced ? 'reduce' : 'no-preference' },
+			],
+		});
+	}
+
 	/** Closes the connection. */
 	close(): void {
 		this.socket.close();

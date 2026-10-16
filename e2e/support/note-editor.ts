@@ -102,6 +102,13 @@ export class NoteEditor {
 		);
 	}
 
+	/** Returns the text of the lines that are marked as revealed by an unfold and the animation they run. */
+	revealedLines(): Promise<{ text: string; animation: string }[]> {
+		return this.app.evaluate<{ text: string; animation: string }[]>(
+			'Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .cm-line.flow-line-revealed")).map((el) => ({ text: el.textContent, animation: getComputedStyle(el).animationName }))',
+		);
+	}
+
 	/** Returns the text of the lines the editor draws, which excludes hidden lines. */
 	visibleLines(): Promise<string[]> {
 		return this.app.evaluate<string[]>(
