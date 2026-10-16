@@ -9,6 +9,7 @@ export interface FlowSettings {
 	clickBulletToZoom: boolean;
 	clickThreadLineToFold: boolean;
 	useMouseHistory: boolean;
+	dragItems: boolean;
 	enterOutdentsEmptyItem: boolean;
 	backspaceMergesItem: boolean;
 	homeStaysInItem: boolean;
@@ -24,6 +25,7 @@ export const DEFAULT_SETTINGS: FlowSettings = {
 	clickBulletToZoom: true,
 	clickThreadLineToFold: true,
 	useMouseHistory: true,
+	dragItems: true,
 	enterOutdentsEmptyItem: true,
 	backspaceMergesItem: true,
 	homeStaysInItem: true,
@@ -81,6 +83,12 @@ export class FlowSettingTab extends PluginSettingTab {
 			"Step through zoom levels first. When none are left, Obsidian's own back and forward apply.",
 			'useMouseHistory',
 			null,
+		);
+		this.addToggle(
+			'Drag items by their handle',
+			'Show a handle at the start of each item. Drag it to move the item and its children, also to another open note.',
+			'dragItems',
+			() => this.app.workspace.updateOptions(),
 		);
 		new Setting(this.containerEl).setName('List editing').setHeading();
 		this.addToggle(
