@@ -43,4 +43,16 @@ describe('zoomWasRemoved', () => {
 		const transaction = before.update({ changes: { from: 0, insert: 'x' } });
 		expect(zoomWasRemoved(before, transaction.state, [transaction])).toBe(false);
 	});
+
+	it('is false when the state before had no zoom support yet', () => {
+		const before = EditorState.create({ doc: '- a' });
+		const after = EditorState.create({ doc: '- a', extensions: [zoomField] });
+		expect(zoomWasRemoved(before, after, [])).toBe(false);
+	});
+
+	it('is false when the state after has no zoom support any more', () => {
+		const before = zoomed();
+		const after = EditorState.create({ doc: '- a' });
+		expect(zoomWasRemoved(before, after, [])).toBe(false);
+	});
 });

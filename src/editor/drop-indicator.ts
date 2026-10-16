@@ -1,4 +1,4 @@
-import { StateEffect, StateField, type Extension } from '@codemirror/state';
+import { StateEffect, StateField, type EditorState, type Extension } from '@codemirror/state';
 import { layer, RectangleMarker, type EditorView } from '@codemirror/view';
 import { itemStartingAt } from '../outline/item-lookup';
 import { ownLastLine } from '../outline/item-text';
@@ -10,7 +10,7 @@ const INDICATOR_HEIGHT = 2;
 
 export const setDropIndicator = StateEffect.define<DropDestination | null>();
 
-const dropIndicatorField = StateField.define<DropDestination | null>({
+export const dropIndicatorField = StateField.define<DropDestination | null>({
 	create: () => null,
 	update(value, transaction) {
 		if (transaction.docChanged) return null;
@@ -20,6 +20,11 @@ const dropIndicatorField = StateField.define<DropDestination | null>({
 		return next;
 	},
 });
+
+/** Returns where the dragged item would land, or null when nothing is dragged or the plugin is not active in the editor. */
+export function indicatedDestination(state: EditorState): DropDestination | null {
+	return state.field(dropIndicatorField, false) ?? null;
+}
 
 /** Returns the screen height where the indicator line for a destination sits, or null when it is not drawn. */
 function indicatorTop(view: EditorView, destination: DropDestination): number | null {
@@ -37,7 +42,7 @@ function indicatorTop(view: EditorView, destination: DropDestination): number | 
 
 /** Draws the line that shows where a dragged item would land. */
 function indicatorMarkers(view: EditorView): RectangleMarker[] {
-	const destination = view.state.field(dropIndicatorField);
+	const destination = indicatedDestination(view.state);
 	if (!destination) return [];
 	const item = itemStartingAt(outlineOfState(view.state), destination.targetLine);
 	const top = indicatorTop(view, destination);

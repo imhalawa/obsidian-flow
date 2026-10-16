@@ -1,5 +1,6 @@
 import { Notice, Plugin } from 'obsidian';
 import { registerCommands } from './commands';
+import { registerZoomMenu } from './commands/zoom-menu';
 import { systemBlockLinkServices } from './commands/copy-item-link';
 import { blockIdHiding } from './editor/block-id-hiding';
 import { foldReveal } from './editor/fold-reveal';
@@ -24,6 +25,7 @@ export default class FlowPlugin extends Plugin {
 		);
 		this.addSettingTab(new FlowSettingTab(this.app, this));
 		registerCommands(this);
+		registerZoomMenu(this);
 		this.registerEditorExtension(blockIdHiding(() => this.settings.hideBlockIds));
 		this.registerEditorExtension(foldReveal());
 		this.registerEditorExtension(threadHighlight());

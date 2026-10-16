@@ -78,6 +78,20 @@ export class NoteEditor {
 		);
 	}
 
+	/** Pastes plain text into the focused editor, as the clipboard does. */
+	async paste(text: string): Promise<void> {
+		await this.app.evaluate(
+			`(() => { const target = activeDocument.querySelector(".workspace-leaf.mod-active .cm-content"); const data = new DataTransfer(); data.setData("text/plain", ${JSON.stringify(text)}); target.dispatchEvent(new ClipboardEvent("paste", { clipboardData: data, bubbles: true, cancelable: true })); return true; })()`,
+		);
+	}
+
+	/** Switches the active note to source mode. */
+	async useSourceMode(): Promise<void> {
+		await this.app.evaluate(
+			`(async () => { const leaf = app.workspace.activeLeaf; const state = leaf.getViewState(); state.state.mode = "source"; state.state.source = true; await leaf.setViewState(state); app.workspace.activeEditor.editor.focus(); return true; })()`,
+		);
+	}
+
 	/** Returns the text of the note. */
 	text(): Promise<string> {
 		return this.app.evaluate<string>('app.workspace.activeEditor.editor.getValue()');

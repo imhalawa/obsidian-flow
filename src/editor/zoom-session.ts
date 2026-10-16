@@ -89,7 +89,8 @@ export class ZoomSession {
 	private saveNow(): void {
 		this.cancelSave();
 		const state = this.target.state;
-		const zoom = state.field(zoomField);
+		const zoom = state.field(zoomField, false);
+		if (zoom === undefined) return;
 		const anchor = zoom
 			? makeAnchor(state.doc.toJSON(), state.tabSize, state.doc.lineAt(zoom.from).number - 1)
 			: null;
