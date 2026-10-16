@@ -9,7 +9,9 @@ Zoom shows one list item, or one heading, and everything under it. Everything el
 ## What you can zoom into
 
 - **A list item.** Select its bullet, or run **Zoom in** with the cursor in the item. The deepest item at the cursor is chosen.
-- **A heading.** Run **Zoom in** with the cursor on a heading or in text under it that is not in a list item. The zoom covers the heading line down to the line before the next heading of the same or a higher level. Lines inside code fences and front matter are never read as headings.
+- **A heading.** Right-click the heading and choose **Zoom in** (it is the last entry of the editor menu, and it appears on list items too), or run **Zoom in** with the cursor on a heading or in text under it that is not in a list item. The zoom covers the heading line down to the line before the next heading of the same or a higher level. Lines inside code fences and front matter are never read as headings.
+
+![The editor menu of a heading with Zoom in at the end](screenshots/heading-menu-light.png)
 
 **Zoom out** goes up one step: from an item to its parent item, then to the heading it sits under, then to the next heading above, then to the whole note.
 

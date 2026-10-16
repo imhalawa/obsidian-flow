@@ -24,8 +24,12 @@ export class FakeApp {
 		containerEl: { ownerDocument: { defaultView: this.mainWindow } },
 		onLayoutReady: (callback: () => void): void => callback(),
 		iterateAllLeaves: (): void => undefined,
-		on: (name: string): string => name,
+		on: (name: string, handler: (...args: never[]) => void): string => {
+			this.workspaceHandlers.set(name, handler);
+			return name;
+		},
 	};
+	readonly workspaceHandlers = new Map<string, (...args: never[]) => void>();
 
 	loadLocalStorage(key: string): unknown {
 		return this.storage.get(key) ?? null;
