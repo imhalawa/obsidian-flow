@@ -7,7 +7,7 @@ import { guardedEdits, nodeDepth } from './structure-guard';
 const ORDERED_MARKER = /^(\s*)\d+([.)])/;
 
 /** Returns the indent column for new children of a parent item. */
-function childIndentColumns(parent: OutlineNode, style: IndentStyle): number {
+export function childIndentColumns(parent: OutlineNode, style: IndentStyle): number {
 	const first = parent.children[0];
 	if (first) return first.indentColumns;
 	return Math.max(parent.indentColumns + style.unitColumns, parent.contentColumn);
