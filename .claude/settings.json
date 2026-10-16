@@ -20,7 +20,6 @@
 		}
 	},
 	"enabledPlugins": {
-		"superpowers@claude-plugins-official": true,
 		"caveman@caveman": true,
 		"ponytail@ponytail": true,
 		"obsidian@obsidian-skills": true
@@ -40,7 +39,8 @@
 	},
 	"includeCoAuthoredBy": false,
 	"attribution": {
-		"commit": ""
+		"commit": "",
+		"pr": ""
 	},
 	"hooks": {
 		"SessionStart": [

@@ -91,7 +91,7 @@ npm run check
 | `npm run test:e2e`      | Tests in real Obsidian on Linux, see [docs/end-to-end-tests.md](docs/end-to-end-tests.md) |
 | `npm run format`        | Format with Prettier                                                                      |
 
-Contributor and agent guidance: [AGENTS.md](AGENTS.md), [CLAUDE.md](CLAUDE.md), [docs/references.md](docs/references.md). The two plugins this one is modelled on are listed in [docs/reference-plugins.md](docs/reference-plugins.md).
+Contributor and agent guidance: [CLAUDE.md](CLAUDE.md), [docs/references.md](docs/references.md). The two plugins this one is modelled on are listed in [docs/reference-plugins.md](docs/reference-plugins.md).
 
 ## Releasing
 
