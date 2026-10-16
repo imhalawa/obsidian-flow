@@ -1,5 +1,4 @@
 import type { EditorState, Transaction } from '@codemirror/state';
-import { parseOutline } from '../outline/outline-tree';
 import { makeAnchor, resolveAnchor } from '../outline/zoom-anchor';
 import { dispatchZoom, type ZoomTarget } from './zoom-control';
 import { changeIn, zoomField } from './zoom-field';
@@ -72,7 +71,7 @@ export class ZoomSession {
 		const anchor = this.memory.recall(this.path);
 		if (!anchor) return;
 		const state = this.target.state;
-		const startLine = resolveAnchor(parseOutline(state.doc.toJSON(), state.tabSize), anchor);
+		const startLine = resolveAnchor(state.doc.toJSON(), state.tabSize, anchor);
 		if (startLine !== null) dispatchZoom(this.target, startLine, 'visit');
 	}
 
@@ -91,8 +90,9 @@ export class ZoomSession {
 		this.cancelSave();
 		const state = this.target.state;
 		const zoom = state.field(zoomField);
-		const tree = parseOutline(state.doc.toJSON(), state.tabSize);
-		const anchor = zoom ? makeAnchor(tree, state.doc.lineAt(zoom.from).number - 1) : null;
+		const anchor = zoom
+			? makeAnchor(state.doc.toJSON(), state.tabSize, state.doc.lineAt(zoom.from).number - 1)
+			: null;
 		this.memory.remember(this.path, anchor);
 	}
 }

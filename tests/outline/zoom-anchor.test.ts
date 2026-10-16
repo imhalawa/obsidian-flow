@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { makeAnchor, resolveAnchor } from '../../src/outline/zoom-anchor';
-import { parseOutline } from '../../src/outline/outline-tree';
-
-const tree = (lines: string[]) => parseOutline(lines, 4);
 
 const BASE = ['- A', '\t- B', '\t\t- C', '\t- D', '- E', '\t- B', '\t\t- X'];
 const ANCHOR_OF_C = [
@@ -11,19 +8,19 @@ const ANCHOR_OF_C = [
 	{ text: 'C', nth: 0 },
 ];
 
-const resolveInto = (lines: string[], anchor = ANCHOR_OF_C) => resolveAnchor(tree(lines), anchor);
+const resolveInto = (lines: string[], anchor = ANCHOR_OF_C) => resolveAnchor(lines, 4, anchor);
 
 describe('makeAnchor', () => {
 	it('describes an item by the texts on its path', () => {
-		expect(makeAnchor(tree(BASE), 2)).toEqual(ANCHOR_OF_C);
+		expect(makeAnchor(BASE, 4, 2)).toEqual(ANCHOR_OF_C);
 	});
 
 	it('describes a top level item by itself', () => {
-		expect(makeAnchor(tree(BASE), 4)).toEqual([{ text: 'E', nth: 0 }]);
+		expect(makeAnchor(BASE, 4, 4)).toEqual([{ text: 'E', nth: 0 }]);
 	});
 
 	it('gives equal siblings under different parents their own path', () => {
-		expect(makeAnchor(tree(BASE), 5)).toEqual([
+		expect(makeAnchor(BASE, 4, 5)).toEqual([
 			{ text: 'E', nth: 0 },
 			{ text: 'B', nth: 0 },
 		]);
@@ -31,22 +28,22 @@ describe('makeAnchor', () => {
 
 	it('numbers equal siblings under one parent', () => {
 		const lines = ['- T', '- T', '\t- k'];
-		expect(makeAnchor(tree(lines), 1)).toEqual([{ text: 'T', nth: 1 }]);
-		expect(makeAnchor(tree(lines), 2)).toEqual([
+		expect(makeAnchor(lines, 4, 1)).toEqual([{ text: 'T', nth: 1 }]);
+		expect(makeAnchor(lines, 4, 2)).toEqual([
 			{ text: 'T', nth: 1 },
 			{ text: 'k', nth: 0 },
 		]);
 	});
 
 	it('ignores a block id at the end of the text', () => {
-		expect(makeAnchor(tree(['- a ^abc123']), 0)).toEqual([{ text: 'a', nth: 0 }]);
+		expect(makeAnchor(['- a ^abc123'], 4, 0)).toEqual([{ text: 'a', nth: 0 }]);
 	});
 
 	it.each([
 		['a line without an item', ['text', '- a'], 0],
 		['a line past the end', ['- a'], 5],
 	])('returns null for %s', (_name, lines, line) => {
-		expect(makeAnchor(tree(lines), line)).toBeNull();
+		expect(makeAnchor(lines, 4, line)).toBeNull();
 	});
 });
 
@@ -81,24 +78,24 @@ describe('resolveAnchor', () => {
 	});
 
 	it('finds nothing for an empty anchor or an empty note', () => {
-		expect(resolveAnchor(tree(BASE), [])).toBeNull();
+		expect(resolveAnchor(BASE, 4, [])).toBeNull();
 		expect(resolveInto([''])).toBeNull();
 	});
 
 	it('tells equal siblings apart by their position', () => {
 		const lines = ['- T', '- T', '\t- k'];
-		const anchor = makeAnchor(tree(lines), 2);
-		expect(anchor && resolveAnchor(tree(lines), anchor)).toBe(2);
+		const anchor = makeAnchor(lines, 4, 2);
+		expect(anchor && resolveAnchor(lines, 4, anchor)).toBe(2);
 	});
 
 	it('uses the last equal sibling when fewer remain', () => {
-		const anchor = makeAnchor(tree(['- T', '- T', '- T']), 2);
-		expect(anchor && resolveAnchor(tree(['- T', '- T']), anchor)).toBe(1);
+		const anchor = makeAnchor(['- T', '- T', '- T'], 4, 2);
+		expect(anchor && resolveAnchor(['- T', '- T'], 4, anchor)).toBe(1);
 	});
 
 	it('ignores a block id when matching', () => {
-		const anchor = makeAnchor(tree(['- a']), 0);
-		expect(anchor && resolveAnchor(tree(['- a ^id1']), anchor)).toBe(0);
+		const anchor = makeAnchor(['- a'], 4, 0);
+		expect(anchor && resolveAnchor(['- a ^id1'], 4, anchor)).toBe(0);
 	});
 });
 
@@ -110,6 +107,56 @@ describe('anchor text', () => {
 		['a caret without a space before it', '- a^abc', 'a^abc'],
 		['trailing spaces', '- a   ', 'a'],
 	])('handles %s', (_name, line, expected) => {
-		expect(makeAnchor(tree([line]), 0)).toEqual([{ text: expected, nth: 0 }]);
+		expect(makeAnchor([line], 4, 0)).toEqual([{ text: expected, nth: 0 }]);
+	});
+});
+
+describe('anchors with headings', () => {
+	const NOTE = ['# A', '- x', '## B', '- y', '\t- z', '# A', '- y'];
+
+	it('puts the headings above an item in front of its path', () => {
+		expect(makeAnchor(NOTE, 4, 4)).toEqual([
+			{ text: 'A', nth: 0, heading: true },
+			{ text: 'B', nth: 0, heading: true },
+			{ text: 'y', nth: 0 },
+			{ text: 'z', nth: 0 },
+		]);
+	});
+
+	it('describes a heading by the headings above it', () => {
+		expect(makeAnchor(NOTE, 4, 2)).toEqual([
+			{ text: 'A', nth: 0, heading: true },
+			{ text: 'B', nth: 0, heading: true },
+		]);
+	});
+
+	it('numbers equal headings among those with the same parent', () => {
+		expect(makeAnchor(NOTE, 4, 5)).toEqual([{ text: 'A', nth: 1, heading: true }]);
+	});
+
+	it('finds an item under the right one of two equal headings', () => {
+		const anchor = makeAnchor(NOTE, 4, 6);
+		expect(anchor && resolveAnchor(NOTE, 4, anchor)).toBe(6);
+	});
+
+	it('finds a heading again after lines are inserted above', () => {
+		const anchor = makeAnchor(NOTE, 4, 2);
+		expect(anchor && resolveAnchor(['new', ...NOTE], 4, anchor)).toBe(3);
+	});
+
+	it('falls back to the deepest heading that still matches', () => {
+		const anchor = makeAnchor(NOTE, 4, 4);
+		const edited = ['# A', '- x', '## renamed', '- y', '\t- z'];
+		expect(anchor && resolveAnchor(edited, 4, anchor)).toBe(0);
+	});
+
+	it('does not match an item that moved under another heading', () => {
+		const anchor = makeAnchor(NOTE, 4, 3);
+		const moved = ['# A', '## B', '# C', '- y'];
+		expect(anchor && resolveAnchor(moved, 4, anchor)).toBe(1);
+	});
+
+	it('still reads an anchor stored before headings were zoomable', () => {
+		expect(resolveAnchor(NOTE, 4, [{ text: 'y', nth: 0 }])).toBe(3);
 	});
 });

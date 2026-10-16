@@ -3,8 +3,8 @@ import { zoomOutcomeMessage } from '../../src/ui/zoom-messages';
 
 describe('zoomOutcomeMessage', () => {
 	it('asks for a list item when the cursor is not in one', () => {
-		expect(zoomOutcomeMessage('not-a-list-item')).toBe(
-			'Place the cursor in a list item to zoom.',
+		expect(zoomOutcomeMessage('nothing-to-zoom')).toBe(
+			'Place the cursor in a list item or a heading to zoom.',
 		);
 	});
 
