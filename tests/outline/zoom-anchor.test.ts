@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { makeAnchor, resolveAnchor } from '../../src/outline/zoom-anchor';
+import { makeAnchor, resolveAnchor, resolveExactAnchor } from '../../src/outline/zoom-anchor';
 
 const BASE = ['- A', '\t- B', '\t\t- C', '\t- D', '- E', '\t- B', '\t\t- X'];
 const ANCHOR_OF_C = [
@@ -180,5 +180,34 @@ describe('anchors with headings', () => {
 	it('does not match an item that moved under a nested heading', () => {
 		const anchor = makeAnchor(['# A', '- x'], 4, 1);
 		expect(anchor && resolveAnchor(['# A', '## B', '- x'], 4, anchor)).toBe(0);
+	});
+});
+
+describe('resolveExactAnchor', () => {
+	it('finds an item whose whole path still exists', () => {
+		expect(resolveExactAnchor(BASE, 4, ANCHOR_OF_C)).toBe(2);
+	});
+
+	it('finds nothing when the last item of the path is gone', () => {
+		const edited = ['- A', '\t- B', '\t\t- C renamed', '- E'];
+		expect(resolveExactAnchor(edited, 4, ANCHOR_OF_C)).toBeNull();
+	});
+
+	it('finds nothing when a parent in the path is gone', () => {
+		expect(resolveExactAnchor(['- E', '\t- B', '\t\t- C'], 4, ANCHOR_OF_C)).toBeNull();
+	});
+
+	it('finds nothing when a heading in the path is gone', () => {
+		const anchor = makeAnchor(['# A', '- x'], 4, 1);
+		expect(anchor && resolveExactAnchor(['# renamed', '- x'], 4, anchor)).toBeNull();
+	});
+
+	it('finds a heading whose path still exists', () => {
+		const anchor = makeAnchor(['# A', '## B', '- x'], 4, 1);
+		expect(anchor && resolveExactAnchor(['# A', '## B', '- x'], 4, anchor)).toBe(1);
+	});
+
+	it('finds nothing for an empty anchor', () => {
+		expect(resolveExactAnchor(BASE, 4, [])).toBeNull();
 	});
 });
