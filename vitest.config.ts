@@ -10,7 +10,7 @@ export default defineConfig({
 		include: ['tests/**/*.test.ts'],
 		coverage: {
 			provider: 'v8',
-			include: ['src/**/*.ts'],
+			include: ['src/**/*.ts', 'scripts/lib/**/*.ts'],
 			exclude: [
 				'src/ui/header-path.ts',
 				'src/editor/zoom-header.ts',
