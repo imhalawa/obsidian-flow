@@ -25,6 +25,8 @@ const KEYS = {
 	home: { key: 'Home', code: 'Home', keyCode: 36, text: null },
 	tab: { key: 'Tab', code: 'Tab', keyCode: 9, text: '\t' },
 	a: { key: 'a', code: 'KeyA', keyCode: 65, text: null },
+	end: { key: 'End', code: 'End', keyCode: 35, text: null },
+	down: { key: 'ArrowDown', code: 'ArrowDown', keyCode: 40, text: null },
 	escape: { key: 'Escape', code: 'Escape', keyCode: 27, text: null },
 } satisfies Record<string, KeyDefinition>;
 

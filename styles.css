@@ -219,3 +219,16 @@
 	background-color: var(--list-marker-color-collapsed);
 	box-shadow: 0 0 0 4px var(--background-modifier-active-hover);
 }
+
+.cm-line.flow-embed-line > .internal-embed {
+	display: inline-block;
+	box-sizing: border-box;
+	width: calc(100% - 1px);
+	margin-bottom: var(--size-4-1);
+	vertical-align: top;
+	text-indent: 0;
+}
+
+.cm-line.flow-embed-untitled > .internal-embed > .markdown-embed-title {
+	display: none;
+}
