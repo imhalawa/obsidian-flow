@@ -32,6 +32,7 @@ describe('settings tab', () => {
 			'Drag items by their bullet',
 			'List editing',
 			'Enter on an empty item outdents it',
+			'Enter on an item with children adds its first child',
 			'Backspace at the start of an item merges it',
 			'Home stays inside the item text',
 			'Select all starts with the item text',
@@ -54,6 +55,7 @@ describe('settings tab', () => {
 			'Press a bullet and move to drag the item and its children, also to another open note. A click on the bullet still zooms.',
 			'',
 			'Outdent an empty item, or end the list when it is at the top level.',
+			'Add the new item as the first child, as a task when the first child is a task, instead of between the item and its children.',
 			'Join the item with the one above instead of deleting the bullet.',
 			'Move to the start of the item text before moving to the start of the line.',
 			'Select the text of the item first. Select all again to select the whole note.',
@@ -76,6 +78,7 @@ describe('settings tab', () => {
 			plugin.settings.dragItems,
 			undefined,
 			plugin.settings.enterOutdentsEmptyItem,
+			plugin.settings.enterAddsFirstChild,
 			plugin.settings.backspaceMergesItem,
 			plugin.settings.homeStaysInItem,
 			plugin.settings.selectAllStaysInItem,
@@ -145,10 +148,11 @@ describe('settings tab', () => {
 
 	it.each([
 		[10 + 1, 'enterOutdentsEmptyItem', true],
-		[10 + 2, 'backspaceMergesItem', true],
-		[10 + 3, 'homeStaysInItem', true],
-		[10 + 4, 'selectAllStaysInItem', true],
-		[10 + 5, 'tabIndentsItem', false],
+		[10 + 3, 'backspaceMergesItem', true],
+		[10 + 4, 'homeStaysInItem', true],
+		[10 + 5, 'selectAllStaysInItem', true],
+		[10 + 6, 'tabIndentsItem', false],
+		[10 + 2, 'enterAddsFirstChild', true],
 	] as const)(
 		'saves list editing setting %i (%s) when its toggle changes',
 		async (index, key, initial) => {

@@ -12,6 +12,7 @@ export interface FlowSettings {
 	useMouseHistory: boolean;
 	dragItems: boolean;
 	enterOutdentsEmptyItem: boolean;
+	enterAddsFirstChild: boolean;
 	backspaceMergesItem: boolean;
 	homeStaysInItem: boolean;
 	selectAllStaysInItem: boolean;
@@ -29,6 +30,7 @@ export const DEFAULT_SETTINGS: FlowSettings = {
 	useMouseHistory: true,
 	dragItems: true,
 	enterOutdentsEmptyItem: true,
+	enterAddsFirstChild: true,
 	backspaceMergesItem: true,
 	homeStaysInItem: true,
 	selectAllStaysInItem: true,
@@ -121,6 +123,12 @@ export class FlowSettingTab extends PluginSettingTab {
 			'Enter on an empty item outdents it',
 			'Outdent an empty item, or end the list when it is at the top level.',
 			'enterOutdentsEmptyItem',
+			null,
+		);
+		this.addToggle(
+			'Enter on an item with children adds its first child',
+			'Add the new item as the first child, as a task when the first child is a task, instead of between the item and its children.',
+			'enterAddsFirstChild',
 			null,
 		);
 		this.addToggle(
