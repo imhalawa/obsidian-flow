@@ -24,6 +24,10 @@ Tests live in `e2e/*.e2e.ts` and run one file at a time because they share the d
 
 `e2e/guest-behavior.e2e.ts` pins what Obsidian itself does for typing, Enter, Backspace, Home and Tab, so the plugin cannot change it by accident. `e2e/open-notes.e2e.ts` enables and disables the plugin while a note is open and fails on any console error.
 
+## Contract and nightly runs
+
+`e2e/obsidian-contract.e2e.ts` probes every Obsidian API, CodeMirror method and DOM class the plugin relies on, so a failure names the surface that changed. The `Obsidian compatibility` workflow runs it with the guest, open-note and mouse history tests against the latest Obsidian every night and opens an issue when it fails. Only the latest Obsidian is supported.
+
 ## Writing a test
 
 Open a note with `NoteEditor.open`, call `caret`, `select` or `runCommand`, then assert on `text()` and `selections()`. Use `lezerShape` from `tests/support` to check that the result still parses as the intended list.
