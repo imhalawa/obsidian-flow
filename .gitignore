@@ -28,3 +28,6 @@ reports
 
 # end-to-end cache (downloaded Obsidian)
 .e2e-cache
+
+# local dev install into a vault
+.env.local

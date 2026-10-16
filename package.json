@@ -5,8 +5,8 @@
 	"main": "main.js",
 	"type": "module",
 	"scripts": {
-		"dev": "node esbuild.config.mjs",
-		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+		"dev": "node --env-file-if-exists=.env.local esbuild.config.mjs",
+		"build": "tsc -noEmit -skipLibCheck && node --env-file-if-exists=.env.local esbuild.config.mjs production",
 		"version": "jiti scripts/release.ts bump && git add manifest.json versions.json",
 		"lint": "eslint .",
 		"lint:fix": "eslint . --fix",
