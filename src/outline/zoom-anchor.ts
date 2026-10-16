@@ -17,9 +17,31 @@ function anchorText(node: OutlineNode): string {
 	return node.text.replace(TRAILING_BLOCK_ID, '').trim();
 }
 
-/** Returns the items that share a parent with a node, the node included. */
-function siblingsOf(tree: OutlineTree, node: OutlineNode): readonly OutlineNode[] {
-	return node.parent ? node.parent.children : tree.roots;
+/** Returns the closest heading above a line, or null. */
+function closestHeading(headings: readonly Heading[], line: number): Heading | null {
+	return enclosingHeadings(headings, line).pop() ?? null;
+}
+
+/** Returns the top level items whose closest heading is the given one, or all of them for no heading. */
+function rootsUnder(
+	tree: OutlineTree,
+	headings: readonly Heading[],
+	heading: Heading | null,
+): readonly OutlineNode[] {
+	if (!heading) return tree.roots;
+	return tree.roots.filter(
+		(node) => closestHeading(headings, node.startLine)?.line === heading.line,
+	);
+}
+
+/** Returns the items that share a parent with a node, the node included, with top level items counted within their heading. */
+function siblingsOf(
+	tree: OutlineTree,
+	headings: readonly Heading[],
+	node: OutlineNode,
+): readonly OutlineNode[] {
+	if (node.parent) return node.parent.children;
+	return rootsUnder(tree, headings, closestHeading(headings, node.startLine));
 }
 
 /** Returns the path from the top level item down to a node. */
@@ -67,7 +89,9 @@ export function makeAnchor(
 	if (!item) return null;
 	const items = pathTo(item).map((node): AnchorSegment => {
 		const text = anchorText(node);
-		const equal = siblingsOf(tree, node).filter((sibling) => anchorText(sibling) === text);
+		const equal = siblingsOf(tree, headings, node).filter(
+			(sibling) => anchorText(sibling) === text,
+		);
 		return { text, nth: equal.indexOf(node) };
 	});
 	return [...headingSegments(headings, item.startLine), ...items];
@@ -99,14 +123,6 @@ function matchedEveryHeading(
 	return enclosingHeadings(headings, found.line).length + 1 === wanted;
 }
 
-/** Returns the top level items inside the section of a heading, or all of them for no heading. */
-function rootsUnder(tree: OutlineTree, heading: Heading | null): readonly OutlineNode[] {
-	if (!heading) return tree.roots;
-	return tree.roots.filter(
-		(node) => heading.line < node.startLine && node.startLine <= heading.endLine,
-	);
-}
-
 /** Returns the start line of the deepest heading or item an anchor still matches, or null when none matches. */
 export function resolveAnchor(
 	lines: readonly string[],
@@ -117,7 +133,7 @@ export function resolveAnchor(
 	const heading = resolveHeadings(headings, anchor);
 	if (!matchedEveryHeading(headings, heading, anchor)) return heading ? heading.line : null;
 	const tree = parseOutline(lines, tabSize);
-	let siblings = rootsUnder(tree, heading);
+	let siblings = rootsUnder(tree, headings, heading);
 	let found: OutlineNode | null = null;
 	for (const segment of anchor.filter((each) => each.heading !== true)) {
 		const equal = siblings.filter((sibling) => anchorText(sibling) === segment.text);

@@ -48,12 +48,25 @@ function findHeadings(lines: readonly string[]): Omit<Heading, 'endLine'>[] {
 	return found;
 }
 
+/** Returns the line of the first heading after an index that is at the same level or higher, or null. */
+function nextSectionLine(
+	found: readonly Omit<Heading, 'endLine'>[],
+	index: number,
+	level: number,
+): number | null {
+	for (let next = index + 1; next < found.length; next += 1) {
+		const other = found[next];
+		if (other && other.level <= level) return other.line;
+	}
+	return null;
+}
+
 /** Returns the headings of a note with the last line of each section, which ends before the next heading of the same or a higher level. */
 export function parseHeadings(lines: readonly string[]): Heading[] {
 	const found = findHeadings(lines);
 	return found.map((heading, index) => {
-		const next = found.slice(index + 1).find((other) => other.level <= heading.level);
-		const through = next ? next.line - 1 : lines.length - 1;
+		const next = nextSectionLine(found, index, heading.level);
+		const through = next === null ? lines.length - 1 : next - 1;
 		return { ...heading, endLine: lastContentLine(lines, heading.line, through) };
 	});
 }

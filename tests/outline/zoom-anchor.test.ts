@@ -159,4 +159,26 @@ describe('anchors with headings', () => {
 	it('still reads an anchor stored before headings were zoomable', () => {
 		expect(resolveAnchor(NOTE, 4, [{ text: 'y', nth: 0 }])).toBe(3);
 	});
+
+	it.each([
+		['the first item', 1],
+		['the equal item under the second heading', 3],
+		['the second equal item under the second heading', 4],
+	])('finds %s again from its own anchor', (_name, line) => {
+		const lines = ['# A', '- x', '# B', '- x', '- x'];
+		const anchor = makeAnchor(lines, 4, line);
+		expect(anchor && resolveAnchor(lines, 4, anchor)).toBe(line);
+	});
+
+	it('numbers an item among the equal items of its own heading only', () => {
+		expect(makeAnchor(['# A', '- x', '# B', '- x', '- x'], 4, 4)).toEqual([
+			{ text: 'B', nth: 0, heading: true },
+			{ text: 'x', nth: 1 },
+		]);
+	});
+
+	it('does not match an item that moved under a nested heading', () => {
+		const anchor = makeAnchor(['# A', '- x'], 4, 1);
+		expect(anchor && resolveAnchor(['# A', '## B', '- x'], 4, anchor)).toBe(0);
+	});
 });
