@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { IndentStyle } from '../../src/outline/indent-style';
 import {
+	lineAfterMove,
 	moveSubtree,
 	placeSubtree,
 	takeSubtree,
@@ -20,6 +21,23 @@ const moved = (
 	if (!result.ok) throw new Error(result.reason);
 	return result;
 };
+
+describe('lineAfterMove', () => {
+	it.each([
+		['a line before both places', 0, 3, 2, 5, 0],
+		['the first line of the block', 3, 3, 2, 6, 6],
+		['the last line of the block', 4, 3, 2, 6, 7],
+		['a line right after the block when the block moves down', 5, 3, 2, 8, 3],
+		['a line right before where the block lands', 7, 3, 2, 8, 5],
+		['a line right after where the block lands', 10, 3, 2, 8, 10],
+		['a line after both places', 12, 3, 2, 8, 12],
+		['a line between the places when the block moves up', 4, 6, 2, 2, 6],
+		['the line before the block when the block moves up', 5, 6, 2, 2, 7],
+		['the line where the block lands when it moves up', 2, 6, 2, 2, 4],
+	])('maps %s', (_name, line, sourceLine, blockLength, blockStart, expected) => {
+		expect(lineAfterMove(line, sourceLine, blockLength, blockStart)).toBe(expected);
+	});
+});
 
 describe('takeSubtree', () => {
 	it('cuts an item with its descendants', () => {
@@ -43,6 +61,21 @@ describe('takeSubtree', () => {
 			ok: true,
 			block: ['- a'],
 			remaining: ['', '- b'],
+		});
+	});
+
+	it('keeps a line of spaces after the item where it is', () => {
+		expect(takeSubtree(['- a', '   ', '- b'], spaces, 0)).toEqual({
+			ok: true,
+			block: ['- a'],
+			remaining: ['   ', '- b'],
+		});
+	});
+
+	it('refuses to cut an item when what stays would read as a different list', () => {
+		expect(takeSubtree(['   - y', '    - c', '', 'text'], spaces, 0)).toEqual({
+			ok: false,
+			reason: 'structure-check-failed',
 		});
 	});
 
@@ -228,6 +261,14 @@ describe('placeSubtree', () => {
 			targetLine: 0,
 		});
 		expect(result).toMatchObject({ lines: ['- x', '  more', '  - a', '- z'], blockStart: 2 });
+	});
+
+	it('refuses a place where the result would read as a different list', () => {
+		const lines = ['1. x', '  - b', '', 'text'];
+		expect(placeSubtree(lines, spaces, ['- z'], { kind: 'after', targetLine: 0 })).toEqual({
+			ok: false,
+			reason: 'structure-check-failed',
+		});
 	});
 
 	it('refuses a block that is not a single item', () => {

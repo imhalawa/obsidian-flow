@@ -14,6 +14,11 @@ export function depthsOf(tree: OutlineTree): number[] {
 	return tree.nodes.map(nodeDepth);
 }
 
+/** Tells whether two lists of depths are the same. */
+export function sameDepths(first: readonly number[], second: readonly number[]): boolean {
+	return first.length === second.length && first.every((depth, index) => depth === second[index]);
+}
+
 /** Accepts the edits only when re-parsing the result gives the expected depths. */
 export function guardedEdits(
 	lines: readonly string[],
@@ -23,7 +28,7 @@ export function guardedEdits(
 	lineMoves: LineMove[],
 ): EditResult {
 	const after = depthsOf(parseOutline(applyEdits(lines, edits), style.tabSize));
-	const same =
-		after.length === expectedDepths.length && after.every((d, i) => d === expectedDepths[i]);
-	return same ? { ok: true, edits, lineMoves } : refuse('structure-check-failed');
+	return sameDepths(after, expectedDepths)
+		? { ok: true, edits, lineMoves }
+		: refuse('structure-check-failed');
 }

@@ -1,5 +1,5 @@
-import { foldEffect, foldedRanges } from '@codemirror/language';
-import { EditorSelection } from '@codemirror/state';
+import { codeFolding, foldEffect, foldedRanges } from '@codemirror/language';
+import { EditorSelection, EditorState, type TransactionSpec } from '@codemirror/state';
 import { describe, expect, it } from 'vitest';
 import { dropAcross, dropWithin } from '../../src/editor/drag-move';
 import { zoomIn } from '../../src/editor/zoom-control';
@@ -64,6 +64,43 @@ describe('dropWithin', () => {
 	});
 });
 
+describe('dropWithin zoom bounds', () => {
+	const zoomedOnFirstItem = (note: string) => {
+		const target = new FakeZoomTarget(note, 0);
+		zoomIn(target);
+		return target;
+	};
+
+	it('allows a change that starts on the first zoomed line and ends on the last', () => {
+		const target = zoomedOnFirstItem('- a\n  - b\n- c');
+		expect(dropWithin(target, 1, { kind: 'before', targetLine: 0 })).toEqual({ ok: true });
+		expect(target.text).toBe('- b\n- a\n- c');
+	});
+
+	it('refuses a place above the first zoomed line', () => {
+		const target = new FakeZoomTarget('- a\n- p\n  - b', 4);
+		zoomIn(target);
+		expect(dropWithin(target, 2, { kind: 'before', targetLine: 0 })).toEqual({
+			ok: false,
+			reason: 'outside-zoom',
+		});
+		expect(target.text).toBe('- a\n- p\n  - b');
+	});
+
+	it('moves items in a note that has no zoom state', () => {
+		const dispatched: TransactionSpec[] = [];
+		const plain = {
+			state: EditorState.create({ doc: NOTE, extensions: [codeFolding()] }),
+			dispatch(spec: TransactionSpec): void {
+				dispatched.push(spec);
+				this.state = this.state.update(spec).state;
+			},
+		};
+		expect(dropWithin(plain, 0, { kind: 'after', targetLine: 3 })).toEqual({ ok: true });
+		expect(plain.state.doc.toString()).toBe('- c\n- d\n- a\n  - b');
+	});
+});
+
 describe('dropWithin folds', () => {
 	const foldsOf = (target: FakeZoomTarget) => {
 		const ranges: { from: number; to: number }[] = [];
@@ -95,6 +132,15 @@ describe('dropWithin folds', () => {
 		dropWithin(target, 0, { kind: 'after', targetLine: 3 });
 		expect(target.text).toBe('- c\n- a\n  - b\n    - b1');
 		expect(foldsOf(target)).toEqual([{ from: 13, to: 22 }]);
+	});
+
+	it('leaves a fold of a heading outside the changed lines alone', () => {
+		const target = new FakeZoomTarget('# h\ntext\n- a\n- b', 0);
+		target.dispatch({ effects: foldEffect.of({ from: 3, to: 8 }) });
+		dropWithin(target, 2, { kind: 'after', targetLine: 3 });
+		expect(target.text).toBe('# h\ntext\n- b\n- a');
+		expect(target.dispatched).toHaveLength(2);
+		expect(foldsOf(target)).toEqual([{ from: 3, to: 8 }]);
 	});
 
 	it('does not touch folds when the note has none', () => {
@@ -215,5 +261,12 @@ describe('dropAcross', () => {
 		zoomIn(source);
 		dropAcross(source, 3, new FakeZoomTarget('- x', 0), after(0));
 		expect(source.text).toBe('- a\n- p\n  - b\n\n- d');
+	});
+
+	it('removes a line from a zoom when the next line is the last zoomed line', () => {
+		const source = new FakeZoomTarget('- a\n- p\n  - b\n  - c\n  - d\n- e', 4);
+		zoomIn(source);
+		dropAcross(source, 3, new FakeZoomTarget('- x', 0), after(0));
+		expect(source.text).toBe('- a\n- p\n  - b\n  - d\n- e');
 	});
 });

@@ -47,6 +47,20 @@ describe('dropDestination above and inside', () => {
 		expect(dropDestination(tree, dragged(tree, 1), hover({ line, half: 'bottom' }))).toBeNull();
 	});
 
+	it('drops before an item that comes right after the dragged subtree', () => {
+		expect(dropDestination(tree, dragged(tree, 0), hover({ line: 4, half: 'top' }))).toEqual({
+			kind: 'before',
+			targetLine: 4,
+		});
+	});
+
+	it('drops before an item that comes right before the dragged item', () => {
+		expect(dropDestination(tree, dragged(tree, 3), hover({ line: 2, half: 'top' }))).toEqual({
+			kind: 'before',
+			targetLine: 2,
+		});
+	});
+
 	it('has no place on a line outside every item', () => {
 		const lines = ['- a', '', 'plain', '- b'];
 		expect(

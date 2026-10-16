@@ -5,7 +5,7 @@ import { ownLastLine } from './item-text';
 import { lineAt, refuse, type Refusal } from './line-edit';
 import { parseListItem, visualWidth } from './list-item';
 import { parseOutline, type OutlineNode } from './outline-tree';
-import { depthsOf, nodeDepth } from './structure-guard';
+import { depthsOf, nodeDepth, sameDepths } from './structure-guard';
 
 export type DropKind = 'before' | 'after' | 'first-child';
 
@@ -24,13 +24,8 @@ const ORDERED_NUMBER = /^(\s*)\d+/;
 /** Returns the last line of an item and its descendants, leaving out blank lines after them. */
 export function subtreeLastLine(lines: readonly string[], item: OutlineNode): number {
 	let last = item.endLine;
-	while (last > item.startLine && lineAt(lines, last).trim() === '') last -= 1;
+	while (lineAt(lines, last).trim() === '') last -= 1;
 	return last;
-}
-
-/** Tells whether two lists of depths are the same. */
-function sameDepths(first: readonly number[], second: readonly number[]): boolean {
-	return first.length === second.length && first.every((depth, index) => depth === second[index]);
 }
 
 /** Cuts an item and its subtree out of the note. */
@@ -67,13 +62,11 @@ function placedBlock(
 	delta: number,
 	renumber: boolean,
 ): string[] {
-	const shifted = block.map((line) => shiftIndent(line, delta, style));
-	const first = shifted[0] ?? '';
-	if (!renumber) return shifted;
-	return [
-		first.replace(ORDERED_NUMBER, (_match, indent: string) => `${indent}1`),
-		...shifted.slice(1),
-	];
+	return block.map((line, index) => {
+		const shifted = shiftIndent(line, delta, style);
+		if (!renumber || index > 0) return shifted;
+		return shifted.replace(ORDERED_NUMBER, (_match, indent: string) => `${indent}1`);
+	});
 }
 
 /** Puts a block of an item and its subtree next to or inside a target item. */
@@ -108,6 +101,19 @@ export function placeSubtree(
 		return refuse('structure-check-failed');
 	}
 	return { ok: true, lines: result, blockStart: at, blockLength: placed.length };
+}
+
+/** Returns where a line of the note ends up when a block of lines moves from one place to another. */
+export function lineAfterMove(
+	line: number,
+	sourceLine: number,
+	blockLength: number,
+	blockStart: number,
+): number {
+	if (line >= sourceLine && line < sourceLine + blockLength)
+		return blockStart + line - sourceLine;
+	const withoutBlock = line < sourceLine ? line : line - blockLength;
+	return withoutBlock < blockStart ? withoutBlock : withoutBlock + blockLength;
 }
 
 /** Moves an item and its subtree to a destination in the same note. */
