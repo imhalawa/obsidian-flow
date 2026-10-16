@@ -3,6 +3,7 @@ import { itemsOfNote, type IndexedItem } from '../outline/item-search';
 export interface IndexedFile {
 	path: string;
 	mtime: number;
+	live: boolean;
 }
 
 export interface IndexSource {
@@ -46,14 +47,14 @@ export class ItemIndex {
 		fresh: Map<string, CachedNote>,
 	): Promise<IndexedItem[]> {
 		const cached = this.cache.get(file.path);
-		if (cached && cached.mtime === file.mtime) {
+		if (!file.live && cached && cached.mtime === file.mtime) {
 			fresh.set(file.path, cached);
 			return cached.items;
 		}
 		try {
 			const text = await this.source.read(file.path);
 			const items = itemsOfNote(file.path, text, this.source.tabSize());
-			fresh.set(file.path, { mtime: file.mtime, items });
+			if (!file.live) fresh.set(file.path, { mtime: file.mtime, items });
 			return items;
 		} catch {
 			return [];
