@@ -283,6 +283,15 @@ export class NoteEditor {
 		);
 	}
 
+	/** Returns the box of the fold arrow Obsidian draws on a line, in window coordinates. */
+	foldArrowBox(
+		line: number,
+	): Promise<{ left: number; right: number; top: number; bottom: number }> {
+		return this.app.evaluate<{ left: number; right: number; top: number; bottom: number }>(
+			`(() => { const cm = app.workspace.activeEditor.editor.cm; const start = cm.coordsAtPos(cm.state.doc.line(${line + 1}).from); const middle = (start.top + start.bottom) / 2; const arrow = Array.from(cm.dom.querySelectorAll(".cm-fold-indicator svg")).find((el) => { const box = el.getBoundingClientRect(); return box.top <= middle && middle <= box.bottom; }); const box = arrow.getBoundingClientRect(); return { left: box.left, right: box.right, top: box.top, bottom: box.bottom }; })()`,
+		);
+	}
+
 	/** Returns the vertical middle of a line in window coordinates. */
 	linePoint(line: number): Promise<number> {
 		return this.app.evaluate<number>(

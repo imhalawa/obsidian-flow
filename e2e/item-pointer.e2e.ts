@@ -55,6 +55,18 @@ describe('bullets and thread lines in real Obsidian', () => {
 		expect(await editor.crumbs()).toEqual([]);
 	});
 
+	it('folds and unfolds an item when the left edge of its fold arrow is clicked', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		const arrow = await editor.foldArrowBox(1);
+		const y = (arrow.top + arrow.bottom) / 2;
+		await app.click(arrow.left + 1, y, false);
+		await wait(300);
+		expect(await editor.folds()).toEqual([{ from: 1, to: 2 }]);
+		await app.click(arrow.left + 1, y, false);
+		await wait(300);
+		expect(await editor.folds()).toEqual([]);
+	});
+
 	it('does not zoom when the text of an item is clicked', async () => {
 		const editor = await NoteEditor.open(app, NOTE);
 		const bullet = await editor.bulletPoint(3);

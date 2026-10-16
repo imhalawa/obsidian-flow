@@ -18,6 +18,7 @@ import {
 } from '../ui/item-menu-model';
 import { hasStartedDragging, isFinishedPress, type PressPoint } from './bullet-press';
 import { isFolded, toggleBranch } from './fold-control';
+import { isOverFoldIndicator } from './fold-indicator';
 import { outlineOfState } from './outline-of-state';
 import { dispatchZoom } from './zoom-control';
 import { zoomField } from './zoom-field';
@@ -78,7 +79,7 @@ function hitAt(view: EditorView, event: MouseEvent, host: ItemPointerHost): Poin
 			return { kind: 'bullet', startLine: lineIndex };
 		}
 	}
-	if (!host.isThreadFoldEnabled()) return null;
+	if (!host.isThreadFoldEnabled() || isOverFoldIndicator(event.target)) return null;
 	const parent = threadParent(
 		tree,
 		lineIndex,
