@@ -55,6 +55,18 @@ describe('bullets and thread lines in real Obsidian', () => {
 		expect(await editor.crumbs()).toEqual([]);
 	});
 
+	it('folds and unfolds an item when the left edge of its fold arrow is clicked', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		const arrow = await editor.foldArrowBox(1);
+		const y = (arrow.top + arrow.bottom) / 2;
+		await app.click(arrow.left + 1, y, false);
+		await wait(300);
+		expect(await editor.folds()).toEqual([{ from: 1, to: 2 }]);
+		await app.click(arrow.left + 1, y, false);
+		await wait(300);
+		expect(await editor.folds()).toEqual([]);
+	});
+
 	it('does not zoom when the text of an item is clicked', async () => {
 		const editor = await NoteEditor.open(app, NOTE);
 		const bullet = await editor.bulletPoint(3);
@@ -102,6 +114,61 @@ describe('bullets and thread lines in real Obsidian', () => {
 		const parent = await editor.bulletPoint(0);
 		await app.click(parent.x, await editor.linePoint(1), false);
 		expect(await editor.folds()).toHaveLength(0);
+		await setting('clickThreadLineToFold', true);
+	});
+
+	it('highlights the thread line from its parent to its last descendant when the pointer is over it', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		const parent = await editor.bulletPoint(0);
+		const child = await editor.linePoint(1);
+		await app.movePointer(parent.x, child);
+		await wait(200);
+		const [line, ...others] = await editor.threadHighlights();
+		const accent = await app.evaluate<string>(
+			'(() => { const probe = activeDocument.body.createDiv(); probe.setCssStyles({ backgroundColor: "var(--interactive-accent)" }); const color = getComputedStyle(probe).backgroundColor; probe.remove(); return color; })()',
+		);
+		expect(others).toEqual([]);
+		expect(line?.background).toBe(accent);
+		expect(Math.abs(((line?.left ?? 0) + (line?.right ?? 0)) / 2 - parent.x)).toBeLessThan(1.5);
+		expect(line?.top).toBeGreaterThanOrEqual(parent.y);
+		expect(line?.bottom).toBeGreaterThan(await editor.linePoint(2));
+	});
+
+	it('highlights only the branch of the parent whose thread line is hovered', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		const nested = await editor.bulletPoint(1);
+		await app.movePointer(nested.x, await editor.linePoint(2));
+		await wait(200);
+		const [line] = await editor.threadHighlights();
+		expect(Math.abs(((line?.left ?? 0) + (line?.right ?? 0)) / 2 - nested.x)).toBeLessThan(1.5);
+		expect(line?.bottom).toBeLessThan(await editor.linePoint(3));
+	});
+
+	it('stops highlighting when the pointer leaves the thread line', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		const parent = await editor.bulletPoint(0);
+		await app.movePointer(parent.x, await editor.linePoint(1));
+		await wait(200);
+		await app.movePointer(parent.x + 200, await editor.linePoint(1));
+		await wait(200);
+		expect(await editor.threadHighlights()).toEqual([]);
+	});
+
+	it('does not highlight a thread line while the fold arrow is hovered', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		const arrow = await editor.foldArrowBox(1);
+		await app.movePointer(arrow.left + 1, (arrow.top + arrow.bottom) / 2);
+		await wait(200);
+		expect(await editor.threadHighlights()).toEqual([]);
+	});
+
+	it('does not highlight a thread line when clicking thread lines is off', async () => {
+		await setting('clickThreadLineToFold', false);
+		const editor = await NoteEditor.open(app, NOTE);
+		const parent = await editor.bulletPoint(0);
+		await app.movePointer(parent.x, await editor.linePoint(1));
+		await wait(200);
+		expect(await editor.threadHighlights()).toEqual([]);
 		await setting('clickThreadLineToFold', true);
 	});
 

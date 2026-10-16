@@ -102,6 +102,13 @@ export class NoteEditor {
 		);
 	}
 
+	/** Returns the text of the lines that are marked as revealed by an unfold and the animation they run. */
+	revealedLines(): Promise<{ text: string; animation: string }[]> {
+		return this.app.evaluate<{ text: string; animation: string }[]>(
+			'Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .cm-line.flow-line-revealed")).map((el) => ({ text: el.textContent, animation: getComputedStyle(el).animationName }))',
+		);
+	}
+
 	/** Returns the text of the lines the editor draws, which excludes hidden lines. */
 	visibleLines(): Promise<string[]> {
 		return this.app.evaluate<string[]>(
@@ -287,6 +294,26 @@ export class NoteEditor {
 	bulletPoint(line: number): Promise<{ x: number; y: number }> {
 		return this.app.evaluate<{ x: number; y: number }>(
 			`(() => { const cm = app.workspace.activeEditor.editor.cm; const row = cm.state.doc.line(${line + 1}); const indent = /^\\s*/.exec(row.text)[0].length; const start = cm.coordsAtPos(row.from + indent); const end = cm.coordsAtPos(row.from + indent + 1); return { x: (start.left + end.left) / 2, y: (start.top + start.bottom) / 2 }; })()`,
+		);
+	}
+
+	/** Returns the box of the fold arrow Obsidian draws on a line, in window coordinates. */
+	foldArrowBox(
+		line: number,
+	): Promise<{ left: number; right: number; top: number; bottom: number }> {
+		return this.app.evaluate<{ left: number; right: number; top: number; bottom: number }>(
+			`(() => { const cm = app.workspace.activeEditor.editor.cm; const start = cm.coordsAtPos(cm.state.doc.line(${line + 1}).from); const middle = (start.top + start.bottom) / 2; const arrow = Array.from(cm.dom.querySelectorAll(".cm-fold-indicator svg")).find((el) => { const box = el.getBoundingClientRect(); return box.top <= middle && middle <= box.bottom; }); const box = arrow.getBoundingClientRect(); return { left: box.left, right: box.right, top: box.top, bottom: box.bottom }; })()`,
+		);
+	}
+
+	/** Returns the boxes of the highlighted thread lines the editor draws, in window coordinates. */
+	threadHighlights(): Promise<
+		{ left: number; right: number; top: number; bottom: number; background: string }[]
+	> {
+		return this.app.evaluate<
+			{ left: number; right: number; top: number; bottom: number; background: string }[]
+		>(
+			'Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .flow-thread-highlight")).map((el) => { const box = el.getBoundingClientRect(); return { left: box.left, right: box.right, top: box.top, bottom: box.bottom, background: getComputedStyle(el).backgroundColor }; })',
 		);
 	}
 

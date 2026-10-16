@@ -106,6 +106,52 @@
 	transform: translateX(calc(var(--flow-zoom-shift, 0px) * -1));
 }
 
+@keyframes flow-line-reveal {
+	from {
+		opacity: 0;
+		transform: translateY(calc(var(--size-4-2) * -1));
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.flow-line-revealed {
+		animation: flow-line-reveal var(--anim-duration-moderate) var(--anim-motion-swing) both;
+	}
+
+	.markdown-source-view.mod-cm6 .cm-fold-indicator .collapse-indicator {
+		transition: opacity var(--anim-duration-fast) var(--anim-motion-smooth);
+	}
+
+	.markdown-source-view.mod-cm6 .cm-fold-indicator .collapse-icon svg.svg-icon {
+		transition:
+			transform var(--anim-duration-fast) var(--anim-motion-smooth),
+			color var(--anim-duration-fast) var(--anim-motion-smooth);
+	}
+
+	.markdown-source-view.mod-cm6 .cm-indent::before {
+		transition: border-color var(--anim-duration-fast) var(--anim-motion-smooth);
+	}
+}
+
+.markdown-source-view.mod-cm6
+	.cm-fold-indicator:not(.is-collapsed)
+	.collapse-indicator:hover
+	svg.svg-icon {
+	color: var(--icon-color-hover);
+}
+
+.flow-thread-highlight {
+	width: var(--size-2-1);
+	transform: translateX(-50%);
+	border-radius: var(--radius-s);
+	background: var(--interactive-accent);
+	pointer-events: none;
+}
+
 .flow-is-dragging,
 .flow-is-dragging .cm-content,
 .flow-is-dragging .cm-line {
