@@ -27,6 +27,12 @@ describe('settings tab', () => {
 			'Click bullet to zoom',
 			'Click thread line to fold',
 			'Use mouse back and forward for zoom',
+			'List editing',
+			'Enter on an empty item outdents it',
+			'Backspace at the start of an item merges it',
+			'Home stays inside the item text',
+			'Select all starts with the item text',
+			'Tab and Shift-Tab move whole items',
 		]);
 	});
 
@@ -40,6 +46,12 @@ describe('settings tab', () => {
 			'Select a bullet to zoom into that item.',
 			'Select a thread line to fold its branch. Hold Alt to fold every descendant too.',
 			"Step through zoom levels first. When none are left, Obsidian's own back and forward apply.",
+			'',
+			'Outdent an empty item, or end the list when it is at the top level.',
+			'Join the item with the one above instead of deleting the bullet.',
+			'Move to the start of the item text before moving to the start of the line.',
+			'Select the text of the item first. Select all again to select the whole note.',
+			'Indent and outdent the item with its children. Turn this on to replace the editor keys.',
 		]);
 	});
 
@@ -53,6 +65,12 @@ describe('settings tab', () => {
 			plugin.settings.clickBulletToZoom,
 			plugin.settings.clickThreadLineToFold,
 			plugin.settings.useMouseHistory,
+			undefined,
+			plugin.settings.enterOutdentsEmptyItem,
+			plugin.settings.backspaceMergesItem,
+			plugin.settings.homeStaysInItem,
+			plugin.settings.selectAllStaysInItem,
+			plugin.settings.tabIndentsItem,
 		]);
 	});
 
@@ -98,4 +116,21 @@ describe('settings tab', () => {
 		expect(plugin.settings.useMouseHistory).toBe(false);
 		expect(await plugin.loadData()).toMatchObject({ useMouseHistory: false });
 	});
+
+	it.each([
+		[7 + 1, 'enterOutdentsEmptyItem', true],
+		[7 + 2, 'backspaceMergesItem', true],
+		[7 + 3, 'homeStaysInItem', true],
+		[7 + 4, 'selectAllStaysInItem', true],
+		[7 + 5, 'tabIndentsItem', false],
+	] as const)(
+		'saves list editing setting %i (%s) when its toggle changes',
+		async (index, key, initial) => {
+			const { plugin } = await showTab();
+			expect(plugin.settings[key]).toBe(initial);
+			await Setting.created[index]?.toggle?.handler?.(!initial);
+			expect(plugin.settings[key]).toBe(!initial);
+			expect(await plugin.loadData()).toMatchObject({ [key]: !initial });
+		},
+	);
 });

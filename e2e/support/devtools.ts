@@ -91,6 +91,30 @@ export class DevtoolsConnection {
 		}
 	}
 
+	/** Presses and releases a key; the text is what the key types, if anything. */
+	async key(
+		key: string,
+		code: string,
+		keyCode: number,
+		text: string | null,
+		modifiers: number,
+	): Promise<void> {
+		const press = {
+			key,
+			code,
+			windowsVirtualKeyCode: keyCode,
+			nativeVirtualKeyCode: keyCode,
+			modifiers,
+		};
+		const type = text === null ? 'rawKeyDown' : 'keyDown';
+		await this.send('Input.dispatchKeyEvent', {
+			type,
+			...press,
+			...(text === null ? {} : { text }),
+		});
+		await this.send('Input.dispatchKeyEvent', { type: 'keyUp', ...press });
+	}
+
 	/** Closes the connection. */
 	close(): void {
 		this.socket.close();

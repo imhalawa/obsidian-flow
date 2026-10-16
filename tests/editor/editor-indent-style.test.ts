@@ -1,7 +1,7 @@
 import { indentUnit } from '@codemirror/language';
 import { EditorState } from '@codemirror/state';
 import { describe, expect, it } from 'vitest';
-import { readIndentStyle } from '../../src/editor/editor-indent-style';
+import { readIndentStyle, stateIndentStyle } from '../../src/editor/editor-indent-style';
 
 const withSettings = (unit: string, tabSize: number) => ({
 	cm: {
@@ -65,6 +65,26 @@ describe('readIndentStyle', () => {
 		expect(readIndentStyle({}, ['- a', '   - b'])).toEqual({
 			useTabs: false,
 			unitColumns: 3,
+			tabSize: 4,
+		});
+	});
+});
+
+describe('stateIndentStyle', () => {
+	const stateOf = (unit: string, tabSize: number) => withSettings(unit, tabSize).cm.state;
+
+	it('prefers the style already used in the note', () => {
+		expect(stateIndentStyle(stateOf('\t', 4), ['- a', '  - b'])).toEqual({
+			useTabs: false,
+			unitColumns: 2,
+			tabSize: 4,
+		});
+	});
+
+	it('uses the editor settings when the note has no nested items', () => {
+		expect(stateIndentStyle(stateOf('  ', 4), ['- a'])).toEqual({
+			useTabs: false,
+			unitColumns: 2,
 			tabSize: 4,
 		});
 	});

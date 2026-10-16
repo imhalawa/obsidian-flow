@@ -26,3 +26,11 @@ export function readIndentStyle(editor: object, lines: readonly string[]): Inden
 	if (settings) return styleFromUnit(settings.unit, settings.tabSize);
 	return { useTabs: true, unitColumns: FALLBACK_TAB_SIZE, tabSize: FALLBACK_TAB_SIZE };
 }
+
+/** Chooses the indent style for an editor state: the note's own style first, then the editor settings. */
+export function stateIndentStyle(state: EditorState, lines: readonly string[]): IndentStyle {
+	return (
+		detectIndentStyle(lines, state.tabSize) ??
+		styleFromUnit(state.facet(indentUnit), state.tabSize)
+	);
+}

@@ -10,6 +10,23 @@ const DEBUG_PORT = 9222;
 const PLUGIN_ID = 'flow-outliner';
 const PLUGIN_FILES = ['main.js', 'manifest.json', 'styles.css'];
 
+interface KeyDefinition {
+	key: string;
+	code: string;
+	keyCode: number;
+	text: string | null;
+}
+
+const KEYS = {
+	enter: { key: 'Enter', code: 'Enter', keyCode: 13, text: '\r' },
+	backspace: { key: 'Backspace', code: 'Backspace', keyCode: 8, text: null },
+	home: { key: 'Home', code: 'Home', keyCode: 36, text: null },
+	tab: { key: 'Tab', code: 'Tab', keyCode: 9, text: '\t' },
+	a: { key: 'a', code: 'KeyA', keyCode: 65, text: null },
+} satisfies Record<string, KeyDefinition>;
+
+export type KeyName = keyof typeof KEYS;
+
 /** Waits until a condition holds, polling every 250 ms. */
 async function waitFor<T>(description: string, attempt: () => Promise<T | null>): Promise<T> {
 	for (let tries = 0; tries < 120; tries += 1) {
@@ -102,6 +119,13 @@ export class ObsidianApp {
 	/** Right-clicks at a point of the window. */
 	rightClick(x: number, y: number): Promise<void> {
 		return this.connection.pointer(x, y, 'click', 'right', 0);
+	}
+
+	/** Presses a key of the keyboard; shift and control hold those modifier keys. */
+	pressKey(name: KeyName, shift: boolean, control: boolean): Promise<void> {
+		const key = KEYS[name];
+		const modifiers = (shift ? 8 : 0) + (control ? 2 : 0);
+		return this.connection.key(key.key, key.code, key.keyCode, key.text, modifiers);
 	}
 
 	/** Presses a side button of the mouse over a point of the screen, as a real mouse does. */
