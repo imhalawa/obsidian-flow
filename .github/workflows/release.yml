@@ -21,6 +21,17 @@ jobs:
                   node-version: 24
                   cache: 'npm'
 
+            - name: Check the tag against the manifest
+              run: |
+                  tag="${GITHUB_REF#refs/tags/}"
+                  node -e '
+                    const manifest = require("./manifest.json");
+                    const versions = require("./versions.json");
+                    const tag = process.argv[1];
+                    if (manifest.version !== tag) throw new Error(`Tag ${tag} does not match manifest version ${manifest.version}.`);
+                    if (versions[tag] !== manifest.minAppVersion) throw new Error(`versions.json has no entry for ${tag} with the manifest minAppVersion.`);
+                  ' "$tag"
+
             - name: Build plugin
               run: |
                   npm ci
