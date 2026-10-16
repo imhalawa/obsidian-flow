@@ -36,3 +36,24 @@ describe('headerCrumbs', () => {
 		expect(headerCrumbs([])).toEqual([]);
 	});
 });
+
+describe('headerCrumbs formatting', () => {
+	it('shows a label without its markdown markers', () => {
+		const crumb = headerCrumbs([{ text: "**Challenges I've encountered**", startLine: 1 }])[0];
+		expect(crumb?.label).toBe("Challenges I've encountered");
+	});
+
+	it('describes the zoom with the cleaned label', () => {
+		expect(headerCrumbs([{ text: '**a**', startLine: 1 }])[0]?.description).toBe('Zoom to a');
+	});
+
+	it('shows a label without its block id', () => {
+		expect(headerCrumbs([{ text: 'Task ^abc123', startLine: 1 }])[0]?.label).toBe('Task');
+	});
+
+	it('names an item whose text is only markers', () => {
+		expect(headerCrumbs([{ text: '[](https://example.com)', startLine: 1 }])[0]?.label).toBe(
+			'Empty item',
+		);
+	});
+});
