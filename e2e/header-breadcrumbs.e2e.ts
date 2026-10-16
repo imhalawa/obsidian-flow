@@ -101,6 +101,57 @@ describe('breadcrumbs in the note header in real Obsidian', () => {
 	});
 });
 
+describe('the note title in the header while zoomed', () => {
+	it('shows the whole note when it is clicked', async () => {
+		const editor = await openInFolder(NOTE);
+		await editor.caret(3, 4);
+		await editor.runCommand('zoom-in');
+		await editor.clickTitle();
+		expect(await editor.crumbs()).toEqual([]);
+		expect(await editor.visibleLines()).toHaveLength(6);
+	});
+
+	it('shows the whole note when Enter is pressed on it', async () => {
+		const editor = await openInFolder(NOTE);
+		await editor.caret(3, 4);
+		await editor.runCommand('zoom-in');
+		await editor.focusTitle();
+		await app.pressKey('enter', false, false);
+		await wait(200);
+		expect(await editor.crumbs()).toEqual([]);
+		expect(await editor.visibleLines()).toHaveLength(6);
+	});
+
+	it('shows a hand cursor so it reads as a link', async () => {
+		const editor = await openInFolder(NOTE);
+		await editor.caret(3, 4);
+		await editor.runCommand('zoom-in');
+		expect(await editor.titleCursor()).toBe('pointer');
+	});
+
+	it('goes back to the native cursor when the whole note is shown', async () => {
+		const editor = await openInFolder(NOTE);
+		await editor.caret(3, 4);
+		await editor.runCommand('zoom-in');
+		await editor.runCommand('zoom-reset');
+		expect(await editor.titleCursor()).not.toBe('pointer');
+	});
+
+	it('still starts a rename when it is clicked and nothing is zoomed', async () => {
+		const editor = await openInFolder(NOTE);
+		await editor.clickTitle();
+		expect(await editor.titleHasFocus()).toBe(true);
+	});
+
+	it('does not start a rename when it is clicked to show the whole note', async () => {
+		const editor = await openInFolder(NOTE);
+		await editor.caret(3, 4);
+		await editor.runCommand('zoom-in');
+		await editor.clickTitle();
+		expect(await editor.titleHasFocus()).toBe(false);
+	});
+});
+
 describe('a path that does not fit the header', () => {
 	const DEEP = '- alpha\n\t- bravo\n\t\t- charlie\n\t\t\t- delta\n\t\t\t\t- echo';
 

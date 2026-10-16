@@ -232,3 +232,17 @@
 .cm-line.flow-embed-untitled > .internal-embed > .markdown-embed-title {
 	display: none;
 }
+
+.view-header-title.flow-title-link {
+	cursor: pointer;
+	border-radius: var(--radius-s);
+}
+
+.view-header-title.flow-title-link:hover {
+	color: var(--text-normal);
+	background-color: var(--background-modifier-hover);
+}
+
+.view-header-title.flow-title-link:focus-visible {
+	box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
+}
