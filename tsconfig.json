@@ -17,6 +17,7 @@
 	},
 	"include": [
 		"src/**/*.ts",
+		"scripts/**/*.ts",
 		"tests/**/*.ts",
 		"vitest.config.ts",
 		"vitest.stryker.config.ts",
