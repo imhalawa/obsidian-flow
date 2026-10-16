@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { depthsOf, guardedEdits } from '../../src/outline/structure-guard';
+import { depthsOf, guardedEdits, sameDepths } from '../../src/outline/structure-guard';
 import { parseOutline } from '../../src/outline/outline-tree';
 import type { IndentStyle } from '../../src/outline/indent-style';
 
@@ -13,6 +13,19 @@ describe('depthsOf', () => {
 
 	it('is empty for a note without items', () => {
 		expect(depthsOf(parseOutline(['text'], 4))).toEqual([]);
+	});
+});
+
+describe('sameDepths', () => {
+	it.each<[string, number[], number[], boolean]>([
+		['equal lists', [0, 1, 2], [0, 1, 2], true],
+		['two empty lists', [], [], true],
+		['lists of different length', [0, 1], [0, 1, 2], false],
+		['a shorter second list', [0, 1, 2], [0, 1], false],
+		['lists that differ in the last depth', [0, 1, 2], [0, 1, 1], false],
+		['lists that differ in the first depth', [1, 1], [0, 1], false],
+	])('compares %s', (_name, first, second, expected) => {
+		expect(sameDepths(first, second)).toBe(expected);
 	});
 });
 

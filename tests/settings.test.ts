@@ -27,6 +27,7 @@ describe('settings tab', () => {
 			'Click bullet to zoom',
 			'Click thread line to fold',
 			'Use mouse back and forward for zoom',
+			'Drag items by their handle',
 			'List editing',
 			'Enter on an empty item outdents it',
 			'Backspace at the start of an item merges it',
@@ -46,6 +47,7 @@ describe('settings tab', () => {
 			'Select a bullet to zoom into that item.',
 			'Select a thread line to fold its branch. Hold Alt to fold every descendant too.',
 			"Step through zoom levels first. When none are left, Obsidian's own back and forward apply.",
+			'Show a handle at the start of each item. Drag it to move the item and its children, also to another open note.',
 			'',
 			'Outdent an empty item, or end the list when it is at the top level.',
 			'Join the item with the one above instead of deleting the bullet.',
@@ -65,6 +67,7 @@ describe('settings tab', () => {
 			plugin.settings.clickBulletToZoom,
 			plugin.settings.clickThreadLineToFold,
 			plugin.settings.useMouseHistory,
+			plugin.settings.dragItems,
 			undefined,
 			plugin.settings.enterOutdentsEmptyItem,
 			plugin.settings.backspaceMergesItem,
@@ -118,11 +121,11 @@ describe('settings tab', () => {
 	});
 
 	it.each([
-		[7 + 1, 'enterOutdentsEmptyItem', true],
-		[7 + 2, 'backspaceMergesItem', true],
-		[7 + 3, 'homeStaysInItem', true],
-		[7 + 4, 'selectAllStaysInItem', true],
-		[7 + 5, 'tabIndentsItem', false],
+		[8 + 1, 'enterOutdentsEmptyItem', true],
+		[8 + 2, 'backspaceMergesItem', true],
+		[8 + 3, 'homeStaysInItem', true],
+		[8 + 4, 'selectAllStaysInItem', true],
+		[8 + 5, 'tabIndentsItem', false],
 	] as const)(
 		'saves list editing setting %i (%s) when its toggle changes',
 		async (index, key, initial) => {
@@ -133,4 +136,12 @@ describe('settings tab', () => {
 			expect(await plugin.loadData()).toMatchObject({ [key]: !initial });
 		},
 	);
+
+	it('saves drag items and refreshes the editors when its toggle changes', async () => {
+		const { app, plugin } = await showTab();
+		await Setting.created[7]?.toggle?.handler?.(false);
+		expect(plugin.settings.dragItems).toBe(false);
+		expect(await plugin.loadData()).toMatchObject({ dragItems: false });
+		expect(app.updateOptionsCalls).toBe(1);
+	});
 });

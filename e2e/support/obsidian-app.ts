@@ -23,6 +23,7 @@ const KEYS = {
 	home: { key: 'Home', code: 'Home', keyCode: 36, text: null },
 	tab: { key: 'Tab', code: 'Tab', keyCode: 9, text: '\t' },
 	a: { key: 'a', code: 'KeyA', keyCode: 65, text: null },
+	escape: { key: 'Escape', code: 'Escape', keyCode: 27, text: null },
 } satisfies Record<string, KeyDefinition>;
 
 export type KeyName = keyof typeof KEYS;
@@ -114,6 +115,16 @@ export class ObsidianApp {
 	/** Clicks at a point of the window; alt holds the Alt key. */
 	click(x: number, y: number, alt: boolean): Promise<void> {
 		return this.connection.pointer(x, y, 'click', 'left', alt ? 1 : 0);
+	}
+
+	/** Presses, moves or releases the held left button at a point of the window. */
+	holdButton(phase: 'press' | 'move' | 'release', x: number, y: number): Promise<void> {
+		return this.connection.held(phase, x, y);
+	}
+
+	/** Drags with the left button through the given points of the window. */
+	drag(points: readonly { x: number; y: number }[]): Promise<void> {
+		return this.connection.dragThrough(points);
 	}
 
 	/** Right-clicks at a point of the window. */

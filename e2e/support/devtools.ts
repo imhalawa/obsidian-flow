@@ -84,6 +84,68 @@ export class DevtoolsConnection {
 		await this.send('Input.dispatchMouseEvent', { type: 'mouseReleased', ...press });
 	}
 
+	/** Presses the left button at the first point, moves through the others with it held and releases at the last. */
+	async dragThrough(points: readonly { x: number; y: number }[]): Promise<void> {
+		const [first, ...rest] = points;
+		const last = rest[rest.length - 1];
+		if (!first || !last) throw new Error('A drag needs at least two points.');
+		await this.send('Input.dispatchMouseEvent', { type: 'mouseMoved', ...first });
+		await this.send('Input.dispatchMouseEvent', {
+			type: 'mousePressed',
+			...first,
+			button: 'left',
+			buttons: 1,
+			clickCount: 1,
+		});
+		for (const point of rest) {
+			await this.send('Input.dispatchMouseEvent', {
+				type: 'mouseMoved',
+				...point,
+				button: 'left',
+				buttons: 1,
+			});
+		}
+		await this.send('Input.dispatchMouseEvent', {
+			type: 'mouseReleased',
+			...last,
+			button: 'left',
+			buttons: 0,
+			clickCount: 1,
+		});
+	}
+
+	/** Presses, moves or releases the held left button at a point. */
+	async held(phase: 'press' | 'move' | 'release', x: number, y: number): Promise<void> {
+		if (phase === 'press') {
+			await this.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y });
+			await this.send('Input.dispatchMouseEvent', {
+				type: 'mousePressed',
+				x,
+				y,
+				button: 'left',
+				buttons: 1,
+				clickCount: 1,
+			});
+		} else if (phase === 'move') {
+			await this.send('Input.dispatchMouseEvent', {
+				type: 'mouseMoved',
+				x,
+				y,
+				button: 'left',
+				buttons: 1,
+			});
+		} else {
+			await this.send('Input.dispatchMouseEvent', {
+				type: 'mouseReleased',
+				x,
+				y,
+				button: 'left',
+				buttons: 0,
+				clickCount: 1,
+			});
+		}
+	}
+
 	/** Types text into the focused element one character at a time, the way input methods do. */
 	async insertText(text: string): Promise<void> {
 		for (const character of text) {
