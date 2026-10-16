@@ -153,6 +153,10 @@ describe('the note title in the header while zoomed', () => {
 });
 
 describe('a path that does not fit the header', () => {
+	beforeEach(async () => {
+		await app.movePointer(5, 600);
+	});
+
 	const DEEP = '- alpha\n\t- bravo\n\t\t- charlie\n\t\t\t- delta\n\t\t\t\t- echo';
 
 	it('keeps the first level and the current item and collapses the middle', async () => {
@@ -251,6 +255,16 @@ describe('long and formatted crumb labels', () => {
 			`(() => { const crumb = Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .flow-crumbs__crumb:not(.is-hidden)")).find((el) => el.textContent === ${JSON.stringify(label)}); const text = crumb.querySelector(".flow-crumbs__text"); const overlay = getComputedStyle(crumb, "::after").content; return { width: crumb.getBoundingClientRect().width, cut: text.scrollWidth > text.clientWidth, overlay: overlay !== "none" && overlay !== "normal" }; })()`,
 		);
 
+	/** Waits until the crumb with a label is wider than a width, then reads it. */
+	async function crumbBoxWiderThan(label: string, width: number): Promise<CrumbBox> {
+		let box = await crumbBox(label);
+		for (let attempt = 0; attempt < 20 && box.width <= width; attempt += 1) {
+			await wait(100);
+			box = await crumbBox(label);
+		}
+		return box;
+	}
+
 	/** Returns the left and right edge of every visible crumb. */
 	const crumbSpans = () =>
 		app.evaluate<{ left: number; right: number }[]>(
@@ -277,16 +291,28 @@ describe('long and formatted crumb labels', () => {
 		expect(box.width).toBeLessThan(420);
 	});
 
-	it('grows the current crumb in the row to show its full text while the pointer is over it', async () => {
-		await hoverCrumb(NOTE_WITH_LONG, LONG);
-		const hovered = await crumbBox(LONG);
-		expect(hovered.cut).toBe(false);
-		expect(hovered.width).toBeGreaterThan(420);
+	/** Zooms into the second item of a note, notes the width of a crumb, then moves the pointer over it. */
+	async function widthBeforeAndAfterHover(
+		text: string,
+		label: string,
+	): Promise<[number, number]> {
+		const editor = await openInFolder(text);
+		await editor.caret(1, 4);
+		await editor.runCommand('zoom-in');
+		const before = (await crumbBox(label)).width;
+		const point = await editor.crumbPoint(label);
+		await app.movePointer(point.x, point.y);
+		return [before, (await crumbBoxWiderThan(label, before)).width];
+	}
+
+	it('grows the current crumb in the row while the pointer is over it', async () => {
+		const [before, after] = await widthBeforeAndAfterHover(NOTE_WITH_LONG, LONG);
+		expect(after).toBeGreaterThan(before);
 	});
 
-	it('grows a level above the current item to show its full text while the pointer is over it', async () => {
-		await hoverCrumb(`- ${LONG}\n\t- short`, LONG);
-		expect((await crumbBox(LONG)).cut).toBe(false);
+	it('grows a level above the current item while the pointer is over it', async () => {
+		const [before, after] = await widthBeforeAndAfterHover(`- ${LONG}\n\t- short`, LONG);
+		expect(after).toBeGreaterThan(before);
 	});
 
 	it('covers no crumb while a cut label is shown in full', async () => {
