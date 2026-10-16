@@ -22,6 +22,7 @@ interface KeyDefinition {
 const KEYS = {
 	enter: { key: 'Enter', code: 'Enter', keyCode: 13, text: '\r' },
 	backspace: { key: 'Backspace', code: 'Backspace', keyCode: 8, text: null },
+	delete: { key: 'Delete', code: 'Delete', keyCode: 46, text: null },
 	home: { key: 'Home', code: 'Home', keyCode: 36, text: null },
 	tab: { key: 'Tab', code: 'Tab', keyCode: 9, text: '\t' },
 	a: { key: 'a', code: 'KeyA', keyCode: 65, text: null },
@@ -96,6 +97,9 @@ export class ObsidianApp {
 			[
 				'--no-sandbox',
 				'--disable-gpu',
+				'--disable-backgrounding-occluded-windows',
+				'--disable-renderer-backgrounding',
+				'--disable-features=CalculateNativeWinOcclusion',
 				'--remote-debugging-port=0',
 				`--user-data-dir=${userData}`,
 			],
