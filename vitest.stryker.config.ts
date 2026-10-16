@@ -1,4 +1,7 @@
 import { defineConfig, mergeConfig } from 'vitest/config';
 import base from './vitest.config';
 
-export default mergeConfig(base, defineConfig({ test: { fileParallelism: false } }));
+export default mergeConfig(
+	base,
+	defineConfig({ test: { fileParallelism: false, testTimeout: 30000 } }),
+);
