@@ -95,6 +95,20 @@ describe('folds in real Obsidian', () => {
 		expect(await editor.notices()).toContain('This item has no children to fold.');
 	});
 
+	it('unfolds, and does not zoom, when the right edge of the fold dots is clicked', async () => {
+		const editor = await NoteEditor.open(app, '- a\n\t- b\n\t\t- c\n\t\t- d\n\t- e');
+		await editor.caret(1, 4);
+		await editor.runCommand('fold-item');
+		await new Promise((resolve) => setTimeout(resolve, 300));
+		const edge = await app.evaluate<{ x: number; y: number }>(
+			`(() => { const r = activeDocument.querySelector('.workspace-leaf.mod-active .cm-foldPlaceholder').getBoundingClientRect(); return { x: r.right - 1, y: (r.top + r.bottom) / 2 }; })()`,
+		);
+		await app.click(edge.x, edge.y, false);
+		await new Promise((resolve) => setTimeout(resolve, 300));
+		expect(await editor.folds()).toEqual([]);
+		expect(await editor.crumbs()).toEqual([]);
+	});
+
 	it('keeps folds made while zoomed after zooming out', async () => {
 		const editor = await NoteEditor.open(app, NOTE);
 		await editor.caret(2, 3);

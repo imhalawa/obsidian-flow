@@ -4,6 +4,7 @@ import {
 	foldAll,
 	foldItem,
 	isFolded,
+	isHiddenByFold,
 	toggleBranch,
 	unfoldAll,
 	unfoldItem,
@@ -230,5 +231,19 @@ describe('isFolded', () => {
 		['a line outside the list', 0],
 	])('is false for %s', (_name, line) => {
 		expect(isFolded(new FakeZoomTarget(NOTE, 0).state, line)).toBe(false);
+	});
+});
+
+describe('isHiddenByFold', () => {
+	it.each([
+		['the item that is folded', 1, false],
+		['a line inside the fold', 2, true],
+		['the last line inside the fold', 4, true],
+		['the line after the fold', 5, false],
+	])('tells %s', (_name, line, expected) => {
+		const target = new FakeZoomTarget(NOTE, at('a'));
+		foldItem(target);
+		const start = target.state.doc.line(line + 1).from;
+		expect(isHiddenByFold(target.state, start)).toBe(expected);
 	});
 });

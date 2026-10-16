@@ -19,7 +19,7 @@ import {
 } from '../ui/item-menu-model';
 import { hasStartedDragging, isFinishedPress, type PressPoint } from './bullet-press';
 import { showLitBullet, litBulletAt } from './bullet-hover';
-import { isFolded, toggleBranch } from './fold-control';
+import { isFolded, isHiddenByFold, toggleBranch } from './fold-control';
 import { foldIndicatorCenter, isOverFoldIndicator } from './fold-indicator';
 import { editorFontSize, firstRow, markerSpan } from './item-geometry';
 import { outlineOfState } from './outline-of-state';
@@ -62,6 +62,7 @@ function hitAt(view: EditorView, event: MouseEvent, host: ItemPointerHost): Poin
 	const offset = event.clientY - view.documentTop;
 	if (offset < block.top || offset > block.bottom) return null;
 	const lineIndex = view.state.doc.lineAt(position).number - 1;
+	if (isHiddenByFold(view.state, view.state.doc.line(lineIndex + 1).from)) return null;
 	const tree = outlineOfState(view.state);
 	const marker = bulletMarker(tree, lineIndex);
 	const row = firstRow(view, lineIndex);
