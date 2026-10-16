@@ -32,7 +32,7 @@ describe('item suggester in real Obsidian', () => {
 		await editor.typeKeys('((apple');
 		expect(await editor.suggestions()).toContain('apple pie');
 		await editor.chooseSuggestion('apple pie');
-		const text = await waitForText(editor, /\[\[.*\]\]/);
+		const text = await waitForText(editor, /^- see \[\[note-1#\^[a-z0-9]{6}\]\]$/);
 		expect(text).toMatch(/^- see \[\[note-1#\^[a-z0-9]{6}\]\]$/);
 		const id = /\^([a-z0-9]{6})/.exec(text)?.[1];
 		expect(await editor.readNote('note-1.md')).toBe(`- apple pie ^${id}\n- banana`);
@@ -44,7 +44,10 @@ describe('item suggester in real Obsidian', () => {
 		await editor.typeKeys('((app');
 		await editor.suggestions();
 		await editor.chooseSuggestion('apple');
-		const text = await waitForText(editor, /\[\[.*\]\]/);
+		const text = await waitForText(
+			editor,
+			/^- apple \^[a-z0-9]{6}\n- see \[\[#\^[a-z0-9]{6}\]\]$/,
+		);
 		expect(text).toMatch(/^- apple \^[a-z0-9]{6}\n- see \[\[#\^[a-z0-9]{6}\]\]$/);
 		expect(text).not.toContain('))');
 	});
