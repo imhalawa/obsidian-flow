@@ -187,14 +187,14 @@ const DEEP = [
 
 const EMBED_LINES = [2, 4, 6, 7];
 
-describe('embeds in nested bullets in real Obsidian', () => {
-	const openDeep = async () => {
-		const editor = await NoteEditor.open(app, DEEP);
-		await editor.caret(9, 2);
-		await wait(1800);
-		return editor;
-	};
+const openDeep = async () => {
+	const editor = await NoteEditor.open(app, DEEP);
+	await editor.caret(9, 2);
+	await wait(1800);
+	return editor;
+};
 
+describe('embeds in nested bullets in real Obsidian', () => {
 	it.each(EMBED_LINES)('draws the embed of line %i beside its bullet', async (line) => {
 		const editor = await openDeep();
 		const layout = await editor.embedLayout(line);
@@ -306,5 +306,41 @@ describe('embed titles in bullets in real Obsidian', () => {
 		);
 		const layout = await editor.embedLayout(1);
 		expect(row - layout!.embedTop).toBeLessThan(6);
+	});
+});
+
+describe('embeds in bullets when the window is resized in real Obsidian', () => {
+	afterAll(async () => {
+		await app.resizeWindow(1280, 900);
+	});
+
+	it.each([800, 1280, 1800])(
+		'keeps the embed beside its bullet and inside the note at a window width of %i pixels',
+		async (width) => {
+			await app.resizeWindow(width, 900);
+			const editor = await openDeep();
+			for (const line of EMBED_LINES) {
+				const layout = await editor.embedLayout(line);
+				const content = await app.evaluate<number>(
+					'activeDocument.querySelector(".workspace-leaf.mod-active .cm-content").getBoundingClientRect().right',
+				);
+				expect(layout!.embedTop - layout!.lineTop).toBeLessThan(2);
+				expect(layout!.bulletRight).toBeLessThanOrEqual(layout!.embedLeft + 1);
+				expect(layout!.embedRight).toBeLessThanOrEqual(content);
+			}
+		},
+	);
+
+	it('re-lays out the embed when the window is narrowed after the note is open', async () => {
+		await app.resizeWindow(1280, 900);
+		const editor = await openDeep();
+		await app.resizeWindow(600, 900);
+		await wait(800);
+		const layout = await editor.embedLayout(2);
+		const content = await app.evaluate<number>(
+			'activeDocument.querySelector(".workspace-leaf.mod-active .cm-content").getBoundingClientRect().right',
+		);
+		expect(layout!.embedRight).toBeLessThanOrEqual(content);
+		expect(layout!.embedTop - layout!.lineTop).toBeLessThan(2);
 	});
 });
