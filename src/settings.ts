@@ -4,6 +4,7 @@ import type FlowPlugin from './main';
 export interface FlowSettings {
 	enabled: boolean;
 	rememberZoom: boolean;
+	cleanZoom: boolean;
 	hideBlockIds: boolean;
 	itemSuggester: boolean;
 	clickBulletToZoom: boolean;
@@ -20,6 +21,7 @@ export interface FlowSettings {
 export const DEFAULT_SETTINGS: FlowSettings = {
 	enabled: true,
 	rememberZoom: true,
+	cleanZoom: true,
 	hideBlockIds: true,
 	itemSuggester: true,
 	clickBulletToZoom: true,
@@ -54,6 +56,12 @@ export class FlowSettingTab extends PluginSettingTab {
 			null,
 		);
 		this.addToggle(
+			'Show the zoomed item at the left edge',
+			'Move the zoomed item to the left edge of the note and hide the indent guides of the levels above it.',
+			'cleanZoom',
+			() => this.app.workspace.updateOptions(),
+		);
+		this.addToggle(
 			'Hide block ids',
 			'Hide the id at the end of an item unless the cursor is on its line.',
 			'hideBlockIds',
@@ -85,8 +93,8 @@ export class FlowSettingTab extends PluginSettingTab {
 			null,
 		);
 		this.addToggle(
-			'Drag items by their handle',
-			'Show a handle at the start of each item. Drag it to move the item and its children, also to another open note.',
+			'Drag items by their bullet',
+			'Press a bullet and move to drag the item and its children, also to another open note. A click on the bullet still zooms.',
 			'dragItems',
 			() => this.app.workspace.updateOptions(),
 		);

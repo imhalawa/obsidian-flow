@@ -36,7 +36,7 @@ describe('zoomIn', () => {
 
 	it('reports a cursor outside any list item and changes nothing', () => {
 		const target = new FakeZoomTarget(NOTE, 2);
-		expect(zoomIn(target)).toBe('not-a-list-item');
+		expect(zoomIn(target)).toBe('nothing-to-zoom');
 		expect(target.zoom).toBeNull();
 	});
 });

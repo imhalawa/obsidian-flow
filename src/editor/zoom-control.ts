@@ -21,7 +21,7 @@ export interface ZoomTarget {
 	dispatch(spec: TransactionSpec): void;
 }
 
-export type ZoomOutcome = 'done' | 'not-a-list-item' | 'item-removed';
+export type ZoomOutcome = 'done' | 'nothing-to-zoom' | 'item-removed';
 
 export type HistoryDirection = 'back' | 'forward';
 
@@ -75,12 +75,12 @@ function entryLine(state: EditorState, entry: ZoomEntry): number | null {
 	return entry === null ? null : state.doc.lineAt(Math.min(entry, state.doc.length)).number - 1;
 }
 
-/** Zooms into the deepest item at the cursor. */
+/** Zooms into the deepest item at the cursor, or into the heading section it is in. */
 export function zoomIn(target: ZoomTarget): ZoomOutcome {
 	const state = target.state;
 	const cursorLine = state.doc.lineAt(state.selection.main.head).number - 1;
 	const startLine = zoomInTarget(state.doc.toJSON(), state.tabSize, cursorLine);
-	if (startLine === null) return 'not-a-list-item';
+	if (startLine === null) return 'nothing-to-zoom';
 	dispatchZoom(target, startLine, 'visit');
 	return 'done';
 }

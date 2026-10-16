@@ -4,7 +4,6 @@ import type { LineSpan } from '../outline/drop-target';
 import { itemStartingAt } from '../outline/item-lookup';
 import type { DropDestination } from '../outline/move-subtree';
 import { refusalMessage } from '../ui/refusal-messages';
-import { dragHandles } from './drag-handles';
 import { destinationAt } from './drag-hover';
 import { dropAcross, dropWithin } from './drag-move';
 import { dropIndicator, setDropIndicator } from './drop-indicator';
@@ -74,13 +73,10 @@ function drop(host: ItemDragHost, session: DragSession): void {
 	if (!outcome.ok) host.notify(refusalMessage(outcome.reason));
 }
 
-/** Follows one drag from the press on a grip to the release. */
-function beginDrag(host: ItemDragHost, view: EditorView, event: PointerEvent, grip: HTMLElement) {
-	if (event.button !== 0) return;
-	const sourceLine = view.state.doc.lineAt(view.posAtDOM(grip)).number - 1;
+/** Follows one drag from the moment a pressed bullet has moved far enough to the release. */
+function followDrag(host: ItemDragHost, view: EditorView, sourceLine: number, first: PointerEvent) {
 	const item = itemStartingAt(outlineOfState(view.state), sourceLine);
 	if (!item) return;
-	event.preventDefault();
 	const session: DragSession = {
 		source: view,
 		sourceLine,
@@ -89,7 +85,6 @@ function beginDrag(host: ItemDragHost, view: EditorView, event: PointerEvent, gr
 		destination: null,
 	};
 	const document = view.dom.ownerDocument;
-	grip.setPointerCapture(event.pointerId);
 	for (const each of views) each.dom.classList.add(DRAGGING_CLASS);
 	const move = (moved: PointerEvent) => {
 		const found = viewAt(view, moved.clientX, moved.clientY);
@@ -98,9 +93,9 @@ function beginDrag(host: ItemDragHost, view: EditorView, event: PointerEvent, gr
 		showIndicator(session, destination ? found : null, destination);
 	};
 	const finish = (released: PointerEvent | null) => {
-		grip.removeEventListener('pointermove', move);
-		grip.removeEventListener('pointerup', finish);
-		grip.removeEventListener('pointercancel', cancel);
+		document.removeEventListener('pointermove', move);
+		document.removeEventListener('pointerup', finish);
+		document.removeEventListener('pointercancel', cancel);
 		document.removeEventListener('keydown', escape, true);
 		for (const each of views) each.dom.classList.remove(DRAGGING_CLASS);
 		if (released) drop(host, session);
@@ -112,24 +107,34 @@ function beginDrag(host: ItemDragHost, view: EditorView, event: PointerEvent, gr
 		pressed.stopPropagation();
 		cancel();
 	};
-	grip.addEventListener('pointermove', move);
-	grip.addEventListener('pointerup', finish);
-	grip.addEventListener('pointercancel', cancel);
+	document.addEventListener('pointermove', move);
+	document.addEventListener('pointerup', finish);
+	document.addEventListener('pointercancel', cancel);
 	document.addEventListener('keydown', escape, true);
+	move(first);
 }
 
-/** Returns the extension that lets the user drag an item by its handle to a new place. */
-export function itemDrag(host: ItemDragHost): Extension {
-	return [
-		dropIndicator(),
-		dragHandles(host.isEnabled, (view, event, grip) => beginDrag(host, view, event, grip)),
-		ViewPlugin.define((view) => {
-			views.add(view);
-			return {
-				destroy() {
-					views.delete(view);
-				},
-			};
-		}),
-	];
+export interface ItemDrag {
+	extension: Extension;
+	begin: (view: EditorView, startLine: number, first: PointerEvent) => void;
+}
+
+/** Returns the extension that draws the drop indicator, and the function that starts dragging the item on a line. */
+export function itemDrag(host: ItemDragHost): ItemDrag {
+	return {
+		extension: [
+			dropIndicator(),
+			ViewPlugin.define((view) => {
+				views.add(view);
+				return {
+					destroy() {
+						views.delete(view);
+					},
+				};
+			}),
+		],
+		begin: (view, startLine, first) => {
+			if (host.isEnabled()) followDrag(host, view, startLine, first);
+		},
+	};
 }

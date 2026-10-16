@@ -1,6 +1,6 @@
 # Drag and drop
 
-Every list item has a drag handle in the left margin of the editor. It shows when the pointer is over the item (always, dimmed, on touch screens). Drag it to move the item with its children.
+Press a bullet and move the pointer to drag the item with its children. There is no handle in the margin: the bullet is the only control. A press that is released without moving still zooms into the item.
 
 ![Dragging an item in the light theme](screenshots/drag-and-drop-light.png)
 
@@ -18,7 +18,7 @@ A line shows where it lands while you drag. It follows the pointer:
 
 Press Escape before releasing the button to cancel.
 
-The drop is one change, so one undo puts everything back. The handle follows the setting **Drag items by their handle** under **Bullets and thread lines**.
+The drop is one change, so one undo puts everything back. The setting **Drag items by their bullet** under **Bullets and thread lines** turns dragging on and off.
 
 ## Between notes
 
@@ -26,8 +26,8 @@ Drop the item on another open note, for example in a split pane. The destination
 
 ## How it works
 
-- The handle is drawn by the plugin as a widget at the start of each item line, with its own class names. The plugin does not look at Obsidian's own elements to find items.
-- Pointer events with pointer capture on the handle, and `ownerDocument` for the key listener, so pop-out windows work.
+- The pointer handler finds the bullet from the position of the pointer in the text, not from Obsidian's own elements. A drag starts once the pointer has moved 4 px from where it was pressed.
+- The pointer is followed with listeners on the `ownerDocument`, so pop-out windows work.
 - Targets come from `posAtCoords`, `lineBlockAt` and `coordsAtPos`. The drop indicator is a CodeMirror layer.
 - The move is a pure function (`src/outline/move-subtree.ts`) that takes the item out, puts it in the new place and checks the result against a re-parse before anything is written. A property test compares it with Lezer for every item and every place of generated notes.
 - Folded items stay folded after the move.
@@ -36,4 +36,4 @@ Drop the item on another open note, for example in a split pane. The destination
 
 - The editor does not scroll while you drag. Move the item in steps, or zoom into a part of the note.
 - Folds of a subtree that moves to another note are not carried along.
-- The handle is a 16 px wide target in the margin, because the margin is narrow. Keyboard users can use the move up and move down commands.
+- Touch screens do not drag: a touch on a bullet only zooms, so scrolling stays predictable. Use the move up and move down commands there. Keyboard users have the same commands.

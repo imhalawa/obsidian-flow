@@ -81,7 +81,7 @@ describe('zoom commands', () => {
 	it('tells the user to place the cursor in a list item', () => {
 		const target = new FakeZoomTarget(NOTE, 0);
 		expect(run('zoom-in', target, false)).toBe(true);
-		expect(Notice.shown).toEqual(['Place the cursor in a list item to zoom.']);
+		expect(Notice.shown).toEqual(['Place the cursor in a list item or a heading to zoom.']);
 	});
 
 	it('zooms out and resets', () => {

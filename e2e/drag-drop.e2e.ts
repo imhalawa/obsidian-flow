@@ -29,7 +29,7 @@ async function levelWidth(pane: NotePane): Promise<number> {
 	return (await pane.bulletPoint(1)).x - (await pane.bulletPoint(0)).x;
 }
 
-/** Drags the handle of an item to the top or bottom half of another line; levels place the pointer over the bullet of the target moved sideways by that many levels, and null keeps it in the gutter. */
+/** Drags the bullet of an item to the top or bottom half of another line; levels place the pointer over the bullet of the target moved sideways by that many levels, and null keeps it in the left margin. */
 async function dragTo(
 	pane: NotePane,
 	line: number,
@@ -37,13 +37,12 @@ async function dragTo(
 	half: 'top' | 'bottom',
 	levels: number | null,
 ): Promise<void> {
-	const grip = await pane.gripPoint(line);
-	if (!grip) throw new Error(`No handle on line ${line}.`);
+	const grip = await pane.bulletPoint(line);
 	const box = await pane.lineBox(targetLine);
 	const height = box.bottom - box.top;
 	const x =
 		levels === null
-			? grip.x
+			? (await pane.bulletPoint(0)).x - (await levelWidth(pane))
 			: (await pane.bulletPoint(targetLine)).x + levels * (await levelWidth(pane));
 	const destination = {
 		x,
@@ -57,15 +56,14 @@ async function dragTo(
 	await wait(150);
 }
 
-/** Presses the handle of an item and moves over the top or bottom half of a line without letting go. */
+/** Presses the bullet of an item and moves over the top or bottom half of a line without letting go. */
 async function holdOver(
 	pane: NotePane,
 	line: number,
 	targetLine: number,
 	half: 'top' | 'bottom',
 ): Promise<Point> {
-	const grip = await pane.gripPoint(line);
-	if (!grip) throw new Error(`No handle on line ${line}.`);
+	const grip = await pane.bulletPoint(line);
 	const box = await pane.lineBox(targetLine);
 	const height = box.bottom - box.top;
 	const destination = {
@@ -80,9 +78,32 @@ async function holdOver(
 }
 
 describe('drag and drop in real Obsidian', () => {
-	it('draws a handle for every item', async () => {
+	it('draws no handle in the gutter', async () => {
 		const pane = await open(NOTE);
-		expect(await pane.gripCount()).toBe(5);
+		expect(await pane.handleCount()).toBe(0);
+	});
+
+	it('zooms into an item when its bullet is pressed and released without moving', async () => {
+		const pane = await open(NOTE);
+		const bullet = await pane.bulletPoint(0);
+		await app.drag([bullet, bullet]);
+		await wait(200);
+		expect(await pane.text()).toBe(NOTE);
+		expect(await NoteEditor.attach(app).crumbs()).toEqual(['a']);
+	});
+
+	it('zooms when the pointer moves less than the drag distance', async () => {
+		const pane = await open(NOTE);
+		const bullet = await pane.bulletPoint(0);
+		await app.drag([bullet, { x: bullet.x + 2, y: bullet.y + 1 }]);
+		await wait(200);
+		expect(await NoteEditor.attach(app).crumbs()).toEqual(['a']);
+	});
+
+	it('does not zoom when the bullet is dragged', async () => {
+		const pane = await open(NOTE);
+		await dragTo(pane, 3, 0, 'top', null);
+		expect(await NoteEditor.attach(app).crumbs()).toEqual([]);
 	});
 
 	it('moves an item above another one', async () => {
@@ -140,13 +161,13 @@ describe('drag and drop in real Obsidian', () => {
 		expect(await pane.text()).toBe(NOTE);
 	});
 
-	it('draws no handles when the setting is off', async () => {
+	it('does not drag when the setting is off', async () => {
 		await app.evaluate(
 			'(app.plugins.plugins["flow-outliner"].settings.dragItems = false, app.workspace.updateOptions(), true)',
 		);
 		const pane = await open(NOTE);
-		await wait(300);
-		expect(await pane.gripCount()).toBe(0);
+		await dragTo(pane, 3, 0, 'top', null);
+		expect(await pane.text()).toBe(NOTE);
 		await app.evaluate(
 			'(app.plugins.plugins["flow-outliner"].settings.dragItems = true, app.workspace.updateOptions(), true)',
 		);
@@ -194,10 +215,9 @@ describe('drag and drop in real Obsidian', () => {
 		await wait(400);
 		const left = NotePane.of(app, `left-${id}.md`);
 		const right = NotePane.of(app, `right-${id}.md`);
-		const grip = await left.gripPoint(0);
+		const grip = await left.bulletPoint(0);
 		const box = await right.lineBox(0);
 		const bullet = await right.bulletPoint(0);
-		if (!grip) throw new Error('No handle.');
 		const target = { x: bullet.x, y: box.bottom - (box.bottom - box.top) * 0.2 };
 		await app.drag([grip, { x: (grip.x + target.x) / 2, y: (grip.y + target.y) / 2 }, target]);
 		await wait(300);

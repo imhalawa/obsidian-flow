@@ -45,8 +45,14 @@ export function renameZoom(store: ZoomStore, oldPath: string, newPath: string): 
 /** Tells whether a value is one anchor segment. */
 function isSegment(value: unknown): value is AnchorSegment {
 	if (typeof value !== 'object' || value === null) return false;
-	const { text, nth } = value as Record<string, unknown>;
-	return typeof text === 'string' && typeof nth === 'number' && Number.isInteger(nth) && nth >= 0;
+	const { text, nth, heading } = value as Record<string, unknown>;
+	return (
+		typeof text === 'string' &&
+		typeof nth === 'number' &&
+		Number.isInteger(nth) &&
+		nth >= 0 &&
+		(heading === undefined || heading === true)
+	);
 }
 
 /** Tells whether a value is a stored zoom. */
