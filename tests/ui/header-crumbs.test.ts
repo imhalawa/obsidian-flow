@@ -22,14 +22,9 @@ describe('headerCrumbs', () => {
 		expect(crumbs.map((crumb) => crumb.current)).toEqual([false, false, true]);
 	});
 
-	it('describes what a crumb does', () => {
-		expect(headerCrumbs([{ text: 'a', startLine: 1 }])[0]?.description).toBe('Zoom to a');
-	});
-
 	it('names an empty item', () => {
 		const crumb = headerCrumbs([{ text: '', startLine: 4 }])[0];
 		expect(crumb?.label).toBe('Empty item');
-		expect(crumb?.description).toBe('Zoom to Empty item');
 	});
 
 	it('draws nothing for an empty path', () => {
@@ -41,10 +36,6 @@ describe('headerCrumbs formatting', () => {
 	it('shows a label without its markdown markers', () => {
 		const crumb = headerCrumbs([{ text: '**Garden tasks for spring**', startLine: 1 }])[0];
 		expect(crumb?.label).toBe('Garden tasks for spring');
-	});
-
-	it('describes the zoom with the cleaned label', () => {
-		expect(headerCrumbs([{ text: '**a**', startLine: 1 }])[0]?.description).toBe('Zoom to a');
 	});
 
 	it('shows a label without its block id', () => {

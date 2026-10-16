@@ -101,7 +101,62 @@ describe('breadcrumbs in the note header in real Obsidian', () => {
 	});
 });
 
+describe('the note title in the header while zoomed', () => {
+	it('shows the whole note when it is clicked', async () => {
+		const editor = await openInFolder(NOTE);
+		await editor.caret(3, 4);
+		await editor.runCommand('zoom-in');
+		await editor.clickTitle();
+		expect(await editor.crumbs()).toEqual([]);
+		expect(await editor.visibleLines()).toHaveLength(6);
+	});
+
+	it('shows the whole note when Enter is pressed on it', async () => {
+		const editor = await openInFolder(NOTE);
+		await editor.caret(3, 4);
+		await editor.runCommand('zoom-in');
+		await editor.focusTitle();
+		await app.pressKey('enter', false, false);
+		await wait(200);
+		expect(await editor.crumbs()).toEqual([]);
+		expect(await editor.visibleLines()).toHaveLength(6);
+	});
+
+	it('shows a hand cursor so it reads as a link', async () => {
+		const editor = await openInFolder(NOTE);
+		await editor.caret(3, 4);
+		await editor.runCommand('zoom-in');
+		expect(await editor.titleCursor()).toBe('pointer');
+	});
+
+	it('goes back to the native cursor when the whole note is shown', async () => {
+		const editor = await openInFolder(NOTE);
+		await editor.caret(3, 4);
+		await editor.runCommand('zoom-in');
+		await editor.runCommand('zoom-reset');
+		expect(await editor.titleCursor()).not.toBe('pointer');
+	});
+
+	it('still starts a rename when it is clicked and nothing is zoomed', async () => {
+		const editor = await openInFolder(NOTE);
+		await editor.clickTitle();
+		expect(await editor.titleHasFocus()).toBe(true);
+	});
+
+	it('does not start a rename when it is clicked to show the whole note', async () => {
+		const editor = await openInFolder(NOTE);
+		await editor.caret(3, 4);
+		await editor.runCommand('zoom-in');
+		await editor.clickTitle();
+		expect(await editor.titleHasFocus()).toBe(false);
+	});
+});
+
 describe('a path that does not fit the header', () => {
+	beforeEach(async () => {
+		await app.movePointer(5, 600);
+	});
+
 	const DEEP = '- alpha\n\t- bravo\n\t\t- charlie\n\t\t\t- delta\n\t\t\t\t- echo';
 
 	it('keeps the first level and the current item and collapses the middle', async () => {
@@ -151,7 +206,7 @@ describe('a path that does not fit the header', () => {
 		await app.pressKey('escape', false, false);
 	});
 
-	it('shortens text that still overflows and keeps the full text for hovering', async () => {
+	it('shortens text that still overflows and keeps the full text in the page', async () => {
 		const editor = await openInFolder(
 			'- a very long first level title that cannot fit\n\t- a very long current item title that cannot fit either',
 		);
@@ -159,7 +214,7 @@ describe('a path that does not fit the header', () => {
 		await editor.runCommand('zoom-in');
 		await editor.limitHeaderWidth(260);
 		const result = await app.evaluate<{ clipped: boolean; label: string | null }>(
-			`(() => { const crumb = activeDocument.querySelector(".workspace-leaf.mod-active .flow-crumbs__crumb.is-current"); const text = crumb.querySelector(".flow-crumbs__text"); return { clipped: text.scrollWidth > text.clientWidth, label: crumb.getAttribute("aria-label") }; })()`,
+			`(() => { const crumb = activeDocument.querySelector(".workspace-leaf.mod-active .flow-crumbs__crumb.is-current"); const text = crumb.querySelector(".flow-crumbs__text"); return { clipped: text.scrollWidth > text.clientWidth, label: text.textContent }; })()`,
 		);
 		expect(result.clipped).toBe(true);
 		expect(result.label).toBe('a very long current item title that cannot fit either');
@@ -191,20 +246,29 @@ describe('long and formatted crumb labels', () => {
 	interface CrumbBox {
 		width: number;
 		cut: boolean;
-		overlayText: string | null;
-		overlayWidth: number;
+		overlay: boolean;
 	}
 
-	/** Reads the visible crumb with a label: its width, whether its text is cut and what it shows while hovered. */
+	/** Reads the visible crumb with a label: its width, whether its text is cut and whether a card is drawn over the row. */
 	const crumbBox = (label: string) =>
 		app.evaluate<CrumbBox>(
-			`(() => { const crumb = Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .flow-crumbs__crumb:not(.is-hidden)")).find((el) => el.textContent === ${JSON.stringify(label)}); const text = crumb.querySelector(".flow-crumbs__text"); const overlay = getComputedStyle(crumb, "::after"); const shown = overlay.content !== "none" && overlay.content !== "normal"; return { width: crumb.getBoundingClientRect().width, cut: text.scrollWidth > text.clientWidth, overlayText: shown ? overlay.content : null, overlayWidth: shown ? Number.parseFloat(overlay.width) : 0 }; })()`,
+			`(() => { const crumb = Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .flow-crumbs__crumb:not(.is-hidden)")).find((el) => el.textContent === ${JSON.stringify(label)}); const text = crumb.querySelector(".flow-crumbs__text"); const overlay = getComputedStyle(crumb, "::after").content; return { width: crumb.getBoundingClientRect().width, cut: text.scrollWidth > text.clientWidth, overlay: overlay !== "none" && overlay !== "normal" }; })()`,
 		);
 
-	/** Returns the left edge of every visible crumb. */
-	const crumbEdges = () =>
-		app.evaluate<number[]>(
-			'Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .flow-crumbs__crumb:not(.is-hidden)")).map((el) => el.getBoundingClientRect().left)',
+	/** Waits until the crumb with a label is wider than a width, then reads it. */
+	async function crumbBoxWiderThan(label: string, width: number): Promise<CrumbBox> {
+		let box = await crumbBox(label);
+		for (let attempt = 0; attempt < 20 && box.width <= width; attempt += 1) {
+			await wait(100);
+			box = await crumbBox(label);
+		}
+		return box;
+	}
+
+	/** Returns the left and right edge of every visible crumb. */
+	const crumbSpans = () =>
+		app.evaluate<{ left: number; right: number }[]>(
+			'Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .flow-crumbs__crumb:not(.is-hidden)")).map((el) => { const box = el.getBoundingClientRect(); return { left: box.left, right: box.right }; })',
 		);
 
 	/** Zooms to the second item of a note and moves the pointer over the crumb with a label. */
@@ -225,54 +289,67 @@ describe('long and formatted crumb labels', () => {
 		const box = await crumbBox(LONG);
 		expect(box.cut).toBe(true);
 		expect(box.width).toBeLessThan(420);
-		expect(box.overlayText).toBeNull();
 	});
 
-	it('shows the full text of the current crumb while the pointer is over it', async () => {
-		await hoverCrumb(NOTE_WITH_LONG, LONG);
-		const hovered = await crumbBox(LONG);
-		expect(hovered.overlayText).toBe(`"${LONG}"`);
-		expect(hovered.overlayWidth).toBeGreaterThan(420);
-	});
-
-	it('shows the full text of a level above the current item while the pointer is over it', async () => {
-		await hoverCrumb(`- ${LONG}\n\t- short`, LONG);
-		expect((await crumbBox(LONG)).overlayText).toBe(`"${LONG}"`);
-	});
-
-	it('moves no crumb while a cut label is shown in full', async () => {
-		const editor = await openInFolder(NOTE_WITH_LONG);
+	/** Zooms into the second item of a note, notes the width of a crumb, then moves the pointer over it. */
+	async function widthBeforeAndAfterHover(
+		text: string,
+		label: string,
+	): Promise<[number, number]> {
+		const editor = await openInFolder(text);
 		await editor.caret(1, 4);
 		await editor.runCommand('zoom-in');
-		const before = await crumbEdges();
-		const point = await editor.crumbPoint(LONG);
+		const before = (await crumbBox(label)).width;
+		const point = await editor.crumbPoint(label);
 		await app.movePointer(point.x, point.y);
-		await wait(400);
-		expect(await crumbEdges()).toEqual(before);
+		return [before, (await crumbBoxWiderThan(label, before)).width];
+	}
+
+	it('grows the current crumb in the row while the pointer is over it', async () => {
+		const [before, after] = await widthBeforeAndAfterHover(NOTE_WITH_LONG, LONG);
+		expect(after).toBeGreaterThan(before);
+	});
+
+	it('grows a level above the current item while the pointer is over it', async () => {
+		const [before, after] = await widthBeforeAndAfterHover(`- ${LONG}\n\t- short`, LONG);
+		expect(after).toBeGreaterThan(before);
+	});
+
+	it('covers no crumb while a cut label is shown in full', async () => {
+		await hoverCrumb(NOTE_WITH_LONG, LONG);
+		const spans = await crumbSpans();
+		spans.slice(1).forEach((span, index) => {
+			expect(span.left).toBeGreaterThanOrEqual((spans[index]?.right ?? 0) - 1);
+		});
+		expect((await crumbBox(LONG)).overlay).toBe(false);
 	});
 
 	it('cuts the label again when the pointer leaves it', async () => {
 		await hoverCrumb(NOTE_WITH_LONG, LONG);
 		await app.movePointer(5, 600);
 		await wait(400);
-		expect((await crumbBox(LONG)).overlayText).toBeNull();
+		expect((await crumbBox(LONG)).cut).toBe(true);
 	});
 
-	it('shows nothing extra while the pointer is over a label that fits', async () => {
-		await hoverCrumb('- **Garden tasks for spring**\n\t- short', 'Garden tasks for spring');
-		const hovered = await crumbBox('Garden tasks for spring');
-		expect(hovered.cut).toBe(false);
-		expect(hovered.overlayText).toBeNull();
+	it('changes nothing while the pointer is over a label that fits', async () => {
+		const editor = await openInFolder('- **Garden tasks for spring**\n\t- short');
+		await editor.caret(1, 4);
+		await editor.runCommand('zoom-in');
+		const before = await crumbBox('Garden tasks for spring');
+		const point = await editor.crumbPoint('Garden tasks for spring');
+		await app.movePointer(point.x, point.y);
+		await wait(400);
+		expect((await crumbBox('Garden tasks for spring')).width).toBe(before.width);
 	});
 
-	it('keeps the full text as the accessible label of a cut crumb', async () => {
+	it('names a cut crumb by its full text and shows no tooltip over the row', async () => {
 		const editor = await openInFolder(`- ${LONG}\n\t- short`);
 		await editor.caret(1, 4);
 		await editor.runCommand('zoom-in');
-		const label = await app.evaluate<string | null>(
-			'activeDocument.querySelector(".workspace-leaf.mod-active .flow-crumbs__crumb:not(.is-current)").getAttribute("aria-label")',
+		const result = await app.evaluate<{ name: string | null; label: string | null }>(
+			'(() => { const crumb = activeDocument.querySelector(".workspace-leaf.mod-active .flow-crumbs__crumb:not(.is-current)"); return { name: crumb.textContent, label: crumb.getAttribute("aria-label") }; })()',
 		);
-		expect(label).toBe(`Zoom to ${LONG}`);
+		expect(result).toEqual({ name: LONG, label: null });
 	});
 
 	it('shows a level without its markdown markers', async () => {

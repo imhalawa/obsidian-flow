@@ -5,6 +5,7 @@ import { drawHeaderPath, fitHeaderPath, removeHeaderPath } from '../ui/header-pa
 import { headerCrumbs, type HeaderCrumb } from '../ui/header-crumbs';
 import { dispatchZoom, zoomTargetOf } from './zoom-control';
 import { zoomField } from './zoom-field';
+import { clearTitleLink, syncTitleLink } from './zoom-title';
 
 const TITLE_CONTAINER_SELECTOR = '.view-header-title-container';
 export const HEADER_MISSING_MESSAGE =
@@ -52,12 +53,14 @@ export class ZoomHeader {
 			if (!(leaf.view instanceof MarkdownView)) return;
 			const container = titleContainer(leaf.view);
 			if (container) removeHeaderPath(container);
+			clearTitleLink(leaf.view);
 		});
 		for (const observer of this.observers.values()) observer.disconnect();
 		this.observers.clear();
 	}
 
 	private drawIn(view: MarkdownView): HTMLElement | null {
+		syncTitleLink(view);
 		const container = titleContainer(view);
 		const target = zoomTargetOf(view.editor);
 		const zoom = target?.state.field(zoomField);

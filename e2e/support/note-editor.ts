@@ -162,6 +162,40 @@ export class NoteEditor {
 		await this.app.click(point.x, point.y, false);
 	}
 
+	/** Returns the middle of the note title in the header in window coordinates. */
+	titlePoint(): Promise<{ x: number; y: number }> {
+		return this.app.evaluate<{ x: number; y: number }>(
+			`(() => { const box = activeDocument.querySelector(".workspace-leaf.mod-active .view-header-title").getBoundingClientRect(); return { x: box.left + box.width / 2, y: box.top + box.height / 2 }; })()`,
+		);
+	}
+
+	/** Clicks the note title in the header with the mouse. */
+	async clickTitle(): Promise<void> {
+		const point = await this.titlePoint();
+		await this.app.click(point.x, point.y, false);
+	}
+
+	/** Gives the note title in the header the keyboard focus. */
+	async focusTitle(): Promise<void> {
+		await this.app.evaluate(
+			'(activeDocument.querySelector(".workspace-leaf.mod-active .view-header-title").focus(), true)',
+		);
+	}
+
+	/** Returns the cursor style the pointer shows over the note title in the header. */
+	titleCursor(): Promise<string> {
+		return this.app.evaluate<string>(
+			'getComputedStyle(activeDocument.querySelector(".workspace-leaf.mod-active .view-header-title")).cursor',
+		);
+	}
+
+	/** Tells whether the note title in the header has the keyboard focus, as it does when it is being renamed. */
+	titleHasFocus(): Promise<boolean> {
+		return this.app.evaluate<boolean>(
+			'activeDocument.activeElement === activeDocument.querySelector(".workspace-leaf.mod-active .view-header-title")',
+		);
+	}
+
 	/** Returns the text of the whole note header title area. */
 	headerText(): Promise<string> {
 		return this.app.evaluate<string>(

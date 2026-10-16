@@ -35,18 +35,14 @@ function crumbElement(crumb: HeaderCrumb, host: HeaderPathHost): HTMLElement {
 	if (crumb.current) {
 		const current = createSpan({
 			cls: `${CRUMB_CLASS} ${CURRENT_CLASS}`,
-			attr: {
-				'aria-current': 'location',
-				'aria-label': crumb.label,
-				'data-label': crumb.label,
-			},
+			attr: { 'aria-current': 'location' },
 		});
 		current.createSpan({ cls: TEXT_CLASS, text: crumb.label });
 		return current;
 	}
 	const button = createEl('button', {
 		cls: CRUMB_CLASS,
-		attr: { type: 'button', 'aria-label': crumb.description, 'data-label': crumb.label },
+		attr: { type: 'button' },
 	});
 	button.createSpan({ cls: TEXT_CLASS, text: crumb.label });
 	button.addEventListener('click', () => host.zoomTo(crumb.targetLine));
