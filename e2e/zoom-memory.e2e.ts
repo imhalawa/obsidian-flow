@@ -24,7 +24,7 @@ describe('remembered zoom in real Obsidian', () => {
 		await editor.caret(2, 3);
 		await editor.runCommand('zoom-in');
 		await editor.reopen();
-		expect(await editor.waitForCrumbs(3000)).toEqual(['Home', 'a', 'b']);
+		expect(await editor.waitForCrumbs(3000)).toEqual(['a', 'b']);
 		expect(await editor.visibleLines()).toEqual(['\t- b', '\t\t- c']);
 	});
 
@@ -52,7 +52,7 @@ describe('remembered zoom in real Obsidian', () => {
 		await editor.caret(3, 4);
 		await editor.runCommand('zoom-in');
 		await editor.reopenAfterRewriting('intro\n- a\n\t- b\n\t\t- c renamed\n\t- d\n- e');
-		expect(await editor.waitForCrumbs(3000)).toEqual(['Home', 'a', 'b']);
+		expect(await editor.waitForCrumbs(3000)).toEqual(['a', 'b']);
 	});
 
 	it('does not restore when remembering is switched off', async () => {

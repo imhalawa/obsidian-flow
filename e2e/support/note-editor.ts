@@ -109,18 +109,58 @@ export class NoteEditor {
 		);
 	}
 
-	/** Returns the labels of the breadcrumb trail on screen. */
+	/** Returns the labels of the crumbs the note header shows after the note name, hidden ones left out. */
 	crumbs(): Promise<string[]> {
 		return this.app.evaluate<string[]>(
-			'Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .flow-breadcrumbs__crumb")).map((el) => el.textContent)',
+			'Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .view-header-title-container .flow-crumbs__crumb:not(.is-hidden)")).map((el) => el.textContent)',
 		);
 	}
 
-	/** Clicks the breadcrumb with the given label. */
-	async clickCrumb(label: string): Promise<void> {
-		await this.app.evaluate(
-			`Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .flow-breadcrumbs__crumb")).find((el) => el.textContent === ${JSON.stringify(label)}).click()`,
+	/** Returns the middle of the crumb with the given label in window coordinates. */
+	crumbPoint(label: string): Promise<{ x: number; y: number }> {
+		return this.app.evaluate<{ x: number; y: number }>(
+			`(() => { const crumb = Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .flow-crumbs__crumb:not(.is-hidden)")).find((el) => el.textContent === ${JSON.stringify(label)}); const box = crumb.getBoundingClientRect(); return { x: box.left + box.width / 2, y: box.top + box.height / 2 }; })()`,
 		);
+	}
+
+	/** Clicks the crumb with the given label with the mouse. */
+	async clickCrumb(label: string): Promise<void> {
+		const point = await this.crumbPoint(label);
+		await this.app.click(point.x, point.y, false);
+	}
+
+	/** Returns the text of the whole note header title area. */
+	headerText(): Promise<string> {
+		return this.app.evaluate<string>(
+			'activeDocument.querySelector(".workspace-leaf.mod-active .view-header-title-container").textContent',
+		);
+	}
+
+	/** Limits the width of the header title area, in pixels, to make the path overflow. */
+	async limitHeaderWidth(pixels: number): Promise<void> {
+		await this.app.evaluate(
+			`(() => { const header = activeDocument.querySelector(".workspace-leaf.mod-active .view-header-title-container"); header.style.width = ${JSON.stringify(`${pixels}px`)}; header.style.flexGrow = "0"; return true; })()`,
+		);
+		await new Promise((resolve) => setTimeout(resolve, 300));
+	}
+
+	/** Creates a note at a path, folders included, opens it and waits for its editor. */
+	static async openAt(app: ObsidianApp, path: string, text: string): Promise<NoteEditor> {
+		await app.evaluate(
+			`(async () => {
+				const folder = ${JSON.stringify(path)}.split("/").slice(0, -1).join("/");
+				if (folder && !app.vault.getFolderByPath(folder)) await app.vault.createFolder(folder);
+				const file = await app.vault.create(${JSON.stringify(path)}, ${JSON.stringify(text)});
+				const leaf = app.workspace.getLeaf(false);
+				await leaf.openFile(file);
+				app.workspace.setActiveLeaf(leaf, { focus: true });
+				return true;
+			})()`,
+		);
+		await app.evaluate(
+			`new Promise((resolve) => { const check = () => app.workspace.activeEditor?.editor ? resolve(true) : setTimeout(check, 50); check(); })`,
+		);
+		return new NoteEditor(app);
 	}
 
 	/** Inserts text at a position as a user edit, the way typing does. */

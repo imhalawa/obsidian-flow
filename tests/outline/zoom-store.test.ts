@@ -120,3 +120,15 @@ describe('parseStore', () => {
 		});
 	});
 });
+
+describe('parseStore with heading segments', () => {
+	it('keeps a heading segment', () => {
+		const raw = { 'a.md': { anchor: [{ text: 'a', nth: 0, heading: true }], usedAt: 1 } };
+		expect(parseStore(raw)).toEqual(raw);
+	});
+
+	it('drops a segment whose heading flag is not true', () => {
+		const raw = { 'a.md': { anchor: [{ text: 'a', nth: 0, heading: 'yes' }], usedAt: 1 } };
+		expect(parseStore(raw)).toEqual({});
+	});
+});

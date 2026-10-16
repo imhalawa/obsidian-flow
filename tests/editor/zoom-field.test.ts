@@ -22,7 +22,7 @@ describe('zoomField', () => {
 		const zoom = zoomed(NOTE, 2).field(zoomField);
 		expect(zoom?.from).toBe(offsetOf(NOTE, '  - b'));
 		expect(zoom?.to).toBe(offsetOf(NOTE, '  - d') - 1);
-		expect(zoom?.crumbs.map((crumb) => crumb.text)).toEqual(['a', 'b']);
+		expect(zoom?.crumbs.map((crumb) => crumb.text)).toEqual(['Title', 'a', 'b']);
 	});
 
 	it('zooms out to the whole note', () => {
@@ -37,7 +37,11 @@ describe('zoomField', () => {
 		const state = create(NOTE).update({
 			effects: [zoomChange.of({ startLine: 2, navigation: 'visit' }), unrelated.of(1)],
 		}).state;
-		expect(state.field(zoomField)?.crumbs.map((crumb) => crumb.text)).toEqual(['a', 'b']);
+		expect(state.field(zoomField)?.crumbs.map((crumb) => crumb.text)).toEqual([
+			'Title',
+			'a',
+			'b',
+		]);
 	});
 
 	it('ignores a zoom into a line without an item', () => {
@@ -58,7 +62,11 @@ describe('zoomField through edits', () => {
 		const state = zoomed(NOTE, 2);
 		const after = edit(state, { changes: { from: 0, insert: 'intro\n' } });
 		expect(after.field(zoomField)?.from).toBe(offsetOf(after.doc.toString(), '  - b'));
-		expect(after.field(zoomField)?.crumbs.map((crumb) => crumb.text)).toEqual(['a', 'b']);
+		expect(after.field(zoomField)?.crumbs.map((crumb) => crumb.text)).toEqual([
+			'Title',
+			'a',
+			'b',
+		]);
 	});
 
 	it('grows the zoom when text is typed inside the item', () => {
@@ -67,7 +75,7 @@ describe('zoomField through edits', () => {
 		const after = edit(state, { changes: { from: at, insert: 'bb' } });
 		const zoom = after.field(zoomField);
 		expect(zoom?.to).toBe((state.field(zoomField)?.to ?? 0) + 2);
-		expect(zoom?.crumbs.map((crumb) => crumb.text)).toEqual(['a', 'bbb']);
+		expect(zoom?.crumbs.map((crumb) => crumb.text)).toEqual(['Title', 'a', 'bbb']);
 	});
 
 	it('keeps a new line added at the end of the zoomed item inside the zoom', () => {

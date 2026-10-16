@@ -7,12 +7,12 @@ Needs Obsidian 1.12.0 or newer. It is built for desktop and mobile, but only des
 ## Features
 
 - **Move and indent.** Indent, outdent, and move an item up or down together with its children. Ordered lists keep their numbering and every change is checked against a re-parse before it is written.
-- **Zoom.** Zoom into an item and see only it and its children, with breadcrumbs back up. The mouse back and forward buttons step through zoom levels first. Zoom is remembered per note. See [docs/mouse-history.md](docs/mouse-history.md).
+- **Zoom.** Zoom into a list item or a heading and see only it and what is under it. The path back up (`Inbox / Test > Some Idea > Bullet 2`) is drawn in the note header, and the zoomed item moves to the left edge without the guides of the levels above it. The mouse back and forward buttons step through zoom levels first. Zoom is remembered per note. See [docs/zoom.md](docs/zoom.md) and [docs/mouse-history.md](docs/mouse-history.md).
 - **Folds.** Fold and unfold an item or the whole note. Folds survive zooming. See [docs/folds.md](docs/folds.md).
 - **Bullets and thread lines.** Select a bullet to zoom, select a thread line to fold its branch (hold Alt to fold every descendant). See [docs/bullets-and-thread-lines.md](docs/bullets-and-thread-lines.md).
 - **Block links.** Copy a link to an item, and type `((` to search items in your vault. The `^id` is written only when you ask for a link, and can be hidden away from the cursor line. See [docs/block-references.md](docs/block-references.md).
 - **List editing.** Enter on an empty item outdents it, Backspace at the start of an item merges it into the one above, Home and select all stay inside the item text, and optional Tab and Shift-Tab move whole items. See [docs/list-editing.md](docs/list-editing.md).
-- **Drag and drop.** Drag an item by its handle, also into another open note. See [docs/drag-and-drop.md](docs/drag-and-drop.md).
+- **Drag and drop.** Drag an item by its bullet, also into another open note. See [docs/drag-and-drop.md](docs/drag-and-drop.md).
 
 ## Commands
 
@@ -42,12 +42,13 @@ Under **Settings → Flow Outliner**. Every behavior can be switched off.
 | Setting                                     | Default |
 | ------------------------------------------- | ------- |
 | Remember zoom per note                      | On      |
+| Show the zoomed item at the left edge       | On      |
 | Hide block ids                              | On      |
 | Suggest items after `((`                    | On      |
 | Click bullet to zoom                        | On      |
 | Click thread line to fold                   | On      |
 | Use mouse back and forward for zoom         | On      |
-| Drag items by their handle                  | On      |
+| Drag items by their bullet                  | On      |
 | Enter on an empty item outdents it          | On      |
 | Backspace at the start of an item merges it | On      |
 | Home stays inside the item text             | On      |
@@ -56,7 +57,7 @@ Under **Settings → Flow Outliner**. Every behavior can be switched off.
 
 ## Limits
 
-- The plugin changes list items only. Headings are not zoomed.
+- The path in the note header is drawn into Obsidian's own header, which has no public API. If a future Obsidian version changes the header, the path is not drawn and the plugin shows a notice once; zooming itself keeps working.
 - While you drag, the editor does not scroll. Folds of a subtree dragged into another note are not carried along.
 - When the zoomed item disappears, for example after an edit in another pane or by sync, the whole note is shown with the message "Zoomed item was removed. Showing the full note."
 - Zoom is stored in the local storage of the vault on the device, not in the note, so it does not sync.

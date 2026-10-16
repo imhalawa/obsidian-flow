@@ -117,6 +117,11 @@ export class ObsidianApp {
 		return this.connection.pointer(x, y, 'click', 'left', alt ? 1 : 0);
 	}
 
+	/** Taps a point of the window with a finger. */
+	tap(x: number, y: number): Promise<void> {
+		return this.connection.tap(x, y);
+	}
+
 	/** Presses, moves or releases the held left button at a point of the window. */
 	holdButton(phase: 'press' | 'move' | 'release', x: number, y: number): Promise<void> {
 		return this.connection.held(phase, x, y);

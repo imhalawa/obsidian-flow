@@ -84,6 +84,17 @@ export class DevtoolsConnection {
 		await this.send('Input.dispatchMouseEvent', { type: 'mouseReleased', ...press });
 	}
 
+	/** Touches a point of the window and lifts the finger again, as a tap does. */
+	async tap(x: number, y: number): Promise<void> {
+		await this.send('Emulation.setTouchEmulationEnabled', { enabled: true });
+		await this.send('Input.dispatchTouchEvent', {
+			type: 'touchStart',
+			touchPoints: [{ x, y }],
+		});
+		await this.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+		await this.send('Emulation.setTouchEmulationEnabled', { enabled: false });
+	}
+
 	/** Presses the left button at the first point, moves through the others with it held and releases at the last. */
 	async dragThrough(points: readonly { x: number; y: number }[]): Promise<void> {
 		const [first, ...rest] = points;

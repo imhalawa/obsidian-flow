@@ -18,6 +18,7 @@ const register = (target: FakeApp, host: { remember: () => boolean }) => {
 	const owner = new Plugin(target);
 	const memory = registerZoom(owner as never, {
 		rememberZoom: host.remember,
+		cleanZoom: () => true,
 		notify: (message) => notices.push(message),
 	});
 	return { owner, memory };
@@ -34,7 +35,7 @@ beforeEach(() => {
 describe('registerZoom', () => {
 	it('registers the zoom and persistence extensions as one editor extension', () => {
 		expect(plugin.editorExtensions).toHaveLength(1);
-		expect(plugin.editorExtensions[0]).toHaveLength(2);
+		expect(plugin.editorExtensions[0]).toHaveLength(3);
 	});
 
 	it('listens to renames and deletes of notes', () => {
