@@ -16,7 +16,7 @@ import {
 	type ItemMenuAction,
 	type ItemMenuEntry,
 } from '../ui/item-menu-model';
-import { hasStartedDragging, type PressPoint } from './bullet-press';
+import { hasStartedDragging, isFinishedPress, type PressPoint } from './bullet-press';
 import { isFolded, toggleBranch } from './fold-control';
 import { outlineOfState } from './outline-of-state';
 import { dispatchZoom } from './zoom-control';
@@ -153,6 +153,7 @@ function followBulletPress(
 export function itemPointer(host: ItemPointerHost): Extension {
 	return ViewPlugin.define((view) => {
 		let claimedPress = false;
+		let lastPointerType = '';
 		const claim = (event: Event) => {
 			event.preventDefault();
 			event.stopImmediatePropagation();
@@ -160,6 +161,9 @@ export function itemPointer(host: ItemPointerHost): Extension {
 		const isPlainPress = (event: MouseEvent) =>
 			event.button === 0 && !event.ctrlKey && !event.metaKey && !event.shiftKey;
 		const listeners: Record<string, (event: MouseEvent) => void> = {
+			pointerdown(event) {
+				lastPointerType = (event as PointerEvent).pointerType;
+			},
 			mousedown(event) {
 				claimedPress = false;
 				if (!isPlainPress(event)) return;
@@ -167,10 +171,14 @@ export function itemPointer(host: ItemPointerHost): Extension {
 				if (!hit) return;
 				if (hit.kind === 'bullet') {
 					if (event.altKey) return;
-					followBulletPress(view, host, hit.startLine, {
-						x: event.clientX,
-						y: event.clientY,
-					});
+					if (isFinishedPress(lastPointerType)) {
+						if (host.isBulletZoomEnabled()) dispatchZoom(view, hit.startLine, 'visit');
+					} else {
+						followBulletPress(view, host, hit.startLine, {
+							x: event.clientX,
+							y: event.clientY,
+						});
+					}
 				} else {
 					toggleBranch(view, hit.parent.startLine, event.altKey);
 				}

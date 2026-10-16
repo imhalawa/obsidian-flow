@@ -1,52 +1,34 @@
 import { EditorState } from '@codemirror/state';
-import type { DecorationSet } from '@codemirror/view';
 import { describe, expect, it } from 'vitest';
-import {
-	cleanZoomDecorations,
-	zoomedLevels,
-	ZOOM_LEVELS_PROPERTY,
-	ZOOM_LINE_CLASS,
-} from '../../src/editor/clean-zoom-decorations';
+import { cleanZoomDecorations, ZOOM_LINE_CLASS } from '../../src/editor/clean-zoom-decorations';
 import { zoomChange, zoomField } from '../../src/editor/zoom-field';
 
 const NOTE = ['# T', '- a', '\t- b', '\t\t- c', '\t\t\t- d', '\t\t- e', '- f'].join('\n');
 
-const zoomedOn = (startLine: number | null) =>
-	EditorState.create({ doc: NOTE, extensions: [zoomField] }).update({
+const zoomedOn = (doc: string, startLine: number | null) =>
+	EditorState.create({ doc, extensions: [zoomField] }).update({
 		effects: zoomChange.of({ startLine, navigation: 'visit' }),
 	}).state;
 
-const decorated = (state: EditorState) => {
-	const found: { line: number; className: string; style: string }[] = [];
-	const set: DecorationSet = cleanZoomDecorations(state);
-	set.between(0, state.doc.length, (from, _to, decoration) => {
-		const spec = decoration.spec as { class: string; attributes: { style: string } };
+const markedLines = (state: EditorState) => {
+	const found: { line: number; className: string }[] = [];
+	cleanZoomDecorations(state).between(0, state.doc.length, (from, _to, decoration) => {
 		found.push({
 			line: state.doc.lineAt(from).number - 1,
-			className: spec.class,
-			style: spec.attributes.style,
+			className: (decoration.spec as { class: string }).class,
 		});
 	});
 	return found;
 };
 
-const levels = (count: number) => `${ZOOM_LEVELS_PROPERTY}: ${count}`;
+const marked = (lines: number[]) => lines.map((line) => ({ line, className: ZOOM_LINE_CLASS }));
 
 describe('cleanZoomDecorations', () => {
-	it('marks every line of the zoomed item with the number of hidden levels', () => {
-		expect(decorated(zoomedOn(3))).toEqual([
-			{ line: 3, className: ZOOM_LINE_CLASS, style: levels(2) },
-			{ line: 4, className: ZOOM_LINE_CLASS, style: levels(2) },
-		]);
-	});
-
-	it('counts one level for an item one level in', () => {
-		expect(decorated(zoomedOn(2)).map((entry) => [entry.line, entry.style])).toEqual([
-			[2, levels(1)],
-			[3, levels(1)],
-			[4, levels(1)],
-			[5, levels(1)],
-		]);
+	it.each([
+		['an item two levels in', 3, [3, 4]],
+		['an item one level in', 2, [2, 3, 4, 5]],
+	])('marks every line of %s', (_name, startLine, expected) => {
+		expect(markedLines(zoomedOn(NOTE, startLine))).toEqual(marked(expected));
 	});
 
 	it.each([
@@ -54,28 +36,14 @@ describe('cleanZoomDecorations', () => {
 		['a heading', 0],
 		['no zoom', null],
 	])('marks nothing for %s', (_name, startLine) => {
-		expect(decorated(zoomedOn(startLine))).toEqual([]);
-	});
-});
-
-describe('zoomedLevels', () => {
-	it.each([
-		[3, 2],
-		[2, 1],
-		[1, 0],
-	])('counts the levels the item on line %i moves', (startLine, expected) => {
-		expect(zoomedLevels(zoomedOn(startLine))).toBe(expected);
+		expect(markedLines(zoomedOn(NOTE, startLine))).toEqual([]);
 	});
 
-	it('is 0 for a heading', () => {
-		expect(zoomedLevels(zoomedOn(0))).toBe(0);
+	it('marks an item indented by two spaces when the tab size is four', () => {
+		expect(markedLines(zoomedOn('- a\n  - b\n    - c', 1))).toEqual(marked([1, 2]));
 	});
 
-	it('is 0 when the note is not zoomed', () => {
-		expect(zoomedLevels(zoomedOn(null))).toBe(0);
-	});
-
-	it('is 0 without the zoom field', () => {
-		expect(zoomedLevels(EditorState.create({ doc: NOTE }))).toBe(0);
+	it('marks nothing without the zoom field', () => {
+		expect(markedLines(EditorState.create({ doc: NOTE }))).toEqual([]);
 	});
 });

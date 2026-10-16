@@ -39,15 +39,52 @@ describe('clean zoom in real Obsidian', () => {
 		expect(child.x).toBeGreaterThan(item.x + 10);
 	});
 
-	it('marks the zoomed lines and gives them the number of hidden levels', async () => {
+	it.each([
+		['two spaces', '- a\n  - b\n    - c\n      - d', 1],
+		['four spaces', '- a\n    - b\n        - c', 1],
+		['two spaces, deeper', '- a\n  - b\n    - c\n      - d', 2],
+	])('moves an item indented with %s to the left edge', async (_name, note, line) => {
+		const editor = await NoteEditor.open(app, note);
+		await wait(300);
+		const topLevel = await editor.bulletPoint(0);
+		await editor.caret(line, 4);
+		await editor.runCommand('zoom-in');
+		await wait(300);
+		const zoomed = await editor.bulletPoint(line);
+		expect(Math.abs(zoomed.x - topLevel.x)).toBeLessThan(2);
+	});
+
+	it('follows the setting while the note stays zoomed', async () => {
 		const editor = await NoteEditor.open(app, NOTE);
 		await editor.caret(2, 5);
 		await editor.runCommand('zoom-in');
 		await wait(300);
-		const levels = await app.evaluate<string[]>(
-			'Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .cm-line.flow-zoom-line")).map((el) => el.style.getPropertyValue("--flow-zoom-levels").trim())',
+		const count = () =>
+			app.evaluate<number>(
+				'activeDocument.querySelectorAll(".workspace-leaf.mod-active .cm-line.flow-zoom-line").length',
+			);
+		expect(await count()).toBe(2);
+		await app.evaluate(
+			'(app.plugins.plugins["flow-outliner"].settings.cleanZoom = false, app.workspace.updateOptions(), true)',
 		);
-		expect(levels).toEqual(['2', '2']);
+		await wait(300);
+		expect(await count()).toBe(0);
+		await app.evaluate(
+			'(app.plugins.plugins["flow-outliner"].settings.cleanZoom = true, app.workspace.updateOptions(), true)',
+		);
+		await wait(300);
+		expect(await count()).toBe(2);
+	});
+
+	it('marks the zoomed lines and gives them the shift of the hidden levels', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		await editor.caret(2, 5);
+		await editor.runCommand('zoom-in');
+		await wait(300);
+		const shift = await app.evaluate<string>(
+			'activeDocument.querySelector(".workspace-leaf.mod-active .cm-editor").style.getPropertyValue("--flow-zoom-shift")',
+		);
+		expect(parseFloat(shift)).toBeGreaterThan(30);
 	});
 
 	it('hides the indentation guides of the levels that are not shown', async () => {

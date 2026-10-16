@@ -27,6 +27,25 @@ describe('bullets and thread lines in real Obsidian', () => {
 		expect(await editor.waitForCrumbs(3000)).toEqual(['a', 'b']);
 	});
 
+	it('zooms into an item when its bullet is tapped with a finger', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		const bullet = await editor.bulletPoint(1);
+		await app.tap(bullet.x, bullet.y);
+		expect(await editor.waitForCrumbs(3000)).toEqual(['a', 'b']);
+	});
+
+	it('does not zoom into the item of an earlier tap when the next tap lands elsewhere', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		const first = await editor.bulletPoint(2);
+		await app.tap(first.x, first.y);
+		await editor.waitForCrumbs(3000);
+		await editor.runCommand('zoom-reset');
+		const second = await editor.bulletPoint(3);
+		await app.tap(second.x + 200, second.y);
+		await wait(300);
+		expect(await editor.crumbs()).toEqual([]);
+	});
+
 	it('keeps the fold arrow of Obsidian working next to the bullet', async () => {
 		const editor = await NoteEditor.open(app, NOTE);
 		const bullet = await editor.bulletPoint(1);

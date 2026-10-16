@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { DRAG_START_DISTANCE, hasStartedDragging } from '../../src/editor/bullet-press';
+import {
+	DRAG_START_DISTANCE,
+	hasStartedDragging,
+	isFinishedPress,
+} from '../../src/editor/bullet-press';
 
 const START = { x: 100, y: 100 };
 
@@ -19,5 +23,16 @@ describe('hasStartedDragging', () => {
 
 	it('starts dragging after 4 pixels', () => {
 		expect(DRAG_START_DISTANCE).toBe(4);
+	});
+});
+
+describe('isFinishedPress', () => {
+	it.each([
+		['touch', true],
+		['mouse', false],
+		['pen', false],
+		['', false],
+	])('says %j is finished: %s', (pointerType, expected) => {
+		expect(isFinishedPress(pointerType)).toBe(expected);
 	});
 });

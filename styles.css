@@ -89,8 +89,8 @@
 
 .flow-zoom-line {
 	position: relative;
-	inset-inline-start: calc(var(--flow-zoom-levels) * var(--flow-zoom-level-px, 0px) * -1);
-	clip-path: inset(0 0 0 calc(var(--flow-zoom-levels) * var(--flow-zoom-level-px, 0px)));
+	inset-inline-start: calc(var(--flow-zoom-shift, 0px) * -1);
+	clip-path: inset(0 0 0 var(--flow-zoom-shift, 0px));
 }
 
 .flow-zoomed .cm-selectionLayer,

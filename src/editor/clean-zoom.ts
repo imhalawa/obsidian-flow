@@ -6,49 +6,42 @@ import {
 	type EditorView,
 	type ViewUpdate,
 } from '@codemirror/view';
-import { cleanZoomDecorations, ZOOM_LINE_CLASS, zoomedLevels } from './clean-zoom-decorations';
+import { cleanZoomDecorations, ZOOM_LINE_CLASS } from './clean-zoom-decorations';
 import { zoomField } from './zoom-field';
 
 const ZOOMED_CLASS = 'flow-zoomed';
-const LEVEL_WIDTH_PROPERTY = '--flow-zoom-level-px';
 const SHIFT_PROPERTY = '--flow-zoom-shift';
+const MARKER_SELECTOR = '.cm-formatting-list';
 
-/** Reads the width of one indent level in pixels from the first indent the zoomed lines draw. */
-function measuredLevelWidth(view: EditorView): number {
-	const indent = view.contentDOM.querySelector<HTMLElement>(`.${ZOOM_LINE_CLASS} .cm-indent`);
-	if (indent && indent.offsetWidth > 0) return indent.offsetWidth;
-	return view.defaultCharacterWidth * view.state.tabSize;
+/** Reads how far the zoomed item sits from the left edge of its line in pixels, from the list marker the editor draws. */
+function measuredShift(view: EditorView): number | null {
+	const line = view.contentDOM.querySelector<HTMLElement>(`.${ZOOM_LINE_CLASS}`);
+	const marker = line?.querySelector<HTMLElement>(MARKER_SELECTOR);
+	if (!line || !marker) return null;
+	return Math.max(0, marker.getBoundingClientRect().left - line.getBoundingClientRect().left);
 }
 
 /** Returns the extension that shows a zoomed item at the left edge of the note when the setting is on. */
 export function cleanZoom(isEnabled: () => boolean): Extension {
 	return ViewPlugin.define(
 		(view) => {
+			let enabled = isEnabled();
 			const build = (current: EditorView): DecorationSet =>
-				isEnabled() ? cleanZoomDecorations(current.state) : Decoration.none;
+				enabled ? cleanZoomDecorations(current.state) : Decoration.none;
 			let decorations = build(view);
 			const measure = (current: EditorView) => {
 				current.requestMeasure({
 					read: () => ({
 						zoomed: decorations.size > 0,
-						levelWidth: measuredLevelWidth(current),
-						levels: zoomedLevels(current.state),
+						shift: measuredShift(current),
 					}),
 					write: (measured) => {
 						current.dom.classList.toggle(ZOOMED_CLASS, measured.zoomed);
-						if (!measured.zoomed) {
-							current.dom.style.removeProperty(LEVEL_WIDTH_PROPERTY);
+						if (!measured.zoomed || measured.shift === null) {
 							current.dom.style.removeProperty(SHIFT_PROPERTY);
 							return;
 						}
-						current.dom.style.setProperty(
-							LEVEL_WIDTH_PROPERTY,
-							`${measured.levelWidth}px`,
-						);
-						current.dom.style.setProperty(
-							SHIFT_PROPERTY,
-							`${measured.levels * measured.levelWidth}px`,
-						);
+						current.dom.style.setProperty(SHIFT_PROPERTY, `${measured.shift}px`);
 					},
 				});
 			};
@@ -61,14 +54,20 @@ export function cleanZoom(isEnabled: () => boolean): Extension {
 					const zoomChanged =
 						update.startState.field(zoomField, false) !==
 						update.state.field(zoomField, false);
-					if (zoomChanged || update.docChanged || update.viewportChanged) {
+					const settingChanged = isEnabled() !== enabled;
+					if (settingChanged) enabled = !enabled;
+					if (
+						zoomChanged ||
+						settingChanged ||
+						update.docChanged ||
+						update.viewportChanged
+					) {
 						decorations = build(update.view);
 						measure(update.view);
 					}
 				},
 				destroy() {
 					view.dom.classList.remove(ZOOMED_CLASS);
-					view.dom.style.removeProperty(LEVEL_WIDTH_PROPERTY);
 					view.dom.style.removeProperty(SHIFT_PROPERTY);
 				},
 			};
