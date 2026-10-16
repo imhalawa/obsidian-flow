@@ -1,6 +1,7 @@
 import { StateEffect, StateField, type EditorState, type Transaction } from '@codemirror/state';
 import type { Breadcrumb } from '../outline/zoom';
 import { resolveZoom } from '../outline/zoom-view';
+import { outlineOfState } from './outline-of-state';
 
 export type ZoomNavigation = 'visit' | 'back' | 'forward';
 
@@ -26,7 +27,7 @@ export function changeIn(transaction: Transaction): ZoomChange | null {
 
 /** Zooms into the item that starts on a line, with the visible range as document offsets. */
 export function zoomOnLine(state: EditorState, startLine: number): ZoomState | null {
-	const view = resolveZoom(state.doc.toJSON(), state.tabSize, startLine);
+	const view = resolveZoom(state.doc.toJSON(), outlineOfState(state), startLine);
 	if (!view) return null;
 	return {
 		from: state.doc.line(view.range.fromLine + 1).from,

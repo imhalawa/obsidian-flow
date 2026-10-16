@@ -1,16 +1,17 @@
 import { EditorSelection, type EditorState } from '@codemirror/state';
 import { Decoration, type DecorationSet } from '@codemirror/view';
 import { blockIdSpans, type IdSpan } from '../outline/block-id';
+import { outlineOfState } from './outline-of-state';
 
 const hiddenId = Decoration.replace({});
 
 /** Finds the trailing block ids of the list items in a document. */
 export function findIdSpans(state: EditorState): IdSpan[] {
-	return blockIdSpans(state.doc.toJSON(), state.tabSize);
+	return blockIdSpans(state.doc.toJSON(), outlineOfState(state));
 }
 
 /** Returns the line numbers the selection touches. */
-function selectedLines(state: EditorState, selection: EditorSelection): Set<number> {
+export function selectedLines(state: EditorState, selection: EditorSelection): Set<number> {
 	const lines = new Set<number>();
 	for (const range of selection.ranges) {
 		const first = state.doc.lineAt(range.from).number - 1;
@@ -18,6 +19,11 @@ function selectedLines(state: EditorState, selection: EditorSelection): Set<numb
 		for (let line = first; line <= last; line += 1) lines.add(line);
 	}
 	return lines;
+}
+
+/** Tells whether two sets hold the same line numbers. */
+export function sameLines(first: ReadonlySet<number>, second: ReadonlySet<number>): boolean {
+	return first.size === second.size && [...first].every((line) => second.has(line));
 }
 
 /** Hides every block id except those on lines the selection touches. */

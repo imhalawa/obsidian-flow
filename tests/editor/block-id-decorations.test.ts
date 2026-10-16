@@ -1,7 +1,12 @@
 import { EditorSelection, EditorState } from '@codemirror/state';
 import type { DecorationSet } from '@codemirror/view';
 import { describe, expect, it } from 'vitest';
-import { findIdSpans, hiddenIdDecorations } from '../../src/editor/block-id-decorations';
+import {
+	findIdSpans,
+	hiddenIdDecorations,
+	sameLines,
+	selectedLines,
+} from '../../src/editor/block-id-decorations';
 
 const NOTE = ['- a ^one', '- b ^two', '  - c', '- d ^three'].join('\n');
 
@@ -75,5 +80,24 @@ describe('findIdSpans', () => {
 			extensions: [EditorState.tabSize.of(2)],
 		});
 		expect(findIdSpans(state)).toEqual([{ lineIndex: 1, from: 4, to: 7 }]);
+	});
+});
+
+describe('sameLines', () => {
+	it.each([
+		[[1, 2], [2, 1], true],
+		[[], [], true],
+		[[1, 2], [1], false],
+		[[1], [1, 2], false],
+		[[1, 2], [1, 3], false],
+	])('compares %j with %j', (first, second, expected) => {
+		expect(sameLines(new Set(first), new Set(second))).toBe(expected);
+	});
+});
+
+describe('selectedLines', () => {
+	it('lists every line a selection touches', () => {
+		const state = EditorState.create({ doc: 'a\nb\nc\nd', selection: { anchor: 0, head: 3 } });
+		expect([...selectedLines(state, state.selection)]).toEqual([0, 1]);
 	});
 });

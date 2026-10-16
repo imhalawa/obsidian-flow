@@ -2,7 +2,6 @@ import { App, PluginSettingTab, Setting } from 'obsidian';
 import type FlowPlugin from './main';
 
 export interface FlowSettings {
-	enabled: boolean;
 	rememberZoom: boolean;
 	cleanZoom: boolean;
 	hideBlockIds: boolean;
@@ -20,7 +19,6 @@ export interface FlowSettings {
 }
 
 export const DEFAULT_SETTINGS: FlowSettings = {
-	enabled: true,
 	rememberZoom: true,
 	cleanZoom: true,
 	hideBlockIds: true,
@@ -40,6 +38,18 @@ export const DEFAULT_SETTINGS: FlowSettings = {
 type ToggleKey = {
 	[Key in keyof FlowSettings]: FlowSettings[Key] extends boolean ? Key : never;
 }[keyof FlowSettings];
+
+/** Returns the defaults with every stored value that is a boolean laid over them. */
+export function mergeSettings(stored: unknown): FlowSettings {
+	const merged = { ...DEFAULT_SETTINGS };
+	if (typeof stored !== 'object' || stored === null) return merged;
+	const values = stored as Record<string, unknown>;
+	for (const key of Object.keys(DEFAULT_SETTINGS) as ToggleKey[]) {
+		const value = values[key];
+		if (typeof value === 'boolean') merged[key] = value;
+	}
+	return merged;
+}
 
 export class FlowSettingTab extends PluginSettingTab {
 	constructor(

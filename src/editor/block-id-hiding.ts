@@ -7,7 +7,7 @@ import {
 	type ViewUpdate,
 } from '@codemirror/view';
 import type { IdSpan } from '../outline/block-id';
-import { findIdSpans, hiddenIdDecorations } from './block-id-decorations';
+import { findIdSpans, hiddenIdDecorations, sameLines, selectedLines } from './block-id-decorations';
 
 /** Returns the extension that hides block ids away from the cursor, while the setting is on. */
 export function blockIdHiding(isEnabled: () => boolean): Extension {
@@ -18,6 +18,7 @@ export function blockIdHiding(isEnabled: () => boolean): Extension {
 			const build = (state: EditorView['state']): DecorationSet =>
 				enabled ? hiddenIdDecorations(state, spans) : Decoration.none;
 			let decorations = build(view.state);
+			let touched = selectedLines(view.state, view.state.selection);
 			return {
 				get decorations() {
 					return decorations;
@@ -28,7 +29,11 @@ export function blockIdHiding(isEnabled: () => boolean): Extension {
 					if (update.docChanged || enabled !== wasEnabled) {
 						spans = enabled ? findIdSpans(update.state) : [];
 						decorations = build(update.state);
+						touched = selectedLines(update.state, update.state.selection);
 					} else if (update.selectionSet) {
+						const next = selectedLines(update.state, update.state.selection);
+						if (sameLines(touched, next)) return;
+						touched = next;
 						decorations = build(update.state);
 					}
 				},

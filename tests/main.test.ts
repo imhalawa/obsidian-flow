@@ -14,17 +14,31 @@ describe('FlowPlugin lifecycle', () => {
 
 	it('merges stored settings over defaults', async () => {
 		const plugin = makePlugin();
-		await plugin.saveData({ enabled: false });
+		await plugin.saveData({ rememberZoom: false });
 		await plugin.onload();
-		expect(plugin.settings.enabled).toBe(false);
+		expect(plugin.settings).toEqual({ ...DEFAULT_SETTINGS, rememberZoom: false });
+	});
+
+	it('ignores stored values that are not booleans or not settings', async () => {
+		const plugin = makePlugin();
+		await plugin.saveData({ dragItems: 'false', cleanZoom: 0, enabled: false, other: true });
+		await plugin.onload();
+		expect(plugin.settings).toEqual(DEFAULT_SETTINGS);
+	});
+
+	it.each([['text'], [7], [[true]]])('loads defaults when stored data is %j', async (stored) => {
+		const plugin = makePlugin();
+		await plugin.saveData(stored);
+		await plugin.onload();
+		expect(plugin.settings).toEqual(DEFAULT_SETTINGS);
 	});
 
 	it('persists settings', async () => {
 		const plugin = makePlugin();
 		await plugin.onload();
-		plugin.settings.enabled = false;
+		plugin.settings.rememberZoom = false;
 		await plugin.saveSettings();
-		expect(await plugin.loadData()).toEqual({ ...DEFAULT_SETTINGS, enabled: false });
+		expect(await plugin.loadData()).toEqual({ ...DEFAULT_SETTINGS, rememberZoom: false });
 	});
 
 	it('registers the settings tab', async () => {
