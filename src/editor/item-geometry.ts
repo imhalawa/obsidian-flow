@@ -47,3 +47,13 @@ export function firstRow(
 	const coords = view.coordsAtPos(view.state.doc.line(startLine + 1).from);
 	return coords ? { top: coords.top, bottom: coords.bottom } : null;
 }
+
+const FALLBACK_FONT_SIZE = 16;
+
+/** Returns the font size of the text of the editor in pixels. */
+export function editorFontSize(view: EditorView): number {
+	const size = parseFloat(
+		view.contentDOM.ownerDocument.defaultView?.getComputedStyle(view.contentDOM).fontSize ?? '',
+	);
+	return Number.isNaN(size) ? FALLBACK_FONT_SIZE : size;
+}

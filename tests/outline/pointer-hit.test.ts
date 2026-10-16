@@ -5,6 +5,7 @@ import {
 	bulletMarker,
 	containsX,
 	expandToMinimumWidth,
+	hitSizes,
 	litInterval,
 	threadParent,
 } from '../../src/outline/pointer-hit';
@@ -109,5 +110,19 @@ describe('threadParent', () => {
 
 	it('does not offer the item of the line itself', () => {
 		expect(threadParent(tree, 2, 200, guideX, 12)).toBeNull();
+	});
+});
+
+describe('hitSizes', () => {
+	it.each([
+		[
+			'the default font',
+			16,
+			{ bulletMinimum: 24, threadHalf: 12, chevronHalf: 12, gutter: 48 },
+		],
+		['a large font', 32, { bulletMinimum: 48, threadHalf: 24, chevronHalf: 24, gutter: 96 }],
+		['a small font', 8, { bulletMinimum: 12, threadHalf: 6, chevronHalf: 6, gutter: 24 }],
+	])('scales the clickable areas with %s', (_name, fontSize, expected) => {
+		expect(hitSizes(fontSize)).toEqual(expected);
 	});
 });
