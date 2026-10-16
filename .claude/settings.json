@@ -39,7 +39,8 @@
 	},
 	"includeCoAuthoredBy": false,
 	"attribution": {
-		"commit": ""
+		"commit": "",
+		"pr": ""
 	},
 	"hooks": {
 		"SessionStart": [
