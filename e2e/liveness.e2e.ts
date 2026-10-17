@@ -49,15 +49,6 @@ const activatePane = (name: string) =>
 		`(app.workspace.setActiveLeaf(window.__panes[${JSON.stringify(name)}], { focus: true }), true)`,
 	);
 
-/** Waits up to a limit for the item suggestions to show and returns their texts, possibly none. */
-const suggestionsWithin = (ms: number) =>
-	app.evaluate<string[]>(
-		`new Promise((resolve) => { const end = Date.now() + ${ms}; const read = () => Array.from(activeDocument.querySelectorAll(".flow-item-suggest-text")).map((el) => el.textContent); const check = () => { const found = read(); if (found.length > 0 || Date.now() > end) resolve(found); else setTimeout(check, 50); }; check(); })`,
-	);
-
-const closeSuggestions = () =>
-	app.evaluate('(app.workspace.activeEditor.editor.cm.contentDOM.focus(), true)');
-
 /** Polls a read until it satisfies a check or the time is up, and returns the last value. */
 async function settle<T>(
 	read: () => Promise<T>,
@@ -79,92 +70,10 @@ const waitForBlock = (path: string, id: string) =>
 		`new Promise((resolve) => { const check = () => { const file = app.vault.getFileByPath(${JSON.stringify(path)}); if (file && app.metadataCache.getFileCache(file)?.blocks?.[${JSON.stringify(id)}]) resolve(true); else setTimeout(check, 50); }; check(); })`,
 	);
 
-/** Waits until no item suggestion is on screen, so the next one read is a fresh list. */
-const suggestionsGone = () =>
-	settle(
-		() =>
-			app.evaluate<number>(
-				'activeDocument.querySelectorAll(".flow-item-suggest-text").length',
-			),
-		(count) => count === 0,
-		3000,
-	);
-
 const embedText = () =>
 	app.evaluate<string | null>(
 		`(() => { const el = activeDocument.querySelector('.workspace-leaf.mod-active .cm-content .markdown-embed-content'); return el ? el.textContent.trim() : null; })()`,
 	);
-
-describe('item suggester stays in step with the vault', () => {
-	it('finds an item that was typed a moment ago in another open note', async () => {
-		await createNote('fresh-source.md', '- seed');
-		await createNote('fresh-target.md', '- see ');
-		await openInPane('source', 'fresh-source.md', false);
-		await openInPane('target', 'fresh-target.md', true);
-		await activatePane('source');
-		const source = NoteEditor.attach(app);
-		await source.typeKeys('\n- unsaved zebra item');
-		await activatePane('target');
-		await NoteEditor.attach(app).typeKeys('((zebra');
-		expect(await suggestionsWithin(3000)).toContain('unsaved zebra item');
-	});
-
-	it('shows the new text of an item after its note was edited', async () => {
-		await createNote('edit-source.md', '- apple pie');
-		await createNote('edit-target.md', '- see ');
-		await openInPane('edit-target', 'edit-target.md', false);
-		const target = NoteEditor.attach(app);
-		await target.waitUntilIndexed('edit-source.md');
-		await target.typeKeys('((apple');
-		expect(await suggestionsWithin(3000)).toContain('apple pie');
-		await closeSuggestions();
-		await modifyNote('edit-source.md', '- apple tart');
-		await wait(300);
-		await target.replace(0, 0, 15, '- see ');
-		await suggestionsGone();
-		await target.typeKeys('((apple');
-		const shown = await suggestionsWithin(3000);
-		expect(shown).toContain('apple tart');
-		expect(shown).not.toContain('apple pie');
-	});
-
-	it('stops offering the items of a deleted note and follows a renamed one', async () => {
-		await createNote('gone-note.md', '- quince one');
-		await createNote('moved-note.md', '- quince two');
-		await createNote('quince-target.md', '- see ');
-		await openInPane('quince', 'quince-target.md', false);
-		const target = NoteEditor.attach(app);
-		await target.waitUntilIndexed('gone-note.md');
-		await target.waitUntilIndexed('moved-note.md');
-		await app.evaluate(
-			`(async () => { await app.vault.delete(app.vault.getFileByPath("gone-note.md")); await app.fileManager.renameFile(app.vault.getFileByPath("moved-note.md"), "renamed-note.md"); return true; })()`,
-		);
-		await wait(300);
-		await target.typeKeys('((quince');
-		const rows = await app.evaluate<string[]>(
-			`new Promise((resolve) => setTimeout(() => resolve(Array.from(activeDocument.querySelectorAll(".flow-item-suggest-path")).map((el) => el.textContent)), 1500))`,
-		);
-		expect(rows).toContain('renamed-note.md');
-		expect(rows).not.toContain('gone-note.md');
-		expect(rows).not.toContain('moved-note.md');
-	});
-
-	it('links the item that was chosen even when its note changed after the list was shown', async () => {
-		await createNote('shift-source.md', '- apple\n- banana');
-		await createNote('shift-target.md', '- see ');
-		await openInPane('shift', 'shift-target.md', false);
-		const target = NoteEditor.attach(app);
-		await target.waitUntilIndexed('shift-source.md');
-		await target.typeKeys('((banana');
-		expect(await suggestionsWithin(3000)).toContain('banana');
-		await modifyNote('shift-source.md', '- new one\n- new two\n- apple\n- banana');
-		await wait(200);
-		await target.chooseSuggestion('banana');
-		await wait(1500);
-		const source = await readNote('shift-source.md');
-		expect(source).toMatch(/^- new one\n- new two\n- apple\n- banana \^[a-z0-9]{6}$/);
-	});
-});
 
 describe('embedded items stay live', () => {
 	const EMBEDDING = '- ![[embed-source#^live01]]\n- next item';
@@ -339,12 +248,6 @@ describe('plugin lifecycle stays clean', () => {
 
 describe('real user sessions', () => {
 	const NOTE = '- a\n\t- b\n\t\t- c\n- d';
-
-	it('offers an item typed a moment ago in the same note after the link opener', async () => {
-		const editor = await NoteEditor.open(app, '- seed');
-		await editor.typeKeys('\n- fresh zebra\n- see ((zebra');
-		expect(await suggestionsWithin(3000)).toContain('fresh zebra');
-	});
 
 	it('updates the embed layout of an open note at once when the title setting is switched', async () => {
 		await createNote('title-source.md', '- titled ^title01');

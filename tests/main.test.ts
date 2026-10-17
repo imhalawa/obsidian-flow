@@ -55,12 +55,6 @@ describe('FlowPlugin lifecycle', () => {
 		).toHaveLength(11);
 	});
 
-	it('registers the item suggester', async () => {
-		const plugin = makePlugin();
-		await plugin.onload();
-		expect((plugin as unknown as { editorSuggests: unknown[] }).editorSuggests).toHaveLength(1);
-	});
-
 	it('wraps the history of the main window and restores it on unload', async () => {
 		const app = new FakeApp();
 		const original = app.mainWindow.history.back;

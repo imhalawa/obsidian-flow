@@ -34,7 +34,6 @@ describe('workspace API the plugin calls', () => {
 		],
 		['commands', 'app.commands', ['executeCommandById']],
 		['local storage', 'app', ['saveLocalStorage', 'loadLocalStorage']],
-		['metadata cache', 'app.metadataCache', ['getFileCache']],
 	])('%s still has the functions the plugin calls', async (_label, owner, names) => {
 		expect(await missingFunctions(owner, names)).toEqual([]);
 	});
@@ -101,27 +100,6 @@ describe('history the plugin wraps', () => {
 				`window.history.back !== Object.getPrototypeOf(window.history).back && window.history.forward !== Object.getPrototypeOf(window.history).forward`,
 			),
 		).toBe(true);
-	});
-});
-
-describe('metadata cache list items', () => {
-	it('lists every bullet with a position and a parent', async () => {
-		const items = await app.evaluate<{ hasPosition: boolean; parent: number }[]>(
-			`new Promise((resolve) => {
-				const read = () => {
-					const cache = app.metadataCache.getFileCache(app.vault.getFileByPath(${JSON.stringify(noteName)}));
-					if (cache && cache.listItems && cache.listItems.length === 3) {
-						resolve(cache.listItems.map((item) => ({ hasPosition: Boolean(item.position?.start), parent: item.parent })));
-					} else setTimeout(read, 100);
-				};
-				read();
-			})`,
-		);
-		expect(items).toEqual([
-			{ hasPosition: true, parent: -1 },
-			{ hasPosition: true, parent: 1 },
-			{ hasPosition: true, parent: -1 },
-		]);
 	});
 });
 

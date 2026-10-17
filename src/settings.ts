@@ -7,7 +7,6 @@ export interface FlowSettings {
 	hideBlockIds: boolean;
 	hideEmbedTitles: boolean;
 	bulletCallouts: boolean;
-	itemSuggester: boolean;
 	clickBulletToZoom: boolean;
 	clickThreadLineToFold: boolean;
 	useMouseHistory: boolean;
@@ -26,7 +25,6 @@ export const DEFAULT_SETTINGS: FlowSettings = {
 	hideBlockIds: true,
 	hideEmbedTitles: true,
 	bulletCallouts: true,
-	itemSuggester: true,
 	clickBulletToZoom: true,
 	clickThreadLineToFold: true,
 	useMouseHistory: true,
@@ -82,12 +80,6 @@ export class FlowSettingTab extends PluginSettingTab {
 			'Hide the id at the end of an item unless the cursor is on its line.',
 			'hideBlockIds',
 			() => this.app.workspace.updateOptions(),
-		);
-		this.addToggle(
-			'Suggest items after ((',
-			'Type (( to search the items of your notes and insert a link to one.',
-			'itemSuggester',
-			null,
 		);
 		this.addToggle(
 			'Hide embed titles in bullets',

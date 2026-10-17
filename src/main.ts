@@ -8,7 +8,6 @@ import { bulletCallouts } from './editor/callout-bullets';
 import { CalloutWidget, layoutCallouts } from './editor/callout-widget';
 import { embedLines } from './editor/embed-lines';
 import { foldReveal } from './editor/fold-reveal';
-import { ItemSuggest } from './editor/item-suggest';
 import { registerItemDrag } from './editor/register-item-drag';
 import { registerListKeys } from './editor/register-list-keys';
 import { registerMouseHistory } from './editor/register-mouse-history';
@@ -37,12 +36,6 @@ export default class FlowPlugin extends Plugin {
 				(markdown) => new CalloutWidget(markdown, this.app),
 				layoutCallouts,
 			),
-		);
-		this.registerEditorSuggest(
-			new ItemSuggest(this.app, {
-				isEnabled: () => this.settings.itemSuggester,
-				random: () => Math.random(),
-			}),
 		);
 		const beginDrag = registerItemDrag(
 			this,

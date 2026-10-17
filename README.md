@@ -10,7 +10,7 @@ Needs Obsidian 1.12.0 or newer. It is built for desktop and mobile, but only des
 - **Zoom.** Zoom into a list item or a heading (right-click it and choose **Zoom in**, or run the command) and see only it and what is under it. The path back up (`Inbox / Test > Some Idea > Bullet 2`) is drawn in the note header, and the zoomed item moves to the left edge without the guides of the levels above it. The mouse back and forward buttons step through zoom levels first. Zoom is remembered per note. See [docs/zoom.md](docs/zoom.md) and [docs/mouse-history.md](docs/mouse-history.md).
 - **Folds.** Fold and unfold an item or the whole note. Folds survive zooming. See [docs/folds.md](docs/folds.md).
 - **Bullets and thread lines.** Select a bullet to zoom, select a thread line to fold its branch (hold Alt to fold every descendant). See [docs/bullets-and-thread-lines.md](docs/bullets-and-thread-lines.md).
-- **Block links.** Copy a link to an item, and type `((` to search items in your vault. The `^id` is written only when you ask for a link, and can be hidden away from the cursor line. See [docs/block-references.md](docs/block-references.md).
+- **Block links.** Copy a link to an item. The `^id` is written only when you ask for a link, and can be hidden away from the cursor line. See [docs/block-references.md](docs/block-references.md).
 - **List editing.** Enter on an empty item outdents it, Enter on an item with children adds its first child, Backspace at the start of an item merges it into the one above, Home and select all stay inside the item text, and optional Tab and Shift-Tab move whole items. See [docs/list-editing.md](docs/list-editing.md).
 - **Callout bullets.** A bullet that starts with `> [!tip]` is drawn as an Obsidian callout with its bullet beside it, so it nests, folds and zooms like any bullet. See [docs/callout-bullets.md](docs/callout-bullets.md).
 - **Drag and drop.** Drag an item by its bullet, also into another open note. See [docs/drag-and-drop.md](docs/drag-and-drop.md).
@@ -45,7 +45,6 @@ Under **Settings → Flow Outliner**. Every behavior can be switched off.
 | Remember zoom per note                              | On      |
 | Show the zoomed item at the left edge               | On      |
 | Hide block ids                                      | On      |
-| Suggest items after `((`                            | On      |
 | Click bullet to zoom                                | On      |
 | Click thread line to fold                           | On      |
 | Use mouse back and forward for zoom                 | On      |

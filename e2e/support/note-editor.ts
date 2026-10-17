@@ -322,28 +322,6 @@ export class NoteEditor {
 		await this.app.typeText(text);
 	}
 
-	/** Waits until Obsidian has indexed the list items of a note. */
-	async waitUntilIndexed(path: string): Promise<void> {
-		await this.app.evaluate(
-			`new Promise((resolve) => { const check = () => { const file = app.vault.getFileByPath(${JSON.stringify(path)}); if (file && app.metadataCache.getFileCache(file)?.listItems) resolve(true); else setTimeout(check, 50); }; check(); })`,
-		);
-	}
-
-	/** Waits for the item suggestions to show and returns their texts. */
-	suggestions(): Promise<string[]> {
-		return this.app.evaluate<string[]>(
-			`new Promise((resolve) => { const read = () => Array.from(activeDocument.querySelectorAll(".flow-item-suggest-text")).map((el) => el.textContent); const check = () => { const found = read(); if (found.length > 0) resolve(found); else setTimeout(check, 50); }; check(); })`,
-		);
-	}
-
-	/** Clicks the item suggestion with the given text. */
-	async chooseSuggestion(text: string): Promise<void> {
-		await new Promise((resolve) => setTimeout(resolve, 300));
-		await this.app.evaluate(
-			`Array.from(activeDocument.querySelectorAll(".flow-item-suggest-text")).find((el) => el.textContent === ${JSON.stringify(text)}).click()`,
-		);
-	}
-
 	/** Reads a note from disk by path. */
 	readNote(path: string): Promise<string> {
 		return this.app.evaluate<string>(

@@ -17,7 +17,6 @@ export default defineConfig({
 				'src/editor/clean-zoom.ts',
 				'src/editor/zoom-persistence.ts',
 				'src/editor/block-id-hiding.ts',
-				'src/editor/item-suggest.ts',
 				'src/editor/item-pointer.ts',
 				'src/editor/register-item-pointer.ts',
 				'src/ui/item-menu.ts',
