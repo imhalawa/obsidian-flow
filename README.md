@@ -12,6 +12,7 @@ Needs Obsidian 1.12.0 or newer. It is built for desktop and mobile, but only des
 - **Bullets and thread lines.** Select a bullet to zoom, select a thread line to fold its branch (hold Alt to fold every descendant). See [docs/bullets-and-thread-lines.md](docs/bullets-and-thread-lines.md).
 - **Block links.** Copy a link to an item, and type `((` to search items in your vault. The `^id` is written only when you ask for a link, and can be hidden away from the cursor line. See [docs/block-references.md](docs/block-references.md).
 - **List editing.** Enter on an empty item outdents it, Enter on an item with children adds its first child, Backspace at the start of an item merges it into the one above, Home and select all stay inside the item text, and optional Tab and Shift-Tab move whole items. See [docs/list-editing.md](docs/list-editing.md).
+- **Callout bullets.** A bullet that starts with `> [!tip]` is drawn as an Obsidian callout with its bullet beside it, so it nests, folds and zooms like any bullet. See [docs/callout-bullets.md](docs/callout-bullets.md).
 - **Drag and drop.** Drag an item by its bullet, also into another open note. See [docs/drag-and-drop.md](docs/drag-and-drop.md).
 
 ## Commands

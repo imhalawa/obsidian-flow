@@ -116,3 +116,12 @@ export class EditorSuggest {
 	context: unknown = null;
 	constructor(public app: unknown) {}
 }
+
+export class Component {
+	load(): void {}
+	unload(): void {}
+}
+
+export const MarkdownRenderer = {
+	render: async (): Promise<void> => undefined,
+};

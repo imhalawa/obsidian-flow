@@ -20,7 +20,8 @@
 		"!src/editor/item-drag.ts",
 		"!src/editor/register-item-drag.ts",
 		"!src/editor/drop-indicator.ts",
-		"!src/editor/item-geometry.ts"
+		"!src/editor/item-geometry.ts",
+		"!src/editor/callout-widget.ts"
 	],
 	"incremental": true,
 	"incrementalFile": "reports/stryker-incremental.json",

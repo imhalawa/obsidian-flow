@@ -149,3 +149,41 @@ describe('Obsidian DOM the plugin attaches to', () => {
 		).toBe(true);
 	});
 });
+
+describe('callout markup the plugin lays out', () => {
+	it.each(['createSpan', 'createDiv', 'createEl'])('has the global %s helper', async (name) => {
+		expect(await app.evaluate<string>(`typeof ${name}`)).toBe('function');
+	});
+
+	it('has setCssProps on elements', async () => {
+		expect(await app.evaluate<string>('typeof HTMLElement.prototype.setCssProps')).toBe(
+			'function',
+		);
+	});
+
+	it('has requestMeasure on the editor view', async () => {
+		expect(
+			await app.evaluate<string>(
+				'typeof app.workspace.activeEditor.editor.cm.requestMeasure',
+			),
+		).toBe('function');
+	});
+
+	it.each([
+		'.flow-callout-widget .callout[data-callout="tip"]',
+		'.flow-callout-widget .callout-title',
+		'.flow-callout-widget .callout-title-inner',
+		'.flow-callout-widget .callout-icon',
+		'.flow-callout-widget .callout-content',
+		'.flow-callout-line .list-bullet',
+	])('renders %s around a callout bullet', async (selector) => {
+		const callouts = await NoteEditor.open(app, '- a\n- > [!tip] t\n  > body\n- z');
+		await callouts.caret(3, 2);
+		await new Promise((resolve) => setTimeout(resolve, 1200));
+		expect(
+			await app.evaluate<boolean>(
+				`Boolean(activeDocument.querySelector(${JSON.stringify(`.workspace-leaf.mod-active ${selector}`)}))`,
+			),
+		).toBe(true);
+	});
+});

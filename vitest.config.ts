@@ -30,6 +30,7 @@ export default defineConfig({
 				'src/editor/register-item-drag.ts',
 				'src/editor/drop-indicator.ts',
 				'src/editor/item-geometry.ts',
+				'src/editor/callout-widget.ts',
 			],
 			reporter: ['text', 'lcov'],
 			thresholds: { lines: 90, functions: 90, branches: 85, statements: 90 },
