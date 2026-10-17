@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-flow",
-	"version": "0.1.0-beta.5",
+	"version": "0.1.0-beta.6",
 	"description": "An outliner experience for Obsidian, in the spirit of RemNote, Roam Research and Logseq.",
 	"main": "main.js",
 	"type": "module",
