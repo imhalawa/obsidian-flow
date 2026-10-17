@@ -1,3 +1,4 @@
+import { codeFolding, foldEffect, unfoldEffect } from '@codemirror/language';
 import { EditorSelection, EditorState } from '@codemirror/state';
 import { EditorView, WidgetType, type DecorationSet } from '@codemirror/view';
 import { describe, expect, it } from 'vitest';
@@ -80,5 +81,39 @@ describe('bulletCallouts', () => {
 		});
 		const changed = state.update({ changes: { from: 3, insert: '\n- > [!tip] t' } }).state;
 		expect(count(changed)).toBe(2);
+	});
+
+	it('drops the guide class of a callout bullet when it is folded', () => {
+		const doc = '- > [!tip] t\n  - child\n- z';
+		const state = EditorState.create({
+			doc,
+			selection: EditorSelection.single(doc.length),
+			extensions: [
+				codeFolding(),
+				bulletCallouts(
+					() => true,
+					() => new TextWidget(),
+					() => undefined,
+				),
+			],
+		});
+		const firstClass = (current: EditorState): string | undefined => {
+			let found: string | undefined;
+			for (const set of sets(current)) {
+				set.between(0, current.doc.length, (_from, _to, value) => {
+					found ??= (value.spec as { class?: string }).class;
+				});
+			}
+			return found;
+		};
+		expect(firstClass(state)).toContain('flow-callout-parent');
+		const folded = state.update({
+			effects: foldEffect.of({ from: 12, to: doc.indexOf('\n- z') }),
+		}).state;
+		expect(firstClass(folded)).toBe('flow-callout-line');
+		const unfolded = folded.update({
+			effects: unfoldEffect.of({ from: 12, to: doc.indexOf('\n- z') }),
+		}).state;
+		expect(firstClass(unfolded)).toContain('flow-callout-parent');
 	});
 });

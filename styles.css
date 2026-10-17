@@ -232,6 +232,7 @@
 
 .flow-callout-widget {
 	display: inline-block;
+	min-width: 10em;
 	width: calc(100% - 1px);
 	vertical-align: top;
 	text-indent: 0;
@@ -250,4 +251,19 @@
 .markdown-source-view.mod-cm6 .cm-line.flow-callout-line.HyperMD-quote::before,
 .markdown-source-view.mod-cm6 .cm-line.flow-callout-after.HyperMD-quote::before {
 	display: none;
+}
+
+.cm-line.flow-callout-parent {
+	position: relative;
+}
+
+.cm-line.flow-callout-parent::after {
+	content: '';
+	position: absolute;
+	top: var(--flow-guide-top, 0);
+	bottom: 0;
+	left: var(--flow-guide-x, -9999px);
+	border-left: var(--indentation-guide-width, 1px) solid
+		var(--indentation-guide-color, var(--background-modifier-border));
+	pointer-events: none;
 }

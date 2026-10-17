@@ -26,6 +26,8 @@ A bullet that holds a callout is drawn as a callout, with its bullet beside it. 
 - The callout is drawn by Obsidian's own markdown renderer, so the markup and the styling are Obsidian's: icons, theme colours, snippets, custom types, markdown and links in the title, lists in the body, the fold chevron.
 - The plugin only places it: the callout starts after the bullet and fills the rest of the row, and the bullet is moved down to the middle of the title row.
 - While the cursor is in the callout, or a selection reaches into it, the lines show their text, like a callout of Obsidian. Click a callout to put the cursor in it.
+- A callout bullet that has children keeps the indentation line of its children: the line starts under the bullet and runs down beside the callout into the children, as it does for a plain bullet. It is left out while the bullet is folded.
+- In a narrow pane the callout keeps a width of at least 10em. When the row is narrower, the callout drops below the bullet instead of being squeezed.
 - The note text is never changed. Drawing a callout replaces nothing in the note.
 - The setting "Show callout bullets as callouts" switches it off.
 

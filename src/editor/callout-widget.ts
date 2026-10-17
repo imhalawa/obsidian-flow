@@ -4,11 +4,16 @@ import { CALLOUT_LINE_CLASS } from './callout-decorations';
 
 export const CALLOUT_WIDGET_CLASS = 'flow-callout-widget';
 const SHIFT_PROPERTY = '--flow-bullet-shift';
+const GUIDE_X_PROPERTY = '--flow-guide-x';
+const GUIDE_TOP_PROPERTY = '--flow-guide-top';
+const GUIDE_GAP = 6;
+const WRAP_DISTANCE = 8;
 const LAYOUT_KEY = 'flow-callout-layout';
 const INTERACTIVE = 'a, button, input, .callout-fold';
 const components = new WeakMap<HTMLElement, Component>();
+const observers = new WeakMap<HTMLElement, ResizeObserver>();
 
-/** Moves the bullet of each callout line down to the middle of the callout title. */
+/** Reads the geometry of the callout lines and sets the properties that place their bullet and the guide of their children. */
 export function layoutCallouts(view: EditorView): void {
 	view.requestMeasure({
 		key: LAYOUT_KEY,
@@ -18,17 +23,32 @@ export function layoutCallouts(view: EditorView): void {
 			).flatMap((line) => {
 				const bullet = line.querySelector('.list-bullet');
 				const title = line.querySelector('.callout-title');
-				if (!bullet || !title) return [];
+				const widget = line.querySelector(`.${CALLOUT_WIDGET_CLASS}`);
+				if (!bullet || !title || !widget) return [];
 				const current = parseFloat(line.style.getPropertyValue(SHIFT_PROPERTY));
+				const applied = Number.isNaN(current) ? 0 : current;
+				const lineBox = line.getBoundingClientRect();
 				const bulletBox = bullet.getBoundingClientRect();
 				const titleBox = title.getBoundingClientRect();
-				const gap =
-					titleBox.top + titleBox.height / 2 - (bulletBox.top + bulletBox.height / 2);
-				return [{ line, shift: (Number.isNaN(current) ? 0 : current) + gap }];
+				const bulletMiddle = (bulletBox.top + bulletBox.bottom) / 2 - applied;
+				const wrapped = widget.getBoundingClientRect().top - lineBox.top > WRAP_DISTANCE;
+				const shift = wrapped ? 0 : (titleBox.top + titleBox.bottom) / 2 - bulletMiddle;
+				return [
+					{
+						line,
+						shift,
+						guideX: (bulletBox.left + bulletBox.right) / 2 - lineBox.left,
+						guideTop: bulletBox.bottom - applied + shift - lineBox.top + GUIDE_GAP,
+					},
+				];
 			}),
 		write: (items) => {
-			for (const { line, shift } of items) {
-				line.setCssProps({ [SHIFT_PROPERTY]: `${Math.round(shift)}px` });
+			for (const { line, shift, guideX, guideTop } of items) {
+				line.setCssProps({
+					[SHIFT_PROPERTY]: `${Math.round(shift)}px`,
+					[GUIDE_X_PROPERTY]: `${Math.round(guideX)}px`,
+					[GUIDE_TOP_PROPERTY]: `${Math.round(guideTop)}px`,
+				});
 			}
 		},
 	});
@@ -52,6 +72,9 @@ export class CalloutWidget extends WidgetType {
 		const component = new Component();
 		component.load();
 		components.set(element, component);
+		const observer = new ResizeObserver(() => layoutCallouts(view));
+		observer.observe(element);
+		observers.set(element, observer);
 		const path = view.state.field(editorInfoField, false)?.file?.path ?? '';
 		MarkdownRenderer.render(this.app, this.markdown, element, path, component).then(
 			() => layoutCallouts(view),
@@ -69,6 +92,8 @@ export class CalloutWidget extends WidgetType {
 	}
 
 	destroy(dom: HTMLElement): void {
+		observers.get(dom)?.disconnect();
+		observers.delete(dom);
 		components.get(dom)?.unload();
 		components.delete(dom);
 	}

@@ -5,6 +5,7 @@ export interface CalloutBlock {
 	startLine: number;
 	endLine: number;
 	markerColumn: number;
+	hasChildren: boolean;
 	markdown: string;
 }
 
@@ -49,6 +50,7 @@ export function findCallouts(
 			startLine: item.startLine,
 			endLine,
 			markerColumn: head.length - item.text.length,
+			hasChildren: item.children.length > 0,
 			markdown: [item.text, ...body].join('\n'),
 		};
 	});

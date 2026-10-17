@@ -1,9 +1,11 @@
+import { codeFolding, foldEffect } from '@codemirror/language';
 import { EditorSelection, EditorState } from '@codemirror/state';
 import { WidgetType, type DecorationSet } from '@codemirror/view';
 import { describe, expect, it } from 'vitest';
 import {
 	CALLOUT_AFTER_CLASS,
 	CALLOUT_LINE_CLASS,
+	CALLOUT_PARENT_CLASS,
 	calloutDecorations,
 } from '../../src/editor/callout-decorations';
 
@@ -46,6 +48,9 @@ const decorate = (doc: string, anchor: number, head: number) => {
 };
 
 const NOTE = ['- a', '\t- > [!tip] T', '\t  > body', '\t- next'].join('\n');
+
+const PARENT = `${CALLOUT_LINE_CLASS} ${CALLOUT_PARENT_CLASS}`;
+const WITH_CHILD = '- > [!tip] T\n  > body\n  - child\n- z';
 
 describe('calloutDecorations', () => {
 	it('replaces the text of a callout bullet and marks its line and the line after it', () => {
@@ -119,5 +124,33 @@ describe('calloutDecorations', () => {
 			changed.doc.length,
 		);
 		expect(items.filter((item) => item.kind === 'replace')).toHaveLength(1);
+	});
+
+	it('marks a callout bullet that has children as a parent', () => {
+		const classes = decorate(WITH_CHILD, WITH_CHILD.length, WITH_CHILD.length).map(
+			(item) => item.cls,
+		);
+		expect(classes[0]).toBe(PARENT);
+	});
+
+	it('does not mark a callout bullet without children as a parent', () => {
+		const note = '- > [!tip] T\n  > body\n- z';
+		expect(decorate(note, note.length, note.length)[0]?.cls).toBe(CALLOUT_LINE_CLASS);
+	});
+
+	it('does not mark a folded callout bullet as a parent', () => {
+		const state = EditorState.create({
+			doc: WITH_CHILD,
+			selection: EditorSelection.single(WITH_CHILD.length),
+			extensions: [codeFolding()],
+		});
+		const folded = state.update({
+			effects: foldEffect.of({ from: 12, to: WITH_CHILD.indexOf('\n- z') }),
+		}).state;
+		const items = found(
+			calloutDecorations(folded, (markdown) => new TextWidget(markdown)),
+			WITH_CHILD.length,
+		);
+		expect(items[0]?.cls).toBe(CALLOUT_LINE_CLASS);
 	});
 });

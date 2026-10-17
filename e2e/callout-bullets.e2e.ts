@@ -107,6 +107,15 @@ describe('callout bullets in real Obsidian', () => {
 		expect(box.lineBottom - box.widgetBottom).toBeLessThan(2);
 	});
 
+	it.each([1, 2, 3, 4, 5])(
+		'keeps the bullet level with the title in note number %i opened in a row',
+		async () => {
+			await open(NOTE, 4, 4);
+			const box = (await layout(0))!;
+			expect(Math.abs(box.bulletMiddle - box.titleMiddle)).toBeLessThanOrEqual(2);
+		},
+	);
+
 	it('keeps the callout inside the width of the note', async () => {
 		await open(NOTE, 4, 4);
 		const box = (await layout(0))!;
@@ -300,6 +309,123 @@ describe('callout bullets in real Obsidian', () => {
 		expect(await collapsed()).toBe(false);
 		expect(await widgetCount()).toBe(1);
 		expect((await editor.selections())[0]?.head.line).toBe(3);
+	});
+
+	describe('children of a callout bullet', () => {
+		const PARENT_NOTE = [
+			'- a',
+			'\t- > [!warning] Callout parent',
+			'\t  > body',
+			'\t\t- child one',
+			'\t\t- child two',
+			'\t- z',
+		].join('\n');
+
+		interface Guide {
+			left: number;
+			top: number;
+			height: number;
+			width: string;
+			position: string;
+			lineHeight: number;
+			bulletCenter: number;
+			bulletBottom: number;
+		}
+
+		const guide = () =>
+			app.evaluate<Guide | null>(`(() => {
+				const line = activeDocument.querySelector('${ACTIVE} .flow-callout-parent');
+				const bullet = line?.querySelector('.list-bullet');
+				if (!line || !bullet) return null;
+				const style = getComputedStyle(line, '::after');
+				const l = line.getBoundingClientRect();
+				const b = bullet.getBoundingClientRect();
+				return { left: parseFloat(style.left), top: parseFloat(style.top), height: parseFloat(style.height), width: style.borderLeftWidth, position: getComputedStyle(line).position, lineHeight: l.height, bulletCenter: (b.left + b.right) / 2 - l.left, bulletBottom: b.bottom - l.top };
+			})()`);
+
+		it('continues the indentation line of the children from the bullet of the callout', async () => {
+			await open(PARENT_NOTE, 5, 2);
+			const line = (await guide())!;
+			expect(Math.abs(line.left - line.bulletCenter)).toBeLessThanOrEqual(1.5);
+			expect(line.top).toBeGreaterThanOrEqual(line.bulletBottom);
+			expect(line.top - line.bulletBottom).toBeLessThan(10);
+			expect(Math.abs(line.top + line.height - line.lineHeight)).toBeLessThanOrEqual(1);
+			expect(line.width).toBe('1px');
+			expect(line.position).toBe('relative');
+		});
+
+		it('draws no line for a callout bullet without children', async () => {
+			await open('- a\n\t- > [!warning] Callout\n\t  > body\n\t- z', 3, 2);
+			expect(await guide()).toBeNull();
+		});
+
+		it('draws no line while the callout bullet is folded and draws it again when unfolded', async () => {
+			const editor = await open(PARENT_NOTE, 5, 2);
+			await editor.caret(1, 6);
+			expect(await editor.runCommand('fold-item')).toBe(true);
+			await editor.caret(5, 2);
+			await wait(800);
+			expect(await widgetCount()).toBe(1);
+			expect(await guide()).toBeNull();
+			await editor.caret(1, 6);
+			await editor.runCommand('unfold-item');
+			await editor.caret(5, 2);
+			await wait(800);
+			expect(await guide()).not.toBeNull();
+			expect(await editor.text()).toBe(PARENT_NOTE);
+		});
+
+		it('keeps the line of a nested callout bullet under a callout bullet', async () => {
+			await open(
+				'- a\n\t- > [!warning] Outer\n\t\t- > [!tip] Inner\n\t\t\t- leaf\n\t- z',
+				4,
+				2,
+			);
+			expect(await widgetCount()).toBe(2);
+			expect(
+				await app.evaluate<number>(
+					`activeDocument.querySelectorAll('${ACTIVE} .flow-callout-parent').length`,
+				),
+			).toBe(2);
+		});
+	});
+
+	describe('in a narrow pane', () => {
+		const NARROW_NOTE = [
+			'- a',
+			'\t- b',
+			'\t\t- c',
+			'\t\t\t- > [!warning] A callout with a title that is long enough to wrap',
+			'\t\t\t\t- child',
+			'\t\t- z',
+		].join('\n');
+
+		afterAll(async () => {
+			await app.resizeWindow(1280, 900);
+			await app.evaluate('(app.workspace.leftSplit.expand(), true)');
+		});
+
+		it('keeps the callout readable instead of squeezing it', async () => {
+			const editor = await open(NARROW_NOTE, 5, 2);
+			await app.evaluate('(app.workspace.leftSplit.collapse(), true)');
+			await app.resizeWindow(300, 700);
+			await editor.caret(5, 2);
+			await wait(1500);
+			const box = await app.evaluate<{
+				width: number;
+				minimum: number;
+				shift: string;
+				wrapped: boolean;
+			}>(`(() => {
+				const line = activeDocument.querySelector('${ACTIVE} .flow-callout-line');
+				const widget = line.querySelector('.flow-callout-widget');
+				const bullet = line.querySelector('.list-bullet').getBoundingClientRect();
+				return { width: widget.getBoundingClientRect().width, minimum: parseFloat(getComputedStyle(widget).fontSize) * 10, shift: line.style.getPropertyValue('--flow-bullet-shift'), wrapped: widget.getBoundingClientRect().top >= bullet.bottom };
+			})()`);
+			expect(box.width).toBeGreaterThanOrEqual(box.minimum - 1);
+			if (box.wrapped) expect(box.shift).toBe('0px');
+			expect(await editor.text()).toBe(NARROW_NOTE);
+		});
 	});
 
 	it('logs no error', async () => {

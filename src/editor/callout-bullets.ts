@@ -1,3 +1,4 @@
+import { foldEffect, unfoldEffect } from '@codemirror/language';
 import { StateField, type EditorState, type Extension, type Transaction } from '@codemirror/state';
 import {
 	Decoration,
@@ -35,7 +36,15 @@ export function bulletCallouts(
 		create: (state) => build(state, isEnabled(), makeWidget),
 		update(value: CalloutState, transaction: Transaction) {
 			const enabled = isEnabled();
-			if (enabled === value.enabled && !transaction.docChanged && !transaction.selection) {
+			const folds = transaction.effects.some(
+				(effect) => effect.is(foldEffect) || effect.is(unfoldEffect),
+			);
+			if (
+				enabled === value.enabled &&
+				!transaction.docChanged &&
+				!transaction.selection &&
+				!folds
+			) {
 				return value;
 			}
 			return build(transaction.state, enabled, makeWidget);

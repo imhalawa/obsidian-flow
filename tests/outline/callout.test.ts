@@ -9,7 +9,13 @@ const calloutsAt = (lines: string[], tabSize: number) =>
 describe('findCallouts', () => {
 	it('finds a one line callout bullet', () => {
 		expect(callouts(['- > [!tip] Title'])).toEqual([
-			{ startLine: 0, endLine: 0, markerColumn: 2, markdown: '> [!tip] Title' },
+			{
+				startLine: 0,
+				endLine: 0,
+				markerColumn: 2,
+				hasChildren: false,
+				markdown: '> [!tip] Title',
+			},
 		]);
 	});
 
@@ -57,7 +63,13 @@ describe('findCallouts', () => {
 
 	it('joins the body lines that sit at the text column of the bullet', () => {
 		expect(callouts(['- > [!tip] T', '  > one', '  > two', '- next'])).toEqual([
-			{ startLine: 0, endLine: 2, markerColumn: 2, markdown: '> [!tip] T\n> one\n> two' },
+			{
+				startLine: 0,
+				endLine: 2,
+				markerColumn: 2,
+				hasChildren: false,
+				markdown: '> [!tip] T\n> one\n> two',
+			},
 		]);
 	});
 
@@ -98,6 +110,15 @@ describe('findCallouts', () => {
 		expect(callouts(['- > [!tip] T', '  > a', '  - child', '  > not body'])[0]).toMatchObject({
 			endLine: 1,
 		});
+	});
+
+	it('tells whether the callout bullet has children', () => {
+		expect(
+			callouts(['- > [!tip] T', '  > a', '	- child']).map((block) => block.hasChildren),
+		).toEqual([true]);
+		expect(
+			callouts(['- > [!tip] T', '  > a', '- next']).map((block) => block.hasChildren),
+		).toEqual([false]);
 	});
 
 	it('does not take the first line of the next callout bullet as body', () => {
