@@ -30,6 +30,13 @@ export function itemsOfNote(path: string, text: string, tabSize: number): Indexe
 		}));
 }
 
+/** Returns the line where an indexed item sits in the current text of its note, or null when it cannot be told which item it was. */
+export function locateItem(text: string, tabSize: number, item: IndexedItem): number | null {
+	const same = itemsOfNote(item.path, text, tabSize).filter((found) => found.text === item.text);
+	if (same.some((found) => found.startLine === item.startLine)) return item.startLine;
+	return same.length === 1 ? (same[0]?.startLine ?? null) : null;
+}
+
 /** Returns how well an item matches a lowercase query: 0 starts with it, 1 contains it, 2 is in a path, null no match. */
 function rank(item: IndexedItem, query: string): number | null {
 	const text = item.text.toLowerCase();

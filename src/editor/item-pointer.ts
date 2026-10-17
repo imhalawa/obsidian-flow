@@ -19,8 +19,8 @@ import {
 } from '../ui/item-menu-model';
 import { hasStartedDragging, isFinishedPress, type PressPoint } from './bullet-press';
 import { showLitBullet, litBulletAt } from './bullet-hover';
-import { isFolded, toggleBranch } from './fold-control';
-import { foldIndicatorCenter, isOverFoldIndicator } from './fold-indicator';
+import { isFolded, isHiddenByFold, toggleBranch } from './fold-control';
+import { foldIndicatorCenter, foldIndicatorOf, isOverFoldIndicator } from './fold-indicator';
 import { editorFontSize, firstRow, markerSpan } from './item-geometry';
 import { outlineOfState } from './outline-of-state';
 import { setThreadHover, threadHoverField } from './thread-hover-field';
@@ -42,6 +42,7 @@ type PointerHit =
 	| { kind: 'thread'; parent: OutlineNode; guideX: number };
 
 const OVER_ITEM_CLASS = 'flow-over-item-control';
+const CHEVRON_HOVER_CLASS = 'flow-chevron-hover';
 /** Returns the horizontal middle of the marker of an item, where its thread line runs, or null when it is not drawn. */
 function guideX(view: EditorView, item: OutlineNode): number | null {
 	const span = markerSpan(
@@ -62,6 +63,7 @@ function hitAt(view: EditorView, event: MouseEvent, host: ItemPointerHost): Poin
 	const offset = event.clientY - view.documentTop;
 	if (offset < block.top || offset > block.bottom) return null;
 	const lineIndex = view.state.doc.lineAt(position).number - 1;
+	if (isHiddenByFold(view.state, view.state.doc.line(lineIndex + 1).from)) return null;
 	const tree = outlineOfState(view.state);
 	const marker = bulletMarker(tree, lineIndex);
 	const row = firstRow(view, lineIndex);
@@ -82,10 +84,10 @@ function hitAt(view: EditorView, event: MouseEvent, host: ItemPointerHost): Poin
 		row && event.clientY <= row.bottom
 			? foldIndicatorCenter(view, view.state.doc.line(lineIndex + 1).from)
 			: null;
-	if (arrowCenter !== null && Math.abs(event.clientX - arrowCenter) <= sizes.chevronHalf) {
-		return { kind: 'chevron', startLine: lineIndex };
-	}
-	if (!host.isThreadFoldEnabled()) return null;
+	const chevronDistance = arrowCenter === null ? Infinity : Math.abs(event.clientX - arrowCenter);
+	const chevron: PointerHit | null =
+		chevronDistance <= sizes.chevronHalf ? { kind: 'chevron', startLine: lineIndex } : null;
+	if (!host.isThreadFoldEnabled()) return chevron;
 	const parent = threadParent(
 		tree,
 		lineIndex,
@@ -94,7 +96,25 @@ function hitAt(view: EditorView, event: MouseEvent, host: ItemPointerHost): Poin
 		sizes.threadHalf,
 	);
 	const guide = parent ? guideX(view, parent) : null;
-	return parent && guide !== null ? { kind: 'thread', parent, guideX: guide } : null;
+	if (!parent || guide === null) return chevron;
+	if (chevron && Math.abs(event.clientX - guide) > sizes.threadCore) return chevron;
+	return { kind: 'thread', parent, guideX: guide };
+}
+
+/** Marks the fold arrow of a line as hovered, or clears the mark when there is none; returns the arrow that is marked. */
+function markChevron(
+	view: EditorView,
+	marked: Element | null,
+	hit: PointerHit | null,
+): Element | null {
+	const next =
+		hit?.kind === 'chevron'
+			? foldIndicatorOf(view, view.state.doc.line(hit.startLine + 1).from)
+			: null;
+	if (next === marked) return marked;
+	marked?.classList.remove(CHEVRON_HOVER_CLASS);
+	next?.classList.add(CHEVRON_HOVER_CLASS);
+	return next;
 }
 
 /** Highlights the thread line of a hit, or clears the highlight when there is none; does nothing when it is already shown. */
@@ -166,6 +186,7 @@ export function itemPointer(host: ItemPointerHost): Extension {
 	return ViewPlugin.define((view) => {
 		let claimedPress = false;
 		let lastPointerType = '';
+		let markedChevron: Element | null = null;
 		const claim = (event: Event) => {
 			event.preventDefault();
 			event.stopImmediatePropagation();
@@ -213,6 +234,7 @@ export function itemPointer(host: ItemPointerHost): Extension {
 			mousemove(event) {
 				const hit = event.buttons === 0 ? hitAt(view, event, host) : null;
 				view.dom.classList.toggle(OVER_ITEM_CLASS, hit !== null);
+				markedChevron = markChevron(view, markedChevron, hit);
 				showThreadHover(view, hit?.kind === 'thread' ? hit : null);
 				showLitBullet(
 					view,
@@ -221,6 +243,7 @@ export function itemPointer(host: ItemPointerHost): Extension {
 			},
 			mouseleave() {
 				view.dom.classList.remove(OVER_ITEM_CLASS);
+				markedChevron = markChevron(view, markedChevron, null);
 				showThreadHover(view, null);
 				showLitBullet(view, null);
 			},
@@ -234,6 +257,7 @@ export function itemPointer(host: ItemPointerHost): Extension {
 					view.dom.removeEventListener(type, listener as EventListener, true);
 				}
 				view.dom.classList.remove(OVER_ITEM_CLASS);
+				markChevron(view, markedChevron, null);
 			},
 		};
 	});

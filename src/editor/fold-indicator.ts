@@ -12,11 +12,21 @@ export function isOverFoldIndicator(target: object | null): boolean {
 	return (target as ClosestSearch).closest(FOLD_INDICATOR) !== null;
 }
 
+/** Returns the rendered line that holds a document position, or null when it is not drawn. */
+function renderedLine(view: EditorView, position: number): Element | null {
+	const node = view.domAtPos(position).node;
+	const element = node instanceof Element ? node : node.parentElement;
+	return element?.closest('.cm-line') ?? null;
+}
+
+/** Returns the fold arrow element Obsidian draws on a line, or null when the line shows none. */
+export function foldIndicatorOf(view: EditorView, lineStart: number): Element | null {
+	return renderedLine(view, lineStart)?.querySelector(FOLD_INDICATOR) ?? null;
+}
+
 /** Returns the horizontal middle of the fold arrow Obsidian draws on a line, or null when the line shows none. */
 export function foldIndicatorCenter(view: EditorView, lineStart: number): number | null {
-	const node = view.domAtPos(lineStart).node;
-	const element = node instanceof Element ? node : node.parentElement;
-	const arrow = element?.closest('.cm-line')?.querySelector(FOLD_INDICATOR + ' svg');
+	const arrow = renderedLine(view, lineStart)?.querySelector(FOLD_INDICATOR + ' svg');
 	if (!arrow) return null;
 	const box = arrow.getBoundingClientRect();
 	return (box.left + box.right) / 2;

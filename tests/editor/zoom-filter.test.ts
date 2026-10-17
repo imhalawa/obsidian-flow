@@ -1,6 +1,7 @@
 import { EditorState, Transaction, type TransactionSpec } from '@codemirror/state';
 import { describe, expect, it } from 'vitest';
 import { zoomChange, zoomField } from '../../src/editor/zoom-field';
+import { setViewFocus } from '../../src/editor/view-focus';
 import { zoomEditFilter } from '../../src/editor/zoom-filter';
 import { zoomHistoryField } from '../../src/editor/zoom-history-field';
 
@@ -20,6 +21,7 @@ const apply = (state: EditorState, spec: TransactionSpec) =>
 
 const typed = (from: number, to: number, insert: string): TransactionSpec => ({
 	changes: { from, to, insert },
+	selection: { anchor: from + insert.length },
 	userEvent: 'input.type',
 });
 
@@ -46,6 +48,17 @@ describe('zoomEditFilter', () => {
 
 	it('lets changes without a user event through, as sync does', () => {
 		expect(apply(zoomedIntoB(), { changes: { from: 0, insert: 'x' } })).toBe(`x${NOTE}`);
+	});
+
+	it('lets through a change forwarded from another pane, which keeps its user event and cursor, while this view has no focus', () => {
+		const unfocused = zoomedIntoB().update({ effects: setViewFocus.of(false) }).state;
+		expect(apply(unfocused, typed(0, 0, 'x'))).toBe(`x${NOTE}`);
+	});
+
+	it('blocks the same change again once the view has focus', () => {
+		const unfocused = zoomedIntoB().update({ effects: setViewFocus.of(false) }).state;
+		const focused = unfocused.update({ effects: setViewFocus.of(true) }).state;
+		expect(apply(focused, typed(0, 0, 'x'))).toBe(NOTE);
 	});
 
 	it('lets remote changes through even with a user event', () => {

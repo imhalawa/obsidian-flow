@@ -7,6 +7,7 @@ import { globalIgnores, defineConfig } from 'eslint/config';
 export default defineConfig(
 	globalIgnores([
 		'node_modules',
+		'.claude/worktrees',
 		'dist',
 		'esbuild.config.mjs',
 		'commitlint.config.mjs',

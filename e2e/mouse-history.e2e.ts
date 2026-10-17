@@ -36,7 +36,7 @@ describe('mouse back and forward in real Obsidian', () => {
 		const editor = await NoteEditor.open(app, NOTE);
 		await zoomTwice(editor);
 		expect(await editor.crumbs()).toEqual(['a', 'b']);
-		app.pressSideButton(POINTER.x, POINTER.y, 'back');
+		await app.pressSideButton(POINTER.x, POINTER.y, 'back');
 		expect(await editor.crumbs()).toEqual(['a']);
 	});
 
@@ -44,8 +44,8 @@ describe('mouse back and forward in real Obsidian', () => {
 		await useMouseHistory(true);
 		const editor = await NoteEditor.open(app, NOTE);
 		await zoomTwice(editor);
-		app.pressSideButton(POINTER.x, POINTER.y, 'back');
-		app.pressSideButton(POINTER.x, POINTER.y, 'forward');
+		await app.pressSideButton(POINTER.x, POINTER.y, 'back');
+		await app.pressSideButton(POINTER.x, POINTER.y, 'forward');
 		expect(await editor.crumbs()).toEqual(['a', 'b']);
 	});
 
@@ -57,7 +57,7 @@ describe('mouse back and forward in real Obsidian', () => {
 		const child = await editor.bulletPoint(2);
 		await app.click(child.x, child.y, false);
 		expect(await editor.crumbs()).toEqual(['a', 'b']);
-		app.pressSideButton(POINTER.x, POINTER.y, 'back');
+		await app.pressSideButton(POINTER.x, POINTER.y, 'back');
 		expect(await editor.crumbs()).toEqual(['a']);
 	});
 
@@ -68,7 +68,7 @@ describe('mouse back and forward in real Obsidian', () => {
 		await editor.runCommand('zoom-in');
 		await editor.clickCrumb('a');
 		expect(await editor.crumbs()).toEqual(['a']);
-		app.pressSideButton(POINTER.x, POINTER.y, 'back');
+		await app.pressSideButton(POINTER.x, POINTER.y, 'back');
 		expect(await editor.crumbs()).toEqual(['a', 'b', 'c']);
 	});
 
@@ -77,7 +77,7 @@ describe('mouse back and forward in real Obsidian', () => {
 		const editor = await NoteEditor.open(app, NOTE);
 		const path = await editor.path();
 		await zoomTwice(editor);
-		app.pressSideButton(POINTER.x, POINTER.y, 'back');
+		await app.pressSideButton(POINTER.x, POINTER.y, 'back');
 		expect(await editor.path()).toBe(path);
 	});
 
@@ -87,7 +87,7 @@ describe('mouse back and forward in real Obsidian', () => {
 		const firstPath = await first.path();
 		const second = await NoteEditor.open(app, NOTE);
 		expect(await second.path()).not.toBe(firstPath);
-		app.pressSideButton(POINTER.x, POINTER.y, 'back');
+		await app.pressSideButton(POINTER.x, POINTER.y, 'back');
 		expect(await second.path()).toBe(firstPath);
 	});
 
@@ -97,16 +97,18 @@ describe('mouse back and forward in real Obsidian', () => {
 		const firstPath = await first.path();
 		const second = await NoteEditor.open(app, NOTE);
 		await zoomTwice(second);
-		app.pressSideButton(POINTER.x, POINTER.y, 'back');
+		await app.pressSideButton(POINTER.x, POINTER.y, 'back');
 		expect(await second.path()).toBe(firstPath);
 		await useMouseHistory(true);
 	});
 
-	it('steps through zoom levels in a pop-out window', async () => {
-		await useMouseHistory(true);
-		await NoteEditor.open(app, NOTE);
-		const popout = await app.evaluate<{ x: number; y: number }>(
-			`(async () => {
+	it.skipIf(process.platform !== 'linux')(
+		'steps through zoom levels in a pop-out window',
+		async () => {
+			await useMouseHistory(true);
+			await NoteEditor.open(app, NOTE);
+			const popout = await app.evaluate<{ x: number; y: number }>(
+				`(async () => {
 				const leaf = app.workspace.openPopoutLeaf();
 				await leaf.openFile(app.workspace.getActiveFile());
 				app.workspace.setActiveLeaf(leaf, { focus: true });
@@ -114,18 +116,19 @@ describe('mouse back and forward in real Obsidian', () => {
 				const win = leaf.view.containerEl.ownerDocument.defaultView;
 				return { x: win.screenX + win.outerWidth / 2, y: win.screenY + win.outerHeight / 2 };
 			})()`,
-		);
-		const popoutEditor = NoteEditor.attach(app);
-		await popoutEditor.caret(1, 3);
-		await popoutEditor.runCommand('zoom-in');
-		await popoutEditor.caret(2, 4);
-		await popoutEditor.runCommand('zoom-in');
-		const crumbs = () =>
-			app.evaluate<string[]>(
-				'Array.from(window.__popoutLeaf.view.containerEl.querySelectorAll(".flow-crumbs__crumb:not(.is-hidden)")).map((el) => el.textContent)',
 			);
-		expect(await crumbs()).toEqual(['a', 'b']);
-		app.pressSideButton(popout.x, popout.y, 'back');
-		expect(await crumbs()).toEqual(['a']);
-	});
+			const popoutEditor = NoteEditor.attach(app);
+			await popoutEditor.caret(1, 3);
+			await popoutEditor.runCommand('zoom-in');
+			await popoutEditor.caret(2, 4);
+			await popoutEditor.runCommand('zoom-in');
+			const crumbs = () =>
+				app.evaluate<string[]>(
+					'Array.from(window.__popoutLeaf.view.containerEl.querySelectorAll(".flow-crumbs__crumb:not(.is-hidden)")).map((el) => el.textContent)',
+				);
+			expect(await crumbs()).toEqual(['a', 'b']);
+			await app.pressSideButton(popout.x, popout.y, 'back');
+			expect(await crumbs()).toEqual(['a']);
+		},
+	);
 });

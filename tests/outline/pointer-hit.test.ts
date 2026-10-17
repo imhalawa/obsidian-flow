@@ -118,10 +118,18 @@ describe('hitSizes', () => {
 		[
 			'the default font',
 			16,
-			{ bulletMinimum: 24, threadHalf: 12, chevronHalf: 12, gutter: 48 },
+			{ bulletMinimum: 24, threadHalf: 12, threadCore: 4, chevronHalf: 12, gutter: 48 },
 		],
-		['a large font', 32, { bulletMinimum: 48, threadHalf: 24, chevronHalf: 24, gutter: 96 }],
-		['a small font', 8, { bulletMinimum: 12, threadHalf: 6, chevronHalf: 6, gutter: 24 }],
+		[
+			'a large font',
+			32,
+			{ bulletMinimum: 48, threadHalf: 24, threadCore: 8, chevronHalf: 24, gutter: 96 },
+		],
+		[
+			'a small font',
+			8,
+			{ bulletMinimum: 12, threadHalf: 6, threadCore: 2, chevronHalf: 6, gutter: 24 },
+		],
 	])('scales the clickable areas with %s', (_name, fontSize, expected) => {
 		expect(hitSizes(fontSize)).toEqual(expected);
 	});

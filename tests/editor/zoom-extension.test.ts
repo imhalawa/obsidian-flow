@@ -35,6 +35,7 @@ describe('zoomExtension', () => {
 		);
 		const spec: TransactionSpec = {
 			changes: { from: 0, insert: 'x' },
+			selection: { anchor: 1 },
 			userEvent: 'input.type',
 		};
 		expect(state.update(spec).state.doc.toString()).toBe(NOTE);
@@ -49,7 +50,7 @@ describe('zoomExtension', () => {
 			if (typeof source === 'function') throw new Error('Expected a computed set.');
 			return source;
 		});
-		expect(sets.flatMap(rangeStarts)).toEqual([0, 9]);
+		expect(sets.flatMap(rangeStarts)).toEqual([0, 10]);
 	});
 
 	it('makes the hidden ranges atomic', () => {
@@ -60,7 +61,7 @@ describe('zoomExtension', () => {
 		const sources = state.facet(EditorView.atomicRanges);
 		const view = { state } as EditorView;
 		expect(sources.flatMap((source) => rangeStarts(source(view) as DecorationSet))).toEqual([
-			0, 9,
+			0, 10,
 		]);
 	});
 

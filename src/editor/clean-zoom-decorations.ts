@@ -6,7 +6,10 @@ import { zoomField } from './zoom-field';
 
 export const ZOOM_LINE_CLASS = 'flow-zoom-line';
 
+export const ZOOM_ROOT_CLASS = 'flow-zoom-root';
+
 const zoomLine = Decoration.line({ class: ZOOM_LINE_CLASS });
+const zoomRootLine = Decoration.line({ class: `${ZOOM_LINE_CLASS} ${ZOOM_ROOT_CLASS}` });
 
 /** Returns the line decorations that mark the zoomed lines that move to the left edge. */
 export function cleanZoomDecorations(state: EditorState): DecorationSet {
@@ -18,7 +21,8 @@ export function cleanZoomDecorations(state: EditorState): DecorationSet {
 	const range = { fromLine: startLine, toLine: state.doc.lineAt(zoom.to).number - 1 };
 	const builder = new RangeSetBuilder<Decoration>();
 	for (const line of shiftedLines(lines, state.tabSize, range, columns)) {
-		builder.add(state.doc.line(line + 1).from, state.doc.line(line + 1).from, zoomLine);
+		const from = state.doc.line(line + 1).from;
+		builder.add(from, from, line === startLine ? zoomRootLine : zoomLine);
 	}
 	return builder.finish();
 }
