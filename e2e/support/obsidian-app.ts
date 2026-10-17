@@ -6,7 +6,7 @@ import { DevtoolsConnection } from './devtools';
 import { ensureObsidian } from './install-obsidian';
 
 const DISPLAY = ':99';
-const SCREEN_SIZE = '2560x1000x24';
+const SCREEN_SIZE = '3840x2160x24';
 const WINDOW_ORIGIN = process.platform === 'linux' ? 0 : -32000;
 const DEFAULT_WINDOW = { width: 1280, height: 900 };
 const PLUGIN_ID = 'flow-outliner';
@@ -201,6 +201,27 @@ export class ObsidianApp {
 		await this.evaluate(
 			`(electronWindow.setBounds({ x: ${WINDOW_ORIGIN}, y: ${WINDOW_ORIGIN}, width: ${width}, height: ${height} }), true)`,
 		);
+	}
+
+	/** Switches Obsidian between its desktop and mobile layouts, which reloads the window, and enables the plugin again. */
+	async emulateMobile(on: boolean): Promise<void> {
+		await this.evaluate(`(app.emulateMobile(${on}), true)`);
+		await waitFor('Obsidian to reload', async () => {
+			const ready = await this.evaluate<boolean>(
+				`app.isMobile === ${on} && app.workspace.layoutReady === true`,
+			);
+			return ready ? true : null;
+		});
+		await this.enablePlugin();
+	}
+
+	/** Renders the window at a pixel density, as a high resolution display does, or at the normal one with 1. */
+	async emulateScale(scale: number): Promise<void> {
+		if (scale === 1) return this.connection.clearScale();
+		const size = await this.evaluate<{ width: number; height: number }>(
+			'({ width: innerWidth, height: innerHeight })',
+		);
+		await this.connection.emulateScale(size.width, size.height, scale);
 	}
 
 	/** Saves a screenshot of the window as a PNG file. */
