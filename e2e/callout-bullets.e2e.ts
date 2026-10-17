@@ -354,6 +354,24 @@ describe('callout bullets in real Obsidian', () => {
 			expect(line.position).toBe('relative');
 		});
 
+		it('starts the title of the callout where the text of a bullet starts, not where its children start', async () => {
+			await open(PARENT_NOTE, 5, 2);
+			const gaps = await app.evaluate<{
+				title: number;
+				child: number;
+				text: number;
+			}>(`(() => {
+				const line = activeDocument.querySelector('${ACTIVE} .flow-callout-parent');
+				const icon = line.querySelector('.callout-icon').getBoundingClientRect();
+				const bullet = line.querySelector('.list-bullet').getBoundingClientRect();
+				const childLine = line.nextElementSibling;
+				const child = childLine.querySelector('.list-bullet').getBoundingClientRect();
+				return { title: icon.left, child: child.left, text: bullet.right };
+			})()`);
+			expect(gaps.child - gaps.title).toBeGreaterThanOrEqual(16);
+			expect(gaps.title - gaps.text).toBeLessThanOrEqual(14);
+		});
+
 		it('draws no line for a callout bullet without children', async () => {
 			await open('- a\n\t- > [!warning] Callout\n\t  > body\n\t- z', 3, 2);
 			expect(await guide()).toBeNull();

@@ -240,6 +240,7 @@
 }
 
 .flow-callout-widget > .callout {
+	--callout-padding: var(--size-4-3) var(--size-4-3) var(--size-4-3) var(--size-4-2);
 	margin: 0;
 }
 
