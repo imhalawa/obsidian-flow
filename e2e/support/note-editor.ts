@@ -240,14 +240,14 @@ export class NoteEditor {
 	/** Inserts text at a position as a user edit, the way typing does. */
 	async type(position: Position, text: string): Promise<void> {
 		await this.app.evaluate(
-			`(() => { const cm = app.workspace.activeEditor.editor.cm; const at = cm.state.doc.line(${position.line + 1}).from + ${position.ch}; cm.dispatch({ changes: { from: at, insert: ${JSON.stringify(text)} }, userEvent: "input.type" }); return true; })()`,
+			`(() => { const cm = app.workspace.activeEditor.editor.cm; const at = cm.state.doc.line(${position.line + 1}).from + ${position.ch}; cm.dispatch({ changes: { from: at, insert: ${JSON.stringify(text)} }, selection: { anchor: at + ${text.length} }, userEvent: "input.type" }); return true; })()`,
 		);
 	}
 
 	/** Replaces a range inside one line as a user edit. */
 	async replace(line: number, fromCh: number, toCh: number, text: string): Promise<void> {
 		await this.app.evaluate(
-			`(() => { const cm = app.workspace.activeEditor.editor.cm; const start = cm.state.doc.line(${line + 1}).from; cm.dispatch({ changes: { from: start + ${fromCh}, to: start + ${toCh}, insert: ${JSON.stringify(text)} }, userEvent: "input.type" }); return true; })()`,
+			`(() => { const cm = app.workspace.activeEditor.editor.cm; const start = cm.state.doc.line(${line + 1}).from; cm.dispatch({ changes: { from: start + ${fromCh}, to: start + ${toCh}, insert: ${JSON.stringify(text)} }, selection: { anchor: start + ${fromCh + text.length} }, userEvent: "input.type" }); return true; })()`,
 		);
 	}
 
@@ -338,6 +338,7 @@ export class NoteEditor {
 
 	/** Clicks the item suggestion with the given text. */
 	async chooseSuggestion(text: string): Promise<void> {
+		await new Promise((resolve) => setTimeout(resolve, 300));
 		await this.app.evaluate(
 			`Array.from(activeDocument.querySelectorAll(".flow-item-suggest-text")).find((el) => el.textContent === ${JSON.stringify(text)}).click()`,
 		);

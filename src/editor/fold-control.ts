@@ -136,3 +136,12 @@ export function isFolded(state: EditorState, startLine: number): boolean {
 	const span = { fromLine: item.startLine, toLine: item.endLine };
 	return foldsStartingAt(state, rangeOf(state, span).from).length > 0;
 }
+
+/** Tells whether a fold hides the line that starts at a position. */
+export function isHiddenByFold(state: EditorState, lineStart: number): boolean {
+	let hidden = false;
+	foldedRanges(state).between(lineStart, lineStart, (from, to) => {
+		if (from < lineStart && lineStart <= to) hidden = true;
+	});
+	return hidden;
+}

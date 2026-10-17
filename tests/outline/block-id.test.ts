@@ -126,26 +126,28 @@ describe('idInsertion', () => {
 	});
 });
 
+const spansOf = (lines: string[]) => blockIdSpans(lines, parseOutline(lines, 4));
+
 describe('blockIdSpans', () => {
 	it('returns the span of each trailing id including the space before it', () => {
 		const lines = ['- a ^one', '  - b', '  - c ^two', '', 'text ^no'];
-		expect(blockIdSpans(lines, 4)).toEqual([
+		expect(spansOf(lines)).toEqual([
 			{ lineIndex: 0, from: 3, to: 8 },
 			{ lineIndex: 2, from: 5, to: 10 },
 		]);
 	});
 
 	it('finds the id on the last text line of a multi line item', () => {
-		expect(blockIdSpans(['- a', '  more ^x1'], 4)).toEqual([{ lineIndex: 1, from: 6, to: 10 }]);
+		expect(spansOf(['- a', '  more ^x1'])).toEqual([{ lineIndex: 1, from: 6, to: 10 }]);
 	});
 
 	it('ignores an id on the first line of a multi line item', () => {
-		expect(blockIdSpans(['- a ^x1', '  more'], 4)).toEqual([]);
+		expect(spansOf(['- a ^x1', '  more'])).toEqual([]);
 	});
 
 	it('finds nothing in a note without items', () => {
-		expect(blockIdSpans(['text ^x1'], 4)).toEqual([]);
-		expect(blockIdSpans([], 4)).toEqual([]);
+		expect(spansOf(['text ^x1'])).toEqual([]);
+		expect(spansOf([])).toEqual([]);
 	});
 });
 

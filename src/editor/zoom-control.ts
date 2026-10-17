@@ -6,6 +6,7 @@ import {
 } from '@codemirror/state';
 import { canGoBack, canGoForward, currentEntry, goBack, goForward } from '../outline/zoom-history';
 import { resolveZoom, zoomInTarget, zoomOutStart } from '../outline/zoom-view';
+import { outlineOfState } from './outline-of-state';
 import {
 	zoomChange,
 	zoomField,
@@ -124,7 +125,7 @@ export function stepHistory(target: ZoomTarget, direction: HistoryDirection): Zo
 	const startLine = entryLine(target.state, currentEntry(moved));
 	const exists =
 		startLine === null ||
-		resolveZoom(target.state.doc.toJSON(), target.state.tabSize, startLine) !== null;
+		resolveZoom(target.state.doc.toJSON(), outlineOfState(target.state), startLine) !== null;
 	if (exists) {
 		dispatchZoom(target, startLine, direction);
 		return 'done';

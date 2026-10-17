@@ -101,7 +101,7 @@ export class DevtoolsConnection {
 		x: number,
 		y: number,
 		action: 'move' | 'click',
-		button: 'left' | 'right',
+		button: 'left' | 'right' | 'back' | 'forward',
 		modifiers: number,
 	): Promise<void> {
 		await this.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y, modifiers });

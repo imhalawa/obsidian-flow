@@ -1,9 +1,12 @@
 import { EditorSelection, type EditorState } from '@codemirror/state';
 import { backspaceAtItemStart } from '../outline/backspace-key';
-import { enterOnEmptyItem } from '../outline/enter-key';
+import { enterOnEmptyItem, enterOnParentItem } from '../outline/enter-key';
 import { homeColumn, itemTextRange, type LinePosition } from '../outline/home-select';
+import { itemAtLine } from '../outline/item-lookup';
 import type { KeyEdit } from '../outline/key-edit';
 import { stateIndentStyle } from './editor-indent-style';
+import { isFolded, toggleBranch } from './fold-control';
+import { outlineOfState } from './outline-of-state';
 import type { ZoomTarget } from './zoom-control';
 import { zoomField } from './zoom-field';
 
@@ -50,6 +53,18 @@ export function enterInEmptyItem(target: ZoomTarget): boolean {
 	const lines = state.doc.toJSON();
 	const edit = enterOnEmptyItem(lines, stateIndentStyle(state, lines), caret.line, caret.column);
 	return edit !== null && applyKeyEdit(target, edit, 'flow.list-enter');
+}
+
+/** Handles Enter at the end of an item with children by adding a new first child, unfolding the item first. */
+export function enterInParentItem(target: ZoomTarget): boolean {
+	const state = target.state;
+	const caret = caretOf(state);
+	if (!caret) return false;
+	const edit = enterOnParentItem(state.doc.toJSON(), state.tabSize, caret.line, caret.column);
+	if (!edit) return false;
+	const item = itemAtLine(outlineOfState(state), caret.line);
+	if (item && isFolded(state, item.startLine)) toggleBranch(target, item.startLine, false);
+	return applyKeyEdit(target, edit, 'flow.list-enter');
 }
 
 /** Handles Backspace at the start of an item's text by merging it into the item above. */

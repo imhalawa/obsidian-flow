@@ -14,17 +14,13 @@ import { registerItemPointer } from './editor/register-item-pointer';
 import { registerZoom } from './editor/register-zoom';
 import { threadHighlight } from './editor/thread-highlight';
 import { registerZoomHeader } from './editor/zoom-header';
-import { DEFAULT_SETTINGS, FlowSettings, FlowSettingTab } from './settings';
+import { DEFAULT_SETTINGS, FlowSettings, FlowSettingTab, mergeSettings } from './settings';
 
 export default class FlowPlugin extends Plugin {
 	settings: FlowSettings = { ...DEFAULT_SETTINGS };
 
 	async onload() {
-		this.settings = Object.assign(
-			{},
-			DEFAULT_SETTINGS,
-			(await this.loadData()) as Partial<FlowSettings> | null,
-		);
+		this.settings = mergeSettings(await this.loadData());
 		this.addSettingTab(new FlowSettingTab(this.app, this));
 		registerCommands(this);
 		registerZoomMenu(this);
@@ -56,6 +52,7 @@ export default class FlowPlugin extends Plugin {
 		);
 		registerListKeys(this, {
 			enterOutdentsEmptyItem: () => this.settings.enterOutdentsEmptyItem,
+			enterAddsFirstChild: () => this.settings.enterAddsFirstChild,
 			backspaceMergesItem: () => this.settings.backspaceMergesItem,
 			homeStaysInItem: () => this.settings.homeStaysInItem,
 			selectAllStaysInItem: () => this.settings.selectAllStaysInItem,

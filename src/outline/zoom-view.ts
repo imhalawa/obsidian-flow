@@ -1,6 +1,6 @@
 import { enclosingHeadings, parseHeadings, type Heading } from './headings';
 import { itemAtLine, itemStartingAt } from './item-lookup';
-import { parseOutline } from './outline-tree';
+import { parseOutline, type OutlineTree } from './outline-tree';
 import { breadcrumbs, zoomOutTarget, zoomRange, type Breadcrumb, type ZoomRange } from './zoom';
 
 export interface ZoomView {
@@ -21,7 +21,7 @@ function headingCrumbsAbove(headings: readonly Heading[], line: number): Breadcr
 /** Returns the range and breadcrumb path of the heading or item that starts on a line, or null. */
 export function resolveZoom(
 	lines: readonly string[],
-	tabSize: number,
+	tree: OutlineTree,
 	startLine: number,
 ): ZoomView | null {
 	const headings = parseHeadings(lines);
@@ -32,7 +32,7 @@ export function resolveZoom(
 			crumbs: [...headingCrumbsAbove(headings, heading.line), headingCrumb(heading)],
 		};
 	}
-	const item = itemStartingAt(parseOutline(lines, tabSize), startLine);
+	const item = itemStartingAt(tree, startLine);
 	if (!item) return null;
 	return {
 		range: zoomRange(item),

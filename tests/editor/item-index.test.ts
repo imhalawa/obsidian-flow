@@ -2,12 +2,16 @@ import { describe, expect, it } from 'vitest';
 import { ItemIndex, type IndexSource } from '../../src/editor/item-index';
 
 class FakeSource implements IndexSource {
-	readonly notes = new Map<string, { mtime: number; text: string }>();
+	readonly notes = new Map<string, { mtime: number; text: string; live?: boolean }>();
 	readonly reads: string[] = [];
 	failing = new Set<string>();
 
 	files() {
-		return [...this.notes].map(([path, note]) => ({ path, mtime: note.mtime }));
+		return [...this.notes].map(([path, note]) => ({
+			path,
+			mtime: note.mtime,
+			live: note.live === true,
+		}));
 	}
 
 	async read(path: string): Promise<string> {
@@ -46,6 +50,24 @@ describe('ItemIndex', () => {
 		expect(source.reads).toEqual(['a.md']);
 	});
 
+	it('returns the same array while no note changed', async () => {
+		const source = new FakeSource();
+		source.notes.set('a.md', { mtime: 1, text: '- one' });
+		const index = new ItemIndex(source);
+		expect(await index.items()).toBe(await index.items());
+	});
+
+	it('returns a new array when a note is added', async () => {
+		const source = new FakeSource();
+		source.notes.set('a.md', { mtime: 1, text: '- one' });
+		const index = new ItemIndex(source);
+		const before = await index.items();
+		source.notes.set('b.md', { mtime: 1, text: '- two' });
+		const after = await index.items();
+		expect(after).not.toBe(before);
+		expect(after.map((item) => item.text)).toEqual(['one', 'two']);
+	});
+
 	it('reads a note again when its modified time changes', async () => {
 		const source = new FakeSource();
 		source.notes.set('a.md', { mtime: 1, text: '- one' });
@@ -53,6 +75,27 @@ describe('ItemIndex', () => {
 		await index.items();
 		source.notes.set('a.md', { mtime: 2, text: '- changed' });
 		expect(await texts(index)).toEqual(['changed']);
+	});
+
+	it('reads a note that is open in an editor every time, because it may hold edits nobody saved', async () => {
+		const source = new FakeSource();
+		source.notes.set('a.md', { mtime: 1, text: '- one', live: true });
+		const index = new ItemIndex(source);
+		await index.items();
+		source.notes.set('a.md', { mtime: 1, text: '- one\n- typed just now', live: true });
+		expect(await texts(index)).toEqual(['one', 'typed just now']);
+		expect(source.reads).toEqual(['a.md', 'a.md']);
+	});
+
+	it('goes back to the cache once a note is no longer open', async () => {
+		const source = new FakeSource();
+		source.notes.set('a.md', { mtime: 1, text: '- one', live: true });
+		const index = new ItemIndex(source);
+		await index.items();
+		source.notes.set('a.md', { mtime: 1, text: '- one', live: false });
+		await index.items();
+		await index.items();
+		expect(source.reads).toEqual(['a.md', 'a.md']);
 	});
 
 	it('forgets notes that are gone', async () => {

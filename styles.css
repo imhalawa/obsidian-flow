@@ -125,6 +125,14 @@
 	clip-path: inset(0 0 0 var(--flow-zoom-shift, 0px));
 }
 
+.flow-zoom-root {
+	clip-path: inset(0 0 0 max(0px, calc(var(--flow-zoom-shift, 0px) - var(--size-4-5))));
+}
+
+.markdown-source-view.mod-cm6 .flow-zoom-root .cm-indent::before {
+	border-color: transparent;
+}
+
 .flow-zoomed .cm-selectionLayer,
 .flow-zoomed .cm-cursorLayer {
 	transform: translateX(calc(var(--flow-zoom-shift, 0px) * -1));
@@ -228,4 +236,8 @@
 
 .view-header-title.flow-title-link:focus-visible {
 	box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
+}
+
+.markdown-source-view.mod-cm6 .cm-fold-indicator.flow-chevron-hover svg.svg-icon {
+	color: var(--icon-color-hover);
 }

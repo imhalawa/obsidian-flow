@@ -1,5 +1,6 @@
 import {
 	EditorSuggest,
+	MarkdownView,
 	Notice,
 	type App,
 	type Editor,
@@ -13,6 +14,7 @@ import { planBlockId, withBlockId } from '../outline/block-id-plan';
 import {
 	closingParensAfter,
 	itemTrigger,
+	locateItem,
 	searchItems,
 	type IndexedItem,
 } from '../outline/item-search';
@@ -27,18 +29,38 @@ export const ITEM_GONE_MESSAGE = 'Could not find that item. It may have moved or
 const SUGGESTION_LIMIT = 30;
 const INDEX_TAB_SIZE = 4;
 
-/** Lists the notes that have list items, newest first, and reads them through the vault cache. */
+/** Returns the editors that show a note, which hold its text before it is saved. */
+function openEditors(app: App): MarkdownView[] {
+	return app.workspace
+		.getLeavesOfType('markdown')
+		.map((leaf) => leaf.view)
+		.filter((view): view is MarkdownView => view instanceof MarkdownView);
+}
+
+/** Lists the notes that have list items or are open, newest first, and reads open notes from their editor and the others through the vault cache. */
 function vaultSource(app: App): IndexSource {
 	return {
-		files: () =>
-			app.vault
+		files: () => {
+			const open = new Set(
+				openEditors(app).flatMap((view) => (view.file ? [view.file.path] : [])),
+			);
+			return app.vault
 				.getMarkdownFiles()
 				.filter(
-					(file) => (app.metadataCache.getFileCache(file)?.listItems?.length ?? 0) > 0,
+					(file) =>
+						open.has(file.path) ||
+						(app.metadataCache.getFileCache(file)?.listItems?.length ?? 0) > 0,
 				)
 				.sort((left, right) => right.stat.mtime - left.stat.mtime)
-				.map((file) => ({ path: file.path, mtime: file.stat.mtime })),
+				.map((file) => ({
+					path: file.path,
+					mtime: file.stat.mtime,
+					live: open.has(file.path),
+				}));
+		},
 		read: async (path) => {
+			const editor = openEditors(app).find((view) => view.file?.path === path);
+			if (editor) return editor.editor.getValue();
 			const file = app.vault.getFileByPath(path);
 			if (!file) throw new Error(`No note at ${path}`);
 			return app.vault.cachedRead(file);
@@ -105,7 +127,11 @@ export class ItemSuggest extends EditorSuggest<IndexedItem> {
 		}
 		let id: string | null = null;
 		await this.app.vault.process(target, (text) => {
-			const result = withBlockId(text, INDEX_TAB_SIZE, item.startLine, this.services.random);
+			const line = locateItem(text, INDEX_TAB_SIZE, item);
+			const result =
+				line === null
+					? null
+					: withBlockId(text, INDEX_TAB_SIZE, line, item.text, this.services.random);
 			id = result?.id ?? null;
 			return result?.text ?? text;
 		});
@@ -119,10 +145,14 @@ export class ItemSuggest extends EditorSuggest<IndexedItem> {
 		replaced: { from: EditorPosition; to: EditorPosition },
 		makeLink: (id: string) => string,
 	): void {
+		const text = editor.getValue();
+		const line = locateItem(text, INDEX_TAB_SIZE, item);
+		if (line === null) throw new Error('The item is gone');
 		const plan = planBlockId(
-			editor.getValue().split('\n'),
+			text.split('\n'),
 			INDEX_TAB_SIZE,
-			item.startLine,
+			line,
+			item.text,
 			this.services.random,
 		);
 		if (!plan) throw new Error('The item is gone');

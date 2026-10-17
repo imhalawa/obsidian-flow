@@ -1,5 +1,5 @@
 import { lineAt } from './line-edit';
-import { parseOutline, type OutlineNode } from './outline-tree';
+import type { OutlineNode, OutlineTree } from './outline-tree';
 
 export interface IdInsertion {
 	lineIndex: number;
@@ -76,8 +76,8 @@ export function idInsertion(lines: readonly string[], item: OutlineNode, id: str
 }
 
 /** Returns where the trailing block id of every list item sits, including the space before it. */
-export function blockIdSpans(lines: readonly string[], tabSize: number): IdSpan[] {
-	return parseOutline(lines, tabSize).nodes.flatMap((item) => {
+export function blockIdSpans(lines: readonly string[], tree: OutlineTree): IdSpan[] {
+	return tree.nodes.flatMap((item) => {
 		const lineIndex = idLineOf(lines, item);
 		const text = lineAt(lines, lineIndex);
 		const match = TRAILING_ID.exec(text);

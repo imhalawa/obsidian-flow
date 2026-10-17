@@ -1,11 +1,14 @@
+import { foldedRanges } from '@codemirror/language';
 import { EditorSelection } from '@codemirror/state';
 import { describe, expect, it } from 'vitest';
 import {
 	backspaceInItem,
 	enterInEmptyItem,
+	enterInParentItem,
 	homeInItem,
 	selectItemText,
 } from '../../src/editor/list-keys';
+import { foldItem } from '../../src/editor/fold-control';
 import { zoomIn } from '../../src/editor/zoom-control';
 import { FakeZoomTarget } from '../support/fake-zoom-target';
 
@@ -231,5 +234,47 @@ describe('selectItemText', () => {
 		const target = new FakeZoomTarget('- abc\n- def', 3);
 		placeCursors(target, [3, 9]);
 		expect(selectItemText(target)).toBe(false);
+	});
+});
+
+describe('enterInParentItem', () => {
+	it('adds a first child and puts the caret on it', () => {
+		const target = new FakeZoomTarget('- a\n  - b', 3);
+		expect(enterInParentItem(target)).toBe(true);
+		expect(target.text).toBe('- a\n  - \n  - b');
+		expect(target.caret).toBe(8);
+	});
+
+	it('changes the note in one transaction named for the key', () => {
+		const target = new FakeZoomTarget('- a\n  - b', 3);
+		enterInParentItem(target);
+		expect(target.dispatched).toHaveLength(1);
+		expect(target.dispatched[0]?.userEvent).toBe('flow.list-enter');
+	});
+
+	it('does nothing for an item without children', () => {
+		const target = new FakeZoomTarget('- a\n- b', 3);
+		expect(enterInParentItem(target)).toBe(false);
+		expect(target.dispatched).toHaveLength(0);
+	});
+
+	it('does nothing while text is selected', () => {
+		const target = new FakeZoomTarget('- a\n  - b', 3);
+		target.select(0, 3);
+		expect(enterInParentItem(target)).toBe(false);
+	});
+
+	it('does nothing with several cursors', () => {
+		const target = new FakeZoomTarget('- a\n  - b', 3);
+		placeCursors(target, [1, 3]);
+		expect(enterInParentItem(target)).toBe(false);
+	});
+
+	it('shows the new child of a folded item by unfolding it first', () => {
+		const target = new FakeZoomTarget('- a\n  - b', 3);
+		foldItem(target);
+		expect(enterInParentItem(target)).toBe(true);
+		expect(foldedRanges(target.state).size).toBe(0);
+		expect(target.text).toBe('- a\n  - \n  - b');
 	});
 });

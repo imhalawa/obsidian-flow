@@ -1,5 +1,5 @@
 import { execFileSync, spawn, type ChildProcess } from 'node:child_process';
-import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DevtoolsConnection } from './devtools';
@@ -7,8 +7,8 @@ import { ensureObsidian } from './install-obsidian';
 
 const DISPLAY = ':99';
 const SCREEN_SIZE = '2560x1000x24';
+const WINDOW_ORIGIN = process.platform === 'linux' ? 0 : -32000;
 const DEFAULT_WINDOW = { width: 1280, height: 900 };
-const DEBUG_PORT = 9222;
 const PLUGIN_ID = 'flow-outliner';
 const PLUGIN_FILES = ['main.js', 'manifest.json', 'styles.css'];
 
@@ -22,6 +22,7 @@ interface KeyDefinition {
 const KEYS = {
 	enter: { key: 'Enter', code: 'Enter', keyCode: 13, text: '\r' },
 	backspace: { key: 'Backspace', code: 'Backspace', keyCode: 8, text: null },
+	delete: { key: 'Delete', code: 'Delete', keyCode: 46, text: null },
 	home: { key: 'Home', code: 'Home', keyCode: 36, text: null },
 	tab: { key: 'Tab', code: 'Tab', keyCode: 9, text: '\t' },
 	a: { key: 'a', code: 'KeyA', keyCode: 65, text: null },
@@ -31,6 +32,11 @@ const KEYS = {
 } satisfies Record<string, KeyDefinition>;
 
 export type KeyName = keyof typeof KEYS;
+
+/** Returns the port Obsidian chose for remote debugging, which it writes into its user data folder. */
+function debugPort(userData: string): number {
+	return Number(readFileSync(join(userData, 'DevToolsActivePort'), 'utf8').split('\n')[0]);
+}
 
 /** Waits until a condition holds, polling every 250 ms. */
 async function waitFor<T>(description: string, attempt: () => Promise<T | null>): Promise<T> {
@@ -46,7 +52,7 @@ async function waitFor<T>(description: string, attempt: () => Promise<T | null>)
 export class ObsidianApp {
 	private constructor(
 		private readonly process: ChildProcess,
-		private readonly display: ChildProcess,
+		private readonly display: ChildProcess | null,
 		private readonly connection: DevtoolsConnection,
 		private readonly workspace: string,
 	) {}
@@ -81,28 +87,33 @@ export class ObsidianApp {
 			join(userData, 'obsidian.json'),
 			JSON.stringify({ vaults: { flow: { path: vault, ts: 1, open: true } } }),
 		);
-		const display = spawn('Xvfb', [DISPLAY, '-screen', '0', SCREEN_SIZE], {
-			stdio: 'ignore',
-		});
-		const env = { ...process.env, DISPLAY };
+		const display =
+			process.platform === 'linux'
+				? spawn('Xvfb', [DISPLAY, '-screen', '0', SCREEN_SIZE], { stdio: 'ignore' })
+				: null;
+		const env = display ? { ...process.env, DISPLAY } : process.env;
 		const child = spawn(
 			ensureObsidian(),
 			[
 				'--no-sandbox',
 				'--disable-gpu',
-				`--remote-debugging-port=${DEBUG_PORT}`,
+				'--disable-backgrounding-occluded-windows',
+				'--disable-renderer-backgrounding',
+				'--disable-features=CalculateNativeWinOcclusion',
+				'--remote-debugging-port=0',
 				`--user-data-dir=${userData}`,
 			],
 			{ env, stdio: 'ignore' },
 		);
 		const connection = await waitFor('Obsidian to start', async () => {
-			const opened = await DevtoolsConnection.connect(DEBUG_PORT);
+			const opened = await DevtoolsConnection.connect(debugPort(userData));
 			const ready = await opened.evaluate<boolean>(
 				'typeof app !== "undefined" && app.workspace.layoutReady === true',
 			);
 			return ready ? opened : null;
 		});
 		const app = new ObsidianApp(child, display, connection, workspace);
+		if (!display) await app.evaluate('(electronWindow.setFocusable(false), true)');
 		await app.dismissTrustPrompt();
 		await app.resizeWindow(DEFAULT_WINDOW.width, DEFAULT_WINDOW.height);
 		return app;
@@ -177,7 +188,8 @@ export class ObsidianApp {
 	}
 
 	/** Presses a side button of the mouse over a point of the screen, as a real mouse does. */
-	pressSideButton(x: number, y: number, button: 'back' | 'forward'): void {
+	async pressSideButton(x: number, y: number, button: 'back' | 'forward'): Promise<void> {
+		if (process.platform !== 'linux') return this.connection.pointer(x, y, 'click', button, 0);
 		const code = button === 'back' ? '8' : '9';
 		execFileSync('xdotool', ['mousemove', String(x), String(y), 'click', code], {
 			env: { ...process.env, DISPLAY },
@@ -187,7 +199,7 @@ export class ObsidianApp {
 	/** Sets the size of the Obsidian window in pixels. */
 	async resizeWindow(width: number, height: number): Promise<void> {
 		await this.evaluate(
-			`(electronWindow.setBounds({ x: 0, y: 0, width: ${width}, height: ${height} }), true)`,
+			`(electronWindow.setBounds({ x: ${WINDOW_ORIGIN}, y: ${WINDOW_ORIGIN}, width: ${width}, height: ${height} }), true)`,
 		);
 	}
 
@@ -211,7 +223,7 @@ export class ObsidianApp {
 		this.connection.close();
 		const exited = new Promise((resolve) => this.process.once('exit', resolve));
 		this.process.kill('SIGKILL');
-		this.display.kill('SIGKILL');
+		this.display?.kill('SIGKILL');
 		await exited;
 		try {
 			rmSync(this.workspace, {

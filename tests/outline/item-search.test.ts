@@ -3,6 +3,7 @@ import {
 	closingParensAfter,
 	itemTrigger,
 	itemsOfNote,
+	locateItem,
 	searchItems,
 	type IndexedItem,
 } from '../../src/outline/item-search';
@@ -96,5 +97,35 @@ describe('closingParensAfter', () => {
 		['nothing', '', 0],
 	])('counts %s', (_name, rest, expected) => {
 		expect(closingParensAfter(rest)).toBe(expected);
+	});
+});
+
+describe('locateItem', () => {
+	const picked: IndexedItem = { path: 'n.md', startLine: 1, text: 'banana', id: null };
+
+	it.each([
+		['the item is still on its line', '- apple\n- banana\n- cherry', 1],
+		['lines were added above it', '- new\n- new two\n- apple\n- banana', 3],
+		['lines were removed above it', '- banana', 0],
+		['it is the only item with that text after it moved', '- cherry\n- banana\n- apple', 1],
+		['the note uses Windows line breaks', '- new\r\n- apple\r\n- banana', 2],
+	])('finds the item when %s', (_name, text, expected) => {
+		expect(locateItem(text, 4, picked)).toBe(expected);
+	});
+
+	it.each([
+		['the item was removed', '- apple\n- cherry'],
+		['the item text changed', '- apple\n- banana split'],
+		['the note is empty', ''],
+		[
+			'two items now share its text and none is on its line',
+			'- banana\n- apple\n- apple\n- banana',
+		],
+	])('gives up when %s', (_name, text) => {
+		expect(locateItem(text, 4, picked)).toBeNull();
+	});
+
+	it('keeps the line of one of several equal items when it still holds the text', () => {
+		expect(locateItem('- apple\n- banana\n- banana', 4, picked)).toBe(1);
 	});
 });

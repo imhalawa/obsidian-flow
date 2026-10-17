@@ -2,6 +2,7 @@ import type { EditorView } from '@codemirror/view';
 import { editorLivePreviewField } from 'obsidian';
 import { bulletMarker, containsX, hitSizes, litInterval } from '../outline/pointer-hit';
 import { bulletLightField, setLitBullet } from './bullet-light-field';
+import { isHiddenByFold } from './fold-control';
 import { editorFontSize, firstRow, markerSpan } from './item-geometry';
 import { outlineOfState } from './outline-of-state';
 import { zoomField } from './zoom-field';
@@ -12,6 +13,7 @@ export function litBulletAt(view: EditorView, event: MouseEvent): number | null 
 	if (view.state.field(zoomField, false) === undefined) return null;
 	const position = view.posAtCoords({ x: event.clientX, y: event.clientY }, false);
 	const lineIndex = view.state.doc.lineAt(position).number - 1;
+	if (isHiddenByFold(view.state, view.state.doc.line(lineIndex + 1).from)) return null;
 	const marker = bulletMarker(outlineOfState(view.state), lineIndex);
 	const row = firstRow(view, lineIndex);
 	if (!marker || !row || event.clientY < row.top || event.clientY > row.bottom) return null;

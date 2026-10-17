@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { enterOnEmptyItem } from '../../src/outline/enter-key';
+import { enterOnEmptyItem, enterOnParentItem } from '../../src/outline/enter-key';
 import type { IndentStyle } from '../../src/outline/indent-style';
 
 const tabs: IndentStyle = { useTabs: true, unitColumns: 4, tabSize: 4 };
@@ -75,5 +75,53 @@ describe('enterOnEmptyItem', () => {
 
 	it('does nothing when the line index is not the start of an item', () => {
 		expect(enterOnEmptyItem(['- a', '  more', '  - '], spaces, 1, 6)).toBeNull();
+	});
+});
+
+describe('enterOnParentItem', () => {
+	it('adds a first child at the indent of the existing first child', () => {
+		expect(enterOnParentItem(['- a', '  - b'], 4, 0, 3)).toEqual({
+			fromLine: 0,
+			toLine: 0,
+			text: '- a\n  - ',
+			caret: 8,
+		});
+	});
+
+	it('keeps the marker and the gap of the first child', () => {
+		expect(enterOnParentItem(['- a', '\t*   b'], 4, 0, 3)).toMatchObject({
+			text: '- a\n\t*   ',
+		});
+	});
+
+	it.each([
+		['an unchecked task', '- [ ] b'],
+		['a checked task', '- [x] b'],
+	])('adds an unchecked task when the first child is %s', (_name, child) => {
+		expect(enterOnParentItem(['- a', `  ${child}`], 4, 0, 3)?.text).toBe('- a\n  - [ ] ');
+	});
+
+	it('adds the child after the own notes of the item', () => {
+		expect(enterOnParentItem(['- a', '  notes', '    - b'], 4, 1, 7)).toEqual({
+			fromLine: 1,
+			toLine: 1,
+			text: '  notes\n    - ',
+			caret: 14,
+		});
+	});
+
+	it('adds a child to a nested item', () => {
+		expect(enterOnParentItem(['- a', '  - b', '    - c'], 4, 1, 5)?.text).toBe('  - b\n    - ');
+	});
+
+	it.each([
+		['the caret is not at the end', ['- a', '  - b'], 0, 2],
+		['the item has no children', ['- a', '- b'], 0, 3],
+		['the caret is not on the last line of the own text', ['- a', '  notes', '  - b'], 0, 3],
+		['the first child is ordered', ['- a', '  1. b'], 0, 3],
+		['the line is not an item', ['text', '- b'], 0, 4],
+		['the line does not exist', ['- a', '  - b'], 5, 0],
+	])('does nothing when %s', (_name, lines, line, column) => {
+		expect(enterOnParentItem(lines, 4, line, column)).toBeNull();
 	});
 });

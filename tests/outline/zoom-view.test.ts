@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { resolveZoom, zoomInTarget, zoomOutStart } from '../../src/outline/zoom-view';
+import { parseOutline } from '../../src/outline/outline-tree';
 
 const lines = ['# Title', '- a', '  - b', '    - c', '  - d', '- e', '', 'text'];
+const resolve = (lines: readonly string[], startLine: number) =>
+	resolveZoom(lines, parseOutline(lines, 4), startLine);
 
 describe('resolveZoom', () => {
 	it('returns the range and the path of the item that starts on the line', () => {
-		expect(resolveZoom(lines, 4, 3)).toEqual({
+		expect(resolve(lines, 3)).toEqual({
 			range: { fromLine: 3, toLine: 3 },
 			crumbs: [
 				{ text: 'Title', startLine: 0 },
@@ -17,7 +20,7 @@ describe('resolveZoom', () => {
 	});
 
 	it('covers the whole subtree of a parent', () => {
-		expect(resolveZoom(lines, 4, 1)?.range).toEqual({ fromLine: 1, toLine: 4 });
+		expect(resolve(lines, 1)?.range).toEqual({ fromLine: 1, toLine: 4 });
 	});
 
 	it.each([
@@ -26,15 +29,15 @@ describe('resolveZoom', () => {
 		['a line past the end', 99],
 		['a negative line', -1],
 	])('returns null for %s', (_name, startLine) => {
-		expect(resolveZoom(lines, 4, startLine)).toBeNull();
+		expect(resolve(lines, startLine)).toBeNull();
 	});
 
 	it('returns null for an empty note', () => {
-		expect(resolveZoom([''], 4, 0)).toBeNull();
+		expect(resolve([''], 0)).toBeNull();
 	});
 
 	it('covers a heading and everything under it', () => {
-		expect(resolveZoom(lines, 4, 0)).toEqual({
+		expect(resolve(lines, 0)).toEqual({
 			range: { fromLine: 0, toLine: 7 },
 			crumbs: [{ text: 'Title', startLine: 0 }],
 		});
@@ -42,7 +45,7 @@ describe('resolveZoom', () => {
 
 	it('stops a heading section before the next heading of the same level', () => {
 		const note = ['# a', 'x', '## b', 'y', '# c', 'z'];
-		expect(resolveZoom(note, 4, 2)).toEqual({
+		expect(resolve(note, 2)).toEqual({
 			range: { fromLine: 2, toLine: 3 },
 			crumbs: [
 				{ text: 'a', startLine: 0 },
@@ -53,7 +56,7 @@ describe('resolveZoom', () => {
 
 	it('puts the headings above an item in front of its path', () => {
 		const note = ['# a', '## b', '- x', '  - y'];
-		expect(resolveZoom(note, 4, 3)?.crumbs).toEqual([
+		expect(resolve(note, 3)?.crumbs).toEqual([
 			{ text: 'a', startLine: 0 },
 			{ text: 'b', startLine: 1 },
 			{ text: 'x', startLine: 2 },
@@ -63,7 +66,7 @@ describe('resolveZoom', () => {
 
 	it('does not add headings that end before the item', () => {
 		const note = ['# a', 'x', '# b', '- y'];
-		expect(resolveZoom(note, 4, 3)?.crumbs).toEqual([
+		expect(resolve(note, 3)?.crumbs).toEqual([
 			{ text: 'b', startLine: 2 },
 			{ text: 'y', startLine: 3 },
 		]);

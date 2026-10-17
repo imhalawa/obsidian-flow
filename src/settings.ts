@@ -2,7 +2,6 @@ import { App, PluginSettingTab, Setting } from 'obsidian';
 import type FlowPlugin from './main';
 
 export interface FlowSettings {
-	enabled: boolean;
 	rememberZoom: boolean;
 	cleanZoom: boolean;
 	hideBlockIds: boolean;
@@ -13,6 +12,7 @@ export interface FlowSettings {
 	useMouseHistory: boolean;
 	dragItems: boolean;
 	enterOutdentsEmptyItem: boolean;
+	enterAddsFirstChild: boolean;
 	backspaceMergesItem: boolean;
 	homeStaysInItem: boolean;
 	selectAllStaysInItem: boolean;
@@ -20,7 +20,6 @@ export interface FlowSettings {
 }
 
 export const DEFAULT_SETTINGS: FlowSettings = {
-	enabled: true,
 	rememberZoom: true,
 	cleanZoom: true,
 	hideBlockIds: true,
@@ -31,6 +30,7 @@ export const DEFAULT_SETTINGS: FlowSettings = {
 	useMouseHistory: true,
 	dragItems: true,
 	enterOutdentsEmptyItem: true,
+	enterAddsFirstChild: true,
 	backspaceMergesItem: true,
 	homeStaysInItem: true,
 	selectAllStaysInItem: true,
@@ -40,6 +40,18 @@ export const DEFAULT_SETTINGS: FlowSettings = {
 type ToggleKey = {
 	[Key in keyof FlowSettings]: FlowSettings[Key] extends boolean ? Key : never;
 }[keyof FlowSettings];
+
+/** Returns the defaults with every stored value that is a boolean laid over them. */
+export function mergeSettings(stored: unknown): FlowSettings {
+	const merged = { ...DEFAULT_SETTINGS };
+	if (typeof stored !== 'object' || stored === null) return merged;
+	const values = stored as Record<string, unknown>;
+	for (const key of Object.keys(DEFAULT_SETTINGS) as ToggleKey[]) {
+		const value = values[key];
+		if (typeof value === 'boolean') merged[key] = value;
+	}
+	return merged;
+}
 
 export class FlowSettingTab extends PluginSettingTab {
 	constructor(
@@ -111,6 +123,12 @@ export class FlowSettingTab extends PluginSettingTab {
 			'Enter on an empty item outdents it',
 			'Outdent an empty item, or end the list when it is at the top level.',
 			'enterOutdentsEmptyItem',
+			null,
+		);
+		this.addToggle(
+			'Enter on an item with children adds its first child',
+			'Add the new item as the first child, as a task when the first child is a task, instead of between the item and its children.',
+			'enterAddsFirstChild',
 			null,
 		);
 		this.addToggle(

@@ -42,7 +42,7 @@ describe('hiddenDecorations', () => {
 		const zoom = state.field(zoomField);
 		expect(rangesOf(hiddenDecorations(state))).toEqual([
 			{ from: 0, to: (zoom?.from ?? 0) - 1, block: true, replace: true },
-			{ from: zoom?.to, to: NOTE.length, block: true, replace: true },
+			{ from: (zoom?.to ?? 0) + 1, to: NOTE.length, block: true, replace: true },
 		]);
 	});
 
@@ -51,7 +51,16 @@ describe('hiddenDecorations', () => {
 			effects: zoomChange.of({ startLine: 0, navigation: 'visit' }),
 		}).state;
 		expect(rangesOf(hiddenDecorations(state))).toEqual([
-			{ from: 3, to: 7, block: true, replace: true },
+			{ from: 4, to: 7, block: true, replace: true },
+		]);
+	});
+
+	it('hides the empty last line from the end of the zoomed item when only it is below', () => {
+		const state = EditorState.create({ doc: '- a\n', extensions: [zoomField] }).update({
+			effects: zoomChange.of({ startLine: 0, navigation: 'visit' }),
+		}).state;
+		expect(rangesOf(hiddenDecorations(state))).toEqual([
+			{ from: 3, to: 4, block: true, replace: true },
 		]);
 	});
 
