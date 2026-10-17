@@ -224,6 +224,21 @@ export class DevtoolsConnection {
 		});
 	}
 
+	/** Renders the window at a pixel density without changing its size in CSS pixels. */
+	async emulateScale(width: number, height: number, scale: number): Promise<void> {
+		await this.send('Emulation.setDeviceMetricsOverride', {
+			width,
+			height,
+			deviceScaleFactor: scale,
+			mobile: false,
+		});
+	}
+
+	/** Goes back to the pixel density of the display. */
+	async clearScale(): Promise<void> {
+		await this.send('Emulation.clearDeviceMetricsOverride', {});
+	}
+
 	/** Closes the connection. */
 	close(): void {
 		this.socket.close();
