@@ -6,7 +6,7 @@ export interface FlowSettings {
 	cleanZoom: boolean;
 	hideBlockIds: boolean;
 	hideEmbedTitles: boolean;
-	itemSuggester: boolean;
+	bulletCallouts: boolean;
 	clickBulletToZoom: boolean;
 	clickThreadLineToFold: boolean;
 	useMouseHistory: boolean;
@@ -24,7 +24,7 @@ export const DEFAULT_SETTINGS: FlowSettings = {
 	cleanZoom: true,
 	hideBlockIds: true,
 	hideEmbedTitles: true,
-	itemSuggester: true,
+	bulletCallouts: true,
 	clickBulletToZoom: true,
 	clickThreadLineToFold: true,
 	useMouseHistory: true,
@@ -82,15 +82,15 @@ export class FlowSettingTab extends PluginSettingTab {
 			() => this.app.workspace.updateOptions(),
 		);
 		this.addToggle(
-			'Suggest items after ((',
-			'Type (( to search the items of your notes and insert a link to one.',
-			'itemSuggester',
-			null,
-		);
-		this.addToggle(
 			'Hide embed titles in bullets',
 			'Hide the title bar of a note embedded in a bullet, so the bullet lines up with the first line of the embed.',
 			'hideEmbedTitles',
+			() => this.app.workspace.updateOptions(),
+		);
+		this.addToggle(
+			'Show callout bullets as callouts',
+			'Draw a bullet that starts with > [!tip] as a callout, with its bullet beside it. Put the cursor in it to edit the text.',
+			'bulletCallouts',
 			() => this.app.workspace.updateOptions(),
 		);
 		new Setting(this.containerEl).setName('Bullets and thread lines').setHeading();

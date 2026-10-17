@@ -107,39 +107,6 @@ describe('performance on a large note', () => {
 	});
 });
 
-describe('performance of the item search across many notes', () => {
-	const NOTES = 300;
-	const ITEMS = 30;
-
-	it('searches a vault of many notes cold and then warm', async () => {
-		const started = Date.now();
-		await app.evaluate(
-			`(async () => { for (let n = 0; n < ${NOTES}; n += 1) { const lines = []; for (let i = 0; i < ${ITEMS}; i += 1) lines.push('- note ' + n + ' item ' + i + ' ' + 'word'.repeat(i % 5)); await app.vault.create('bulk-' + n + '.md', lines.join('\\n')); } return true; })()`,
-		);
-		report('create notes ms', String(Date.now() - started));
-		await app.evaluate(
-			`new Promise((resolve) => { const check = () => app.vault.getMarkdownFiles().filter((f) => f.path.startsWith('bulk-') && app.metadataCache.getFileCache(f)?.listItems).length >= ${NOTES} ? resolve(true) : setTimeout(check, 100); check(); })`,
-		);
-		report('index notes ms', String(Date.now() - started));
-		const editor = await NoteEditor.open(app, '- see ');
-		const query = async (text: string) => {
-			const t = Date.now();
-			await app.evaluate(
-				`(() => { const editor = app.workspace.activeEditor.editor; editor.focus(); editor.setValue('- see '); editor.setCursor({ line: 0, ch: 6 }); return true; })()`,
-			);
-			await editor.typeKeys(text);
-			await editor.suggestions();
-			return Date.now() - t;
-		};
-		const cold = await query('((item 7');
-		const warm = await query('((item 9');
-		report('suggest cold ms', String(cold));
-		report('suggest warm ms', String(warm));
-		expect(cold).toBeLessThan(4000);
-		expect(warm).toBeLessThan(1500);
-	}, 180000);
-});
-
 describe('overhead compared with the plugin turned off', () => {
 	const NOTE = bigNote(8, 6);
 

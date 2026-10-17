@@ -23,8 +23,8 @@ describe('settings tab', () => {
 			'Remember zoom per note',
 			'Show the zoomed item at the left edge',
 			'Hide block ids',
-			'Suggest items after ((',
 			'Hide embed titles in bullets',
+			'Show callout bullets as callouts',
 			'Bullets and thread lines',
 			'Click bullet to zoom',
 			'Click thread line to fold',
@@ -46,8 +46,8 @@ describe('settings tab', () => {
 			'Reopen each note at the item you zoomed into.',
 			'Move the zoomed item to the left edge of the note and hide the indent guides of the levels above it.',
 			'Hide the id at the end of an item unless the cursor is on its line.',
-			'Type (( to search the items of your notes and insert a link to one.',
 			'Hide the title bar of a note embedded in a bullet, so the bullet lines up with the first line of the embed.',
+			'Draw a bullet that starts with > [!tip] as a callout, with its bullet beside it. Put the cursor in it to edit the text.',
 			'',
 			'Select a bullet to zoom into that item.',
 			'Select a thread line to fold its branch. Hold Alt to fold every descendant too.',
@@ -69,8 +69,8 @@ describe('settings tab', () => {
 			plugin.settings.rememberZoom,
 			plugin.settings.cleanZoom,
 			plugin.settings.hideBlockIds,
-			plugin.settings.itemSuggester,
 			plugin.settings.hideEmbedTitles,
+			plugin.settings.bulletCallouts,
 			undefined,
 			plugin.settings.clickBulletToZoom,
 			plugin.settings.clickThreadLineToFold,
@@ -109,19 +109,21 @@ describe('settings tab', () => {
 		expect(app.updateOptionsCalls).toBe(1);
 	});
 
-	it('saves the item suggester setting when its toggle changes', async () => {
-		const { plugin } = await showTab();
-		await Setting.created[3]?.toggle?.handler?.(false);
-		expect(plugin.settings.itemSuggester).toBe(false);
-		expect(await plugin.loadData()).toMatchObject({ itemSuggester: false });
-	});
-
 	it('saves hide embed titles in bullets and refreshes the editors when its toggle changes', async () => {
 		const { app, plugin } = await showTab();
 		expect(plugin.settings.hideEmbedTitles).toBe(true);
-		await Setting.created[4]?.toggle?.handler?.(false);
+		await Setting.created[3]?.toggle?.handler?.(false);
 		expect(plugin.settings.hideEmbedTitles).toBe(false);
 		expect(await plugin.loadData()).toMatchObject({ hideEmbedTitles: false });
+		expect(app.updateOptionsCalls).toBe(1);
+	});
+
+	it('saves show callout bullets as callouts and refreshes the editors when its toggle changes', async () => {
+		const { app, plugin } = await showTab();
+		expect(plugin.settings.bulletCallouts).toBe(true);
+		await Setting.created[4]?.toggle?.handler?.(false);
+		expect(plugin.settings.bulletCallouts).toBe(false);
+		expect(await plugin.loadData()).toMatchObject({ bulletCallouts: false });
 		expect(app.updateOptionsCalls).toBe(1);
 	});
 

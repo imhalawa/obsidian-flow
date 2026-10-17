@@ -100,22 +100,6 @@ describe('commands survive every kind of note', () => {
 	});
 });
 
-describe('windows line breaks and long notes', () => {
-	it('links an item of a note that uses windows line breaks without touching other lines', async () => {
-		await app.evaluate(
-			`app.vault.create('crlf-source.md', ${JSON.stringify('- one\r\n- two\r\n- three')}).then(() => true)`,
-		);
-		const target = await NoteEditor.open(app, '- see ');
-		await target.waitUntilIndexed('crlf-source.md');
-		await target.typeKeys('((two');
-		expect(await target.suggestions()).toContain('two');
-		await target.chooseSuggestion('two');
-		await wait(1500);
-		const source = await target.readNote('crlf-source.md');
-		expect(source).toMatch(/^- one\r\n- two \^[a-z0-9]{6}\r\n- three$/);
-	});
-});
-
 describe('switching and removing notes while zoomed', () => {
 	const NOTE = '- a\n\t- b\n\t\t- c\n- d';
 

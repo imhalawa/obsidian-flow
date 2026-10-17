@@ -109,11 +109,6 @@
 	flex-shrink: 0;
 }
 
-.flow-item-suggest-path {
-	color: var(--text-muted);
-	font-size: var(--font-ui-smaller);
-}
-
 .flow-over-item-control .cm-content,
 .flow-over-item-control .cm-line {
 	cursor: pointer;
@@ -236,6 +231,45 @@
 
 .view-header-title.flow-title-link:focus-visible {
 	box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
+}
+
+.flow-callout-widget {
+	display: inline-block;
+	min-width: 10em;
+	width: calc(100% - 1px);
+	vertical-align: top;
+	text-indent: 0;
+	white-space: normal;
+}
+
+.flow-callout-widget > .callout {
+	--callout-padding: var(--size-4-3) var(--size-4-3) var(--size-4-3) var(--size-4-2);
+	margin: 0;
+}
+
+.cm-line.flow-callout-line .list-bullet {
+	position: relative;
+	top: var(--flow-bullet-shift, 0px);
+}
+
+.markdown-source-view.mod-cm6 .cm-line.flow-callout-line.HyperMD-quote::before,
+.markdown-source-view.mod-cm6 .cm-line.flow-callout-after.HyperMD-quote::before {
+	display: none;
+}
+
+.cm-line.flow-callout-parent {
+	position: relative;
+}
+
+.cm-line.flow-callout-parent::after {
+	content: '';
+	position: absolute;
+	top: var(--flow-guide-top, 0);
+	bottom: 0;
+	left: var(--flow-guide-x, -9999px);
+	border-left: var(--indentation-guide-width, 1px) solid
+		var(--indentation-guide-color, var(--background-modifier-border));
+	pointer-events: none;
 }
 
 .markdown-source-view.mod-cm6 .cm-fold-indicator.flow-chevron-hover svg.svg-icon {

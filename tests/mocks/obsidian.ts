@@ -16,7 +16,6 @@ export class Plugin {
 	readonly settingTabs: unknown[] = [];
 	readonly commands: Command[] = [];
 	readonly editorExtensions: unknown[] = [];
-	readonly editorSuggests: unknown[] = [];
 	readonly events: unknown[] = [];
 
 	constructor(app: unknown = {}) {
@@ -40,9 +39,6 @@ export class Plugin {
 	readonly cleanups: (() => void)[] = [];
 	register(cleanup: () => void): void {
 		this.cleanups.push(cleanup);
-	}
-	registerEditorSuggest(suggest: unknown): void {
-		this.editorSuggests.push(suggest);
 	}
 	addCommand(command: Command): Command {
 		this.commands.push(command);
@@ -112,7 +108,11 @@ export class Setting {
 	}
 }
 
-export class EditorSuggest {
-	context: unknown = null;
-	constructor(public app: unknown) {}
+export class Component {
+	load(): void {}
+	unload(): void {}
 }
+
+export const MarkdownRenderer = {
+	render: async (): Promise<void> => undefined,
+};

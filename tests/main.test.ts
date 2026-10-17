@@ -47,18 +47,12 @@ describe('FlowPlugin lifecycle', () => {
 		expect((plugin as unknown as { settingTabs: unknown[] }).settingTabs).toHaveLength(1);
 	});
 
-	it('registers the block id hiding, fold reveal, thread highlight, bullet light, embed lines, item pointer, drag, list keys, zoom and zoom path editor extensions', async () => {
+	it('registers the block id hiding, fold reveal, thread highlight, bullet light, embed lines, bullet callouts, item pointer, drag, list keys, zoom and zoom path editor extensions', async () => {
 		const plugin = makePlugin();
 		await plugin.onload();
 		expect(
 			(plugin as unknown as { editorExtensions: unknown[] }).editorExtensions,
-		).toHaveLength(10);
-	});
-
-	it('registers the item suggester', async () => {
-		const plugin = makePlugin();
-		await plugin.onload();
-		expect((plugin as unknown as { editorSuggests: unknown[] }).editorSuggests).toHaveLength(1);
+		).toHaveLength(11);
 	});
 
 	it('wraps the history of the main window and restores it on unload', async () => {
