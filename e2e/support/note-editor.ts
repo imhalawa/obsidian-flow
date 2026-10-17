@@ -338,6 +338,7 @@ export class NoteEditor {
 
 	/** Clicks the item suggestion with the given text. */
 	async chooseSuggestion(text: string): Promise<void> {
+		await new Promise((resolve) => setTimeout(resolve, 300));
 		await this.app.evaluate(
 			`Array.from(activeDocument.querySelectorAll(".flow-item-suggest-text")).find((el) => el.textContent === ${JSON.stringify(text)}).click()`,
 		);
