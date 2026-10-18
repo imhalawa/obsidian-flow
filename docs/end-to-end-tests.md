@@ -18,9 +18,9 @@ Run them with `npm run test:e2e`. They are not part of `npm run check`.
 
 Tests live in `e2e/*.e2e.ts` and run one file at a time because they share the debugging port and display.
 
-## Behavior specs
+## List editing cases
 
-`e2e/specs/*.spec.md` are behavior specs copied from [imhalawa/obsidian-roamer](https://github.com/imhalawa/obsidian-roamer) (same MIT lineage). Each spec is a title, a start state written with `|` for the caret or two `|` around a selection, a key or a command, and the expected state. `e2e/behaviour-specs.e2e.ts` plays them in real Obsidian. Specs for a Roamer-only setting, a key Roamer does not touch or a behavior Roamer does not have yet are not run; the last group is the `NOT_YET_MATCHING` list in that file.
+`e2e/list-editing-cases.e2e.ts` holds two tables of cases written in the `|` notation (a caret, or two `|` around a selection): a start state, a key press or a command, and the expected state. Add a row to cover a new list editing behavior.
 
 `e2e/guest-behavior.e2e.ts` pins what Obsidian itself does for typing, Enter, Backspace, Home and Tab, so the plugin cannot change it by accident. `e2e/open-notes.e2e.ts` enables and disables the plugin while a note is open and fails on any console error.
 

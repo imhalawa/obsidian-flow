@@ -1,7 +1,7 @@
 {
 	"name": "roamer",
 	"version": "0.1.0-beta.9",
-	"description": "An outliner experience for Obsidian, in the spirit of RemNote, Roam Research and Logseq.",
+	"description": "Outline editing for Obsidian: zoom, folds, and drag and drop.",
 	"main": "main.js",
 	"type": "module",
 	"scripts": {

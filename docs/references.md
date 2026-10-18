@@ -20,12 +20,6 @@ Check these before guessing at API behavior.
 - [CodeMirror 6 system guide](https://codemirror.net/docs/guide/)
 - [Editor extensions in Obsidian](https://docs.obsidian.md/Plugins/Editor/Editor+extensions)
 
-## Prior art for outliner behavior
-
-- [Logseq](https://github.com/logseq/logseq)
-- [obsidian-outliner](https://github.com/vslinko/obsidian-outliner): list indent, move, fold behavior on CodeMirror 6.
-- [Roam Research](https://roamresearch.com/) and [RemNote](https://www.remnote.com/): block references, zoom, bullets as nodes.
-
 ## Obsidian internals
 
 - [Obsidian internals Roamer depends on](obsidian-internals.md): undocumented APIs, DOM selectors and hacks, with the test that guards each.

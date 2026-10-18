@@ -23,7 +23,7 @@ grep -rn "TODO(obsidian-update)" src styles.css
     - `.cm-fold-indicator`: Obsidian's fold arrow, used to ignore clicks on it, to light the bullet and to find its center (`src/editor/fold-indicator.ts`, `styles.css`).
     - `.cm-formatting-list`: the rendered list marker, measured by clean zoom (`src/editor/clean-zoom.ts`).
     - `.list-bullet`, `.callout-title` and the callout markup: measured to place callout bullets (`src/editor/callout-widget.ts`).
-- **Why:** The fold arrow and list marker are drawn by Obsidian, not by Roamer. obsidian-zoom and obsidian-outliner rely on the same classes.
+- **Why:** The fold arrow and list marker are drawn by Obsidian, not by Roamer.
 - **How it breaks:** A renamed or restructured class makes bullets, the fold arrow and drag start misbehave.
 - **Isolation:** Each selector is a single constant in one file. Missing elements return `null` and the feature turns itself off instead of throwing.
 - **Guards:** `tests/editor/fold-indicator.test.ts`; `e2e/obsidian-contract.e2e.ts` ("Obsidian DOM the plugin attaches to"), `e2e/folds.e2e.ts`.
@@ -34,8 +34,8 @@ The path used to be injected into the note header (`.view-header-title-container
 
 ### Research
 
-- Header classes are not in `obsidian.d.ts`, and the header was reworked in Obsidian 0.16, so churn has happened before. The panel approach is what obsidian-zoom uses.
-- `.cm-fold-indicator` and `.cm-formatting-list` are used by obsidian-zoom and obsidian-outliner. Class history for Obsidian 1.5 to 1.14 was not verified.
+- Header classes are not in `obsidian.d.ts`, and the header was reworked in Obsidian 0.16, so churn has happened before.
+- Class history of `.cm-fold-indicator` and `.cm-formatting-list` for Obsidian 1.5 to 1.14 was not verified.
 
 ## 3. `window.history` wrapping (mouse back and forward)
 
