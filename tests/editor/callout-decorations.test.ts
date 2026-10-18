@@ -50,6 +50,7 @@ const decorate = (doc: string, anchor: number, head: number) => {
 const NOTE = ['- a', '\t- > [!tip] T', '\t  > body', '\t- next'].join('\n');
 
 const PARENT = `${CALLOUT_LINE_CLASS} ${CALLOUT_PARENT_CLASS}`;
+const NO_CHILDREN = '- > [!tip] T\n  > body\n- z';
 const WITH_CHILD = '- > [!tip] T\n  > body\n  - child\n- z';
 
 describe('calloutDecorations', () => {
@@ -152,5 +153,24 @@ describe('calloutDecorations', () => {
 			WITH_CHILD.length,
 		);
 		expect(items[0]?.cls).toBe(CALLOUT_LINE_CLASS);
+	});
+
+	it.each([
+		['without children', NO_CHILDREN],
+		['with children', WITH_CHILD],
+	])('renders only the title of a folded callout bullet %s', (_name, note) => {
+		const state = EditorState.create({
+			doc: note,
+			selection: EditorSelection.single(note.length),
+			extensions: [codeFolding()],
+		});
+		const folded = state.update({
+			effects: foldEffect.of({ from: 12, to: note.indexOf('\n- z') }),
+		}).state;
+		const replaced = found(
+			calloutDecorations(folded, (markdown) => new TextWidget(markdown)),
+			note.length,
+		).filter((item) => item.kind === 'replace');
+		expect(replaced).toEqual([{ from: 2, to: 12, kind: 'replace', markdown: '> [!tip] T' }]);
 	});
 });

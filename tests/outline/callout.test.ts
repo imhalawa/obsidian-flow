@@ -14,6 +14,7 @@ describe('findCallouts', () => {
 				endLine: 0,
 				markerColumn: 2,
 				hasChildren: false,
+				title: '> [!tip] Title',
 				markdown: '> [!tip] Title',
 			},
 		]);
@@ -68,6 +69,7 @@ describe('findCallouts', () => {
 				endLine: 2,
 				markerColumn: 2,
 				hasChildren: false,
+				title: '> [!tip] T',
 				markdown: '> [!tip] T\n> one\n> two',
 			},
 		]);

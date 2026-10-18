@@ -247,3 +247,15 @@ describe('isHiddenByFold', () => {
 		expect(isHiddenByFold(target.state, start)).toBe(expected);
 	});
 });
+
+describe('callout bullets', () => {
+	const CALLOUT = ['- > [!tip] T', '  > body', '- z'].join('\n');
+
+	it('folds and unfolds a callout bullet that has body lines but no children', () => {
+		const target = new FakeZoomTarget(CALLOUT, 0);
+		expect(toggleBranch(target, 0, false)).toBe('done');
+		expect(isFolded(target.state, 0)).toBe(true);
+		toggleBranch(target, 0, false);
+		expect(isFolded(target.state, 0)).toBe(false);
+	});
+});
