@@ -24,6 +24,7 @@ interface CalloutLayout {
 	widgetRight: number;
 	bulletRight: number;
 	dotTop: number;
+	dotSize: number;
 }
 
 const ACTIVE = '.workspace-leaf.mod-active';
@@ -51,7 +52,7 @@ const layout = (index: number) =>
 		const w = widget.getBoundingClientRect();
 		const b = bullet.getBoundingClientRect();
 		const t = title.getBoundingClientRect();
-		return { lineTop: l.top, lineBottom: l.bottom, lineRight: l.right, widgetLeft: w.left, widgetTop: w.top, widgetBottom: w.bottom, widgetRight: w.right, bulletRight: b.right, dotTop: b.top + parseFloat(getComputedStyle(bullet, '::after').top) };
+		return { lineTop: l.top, lineBottom: l.bottom, lineRight: l.right, widgetLeft: w.left, widgetTop: w.top, widgetBottom: w.bottom, widgetRight: w.right, bulletRight: b.right, dotTop: b.top + parseFloat(getComputedStyle(bullet, '::after').top), dotSize: parseFloat(getComputedStyle(bullet, '::after').height) };
 	})()`);
 
 const lineTexts = () =>
@@ -102,7 +103,9 @@ describe('callout bullets in real Obsidian', () => {
 		expect(box.bulletRight).toBeLessThanOrEqual(box.widgetLeft + 1);
 		expect(box.widgetLeft - box.bulletRight).toBeLessThan(14);
 		expect(Math.abs(box.dotTop - box.widgetTop)).toBeLessThanOrEqual(1);
-		expect(box.widgetTop - box.lineTop).toBeLessThan(2);
+		expect(box.dotTop + box.dotSize / 2 - box.lineTop).toBeGreaterThanOrEqual(10);
+		expect(box.dotTop + box.dotSize / 2 - box.lineTop).toBeLessThanOrEqual(16);
+		expect(box.widgetTop - box.lineTop).toBeLessThan(16);
 		expect(box.lineBottom - box.widgetBottom).toBeGreaterThanOrEqual(6);
 		expect(box.lineBottom - box.widgetBottom).toBeLessThan(11);
 	});
@@ -132,7 +135,7 @@ describe('callout bullets in real Obsidian', () => {
 		expect(await widgetCount()).toBe(3);
 		for (const index of [0, 1, 2]) {
 			const box = (await layout(index))!;
-			expect(box.widgetTop - box.lineTop).toBeLessThan(2);
+			expect(box.widgetTop - box.lineTop).toBeLessThan(16);
 			expect(box.lineBottom - box.widgetBottom).toBeGreaterThanOrEqual(6);
 			expect(box.lineBottom - box.widgetBottom).toBeLessThan(11);
 		}
@@ -441,7 +444,7 @@ describe('callout bullets in real Obsidian', () => {
 				const line = activeDocument.querySelector('${ACTIVE} .roamer-callout-line');
 				const widget = line.querySelector('.roamer-callout-widget');
 				const bullet = line.querySelector('.list-bullet').getBoundingClientRect();
-				return { width: widget.getBoundingClientRect().width, minimum: parseFloat(getComputedStyle(widget).fontSize) * 10, shift: line.style.getPropertyValue('--roamer-bullet-shift'), wrapped: widget.getBoundingClientRect().top >= bullet.bottom };
+				return { width: widget.getBoundingClientRect().width, minimum: parseFloat(getComputedStyle(widget).fontSize) * 10, shift: line.style.getPropertyValue('--roamer-callout-top'), wrapped: widget.getBoundingClientRect().top >= bullet.bottom };
 			})()`);
 			expect(box.width).toBeGreaterThanOrEqual(box.minimum - 1);
 			if (box.wrapped) expect(box.shift).toBe('0px');

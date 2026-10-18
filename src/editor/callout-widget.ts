@@ -3,7 +3,7 @@ import { Component, MarkdownRenderer, editorInfoField, type App } from 'obsidian
 import { CALLOUT_LINE_CLASS } from './callout-decorations';
 
 export const CALLOUT_WIDGET_CLASS = 'roamer-callout-widget';
-const SHIFT_PROPERTY = '--roamer-bullet-shift';
+const TOP_PROPERTY = '--roamer-callout-top';
 export const GUIDE_X_PROPERTY = '--roamer-guide-x';
 const GUIDE_TOP_PROPERTY = '--roamer-guide-top';
 const GUIDE_GAP = 2;
@@ -34,7 +34,7 @@ export function layoutCallouts(view: EditorView): void {
 				const title = line.querySelector('.callout-title');
 				const widget = line.querySelector(`.${CALLOUT_WIDGET_CLASS}`);
 				if (!bullet || !title || !widget) return [];
-				const current = parseFloat(line.style.getPropertyValue(SHIFT_PROPERTY));
+				const current = parseFloat(line.style.getPropertyValue(TOP_PROPERTY));
 				const applied = Number.isNaN(current) ? 0 : current;
 				const dot = getComputedStyle(bullet, '::after');
 				const dotOffset = pixels(dot.top, DOT_OFFSET);
@@ -42,22 +42,23 @@ export function layoutCallouts(view: EditorView): void {
 				const lineBox = line.getBoundingClientRect();
 				const bulletBox = bullet.getBoundingClientRect();
 				const widgetBox = widget.getBoundingClientRect();
-				const dotTop = bulletBox.top - applied + dotOffset;
-				const wrapped = widgetBox.top - lineBox.top > WRAP_DISTANCE;
-				const shift = wrapped ? 0 : widgetBox.top - dotTop;
+				const dotTop = bulletBox.top + dotOffset;
+				const naturalTop = widgetBox.top - applied;
+				const wrapped = naturalTop - lineBox.top > WRAP_DISTANCE;
+				const top = wrapped ? 0 : dotTop - naturalTop;
 				return [
 					{
 						line,
-						shift,
+						top,
 						guideX: (bulletBox.left + bulletBox.right) / 2 - lineBox.left,
-						guideTop: dotTop + shift - lineBox.top + dotSize + GUIDE_GAP,
+						guideTop: dotTop - lineBox.top + dotSize + GUIDE_GAP,
 					},
 				];
 			}),
 		write: (items) => {
-			for (const { line, shift, guideX, guideTop } of items) {
+			for (const { line, top, guideX, guideTop } of items) {
 				line.setCssProps({
-					[SHIFT_PROPERTY]: `${Math.round(shift)}px`,
+					[TOP_PROPERTY]: `${Math.round(top)}px`,
 					[GUIDE_X_PROPERTY]: `${Math.round(guideX)}px`,
 					[GUIDE_TOP_PROPERTY]: `${Math.round(guideTop)}px`,
 				});
