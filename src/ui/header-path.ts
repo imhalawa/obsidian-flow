@@ -53,7 +53,6 @@ function crumbElement(crumb: HeaderCrumb, host: HeaderPathHost): HTMLElement {
 function moreElement(crumbs: readonly HeaderCrumb[], host: HeaderPathHost): HTMLElement {
 	const button = createEl('button', {
 		cls: `${CRUMB_CLASS} ${MORE_CLASS} ${HIDDEN_CLASS}`,
-		text: MORE_LABEL,
 		attr: {
 			type: 'button',
 			'aria-label': MORE_DESCRIPTION,
