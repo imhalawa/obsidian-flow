@@ -2,6 +2,10 @@
 
 Zoom shows one list item, or one heading, and everything under it. Everything else in the note is hidden, not changed.
 
+![A zoomed item with its path above the text, light theme](screenshots/zoom-path-light.png)
+
+![A zoomed item with its path above the text, dark theme](screenshots/zoom-path-dark.png)
+
 ## What you can zoom into
 
 - **A list item.** Select its bullet, or run **Zoom in** with the cursor in the item. The deepest item at the cursor is chosen.
