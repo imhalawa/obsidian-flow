@@ -72,6 +72,28 @@ describe('bullets outside the text selection in real Obsidian', () => {
 		expect((await readSelection()).text).toBe('Alpha\n\t- Beta\n\t\t- Gamma');
 	});
 
+	it('selects only the text when a mouse drag runs into the bullet', async () => {
+		await NoteEditor.open(app, NOTE);
+		const points = await app.evaluate<{ x: number; y: number }[]>(
+			`(() => { const cm = app.workspace.activeEditor.editor.cm; const end = cm.coordsAtPos(7); const start = cm.coordsAtPos(0); const y = (end.top + end.bottom) / 2; return [{ x: end.left - 2, y }, { x: end.left - 40, y }, { x: start.left + 2, y }]; })()`,
+		);
+		await app.drag(points);
+		await wait(300);
+		const selection = await readSelection();
+		expect(selection.text).toBe('Alpha');
+	});
+
+	it('ends a mouse drag across lines at the start of the text of the last item', async () => {
+		await NoteEditor.open(app, NOTE);
+		const points = await app.evaluate<{ x: number; y: number }[]>(
+			`(() => { const cm = app.workspace.activeEditor.editor.cm; const from = cm.coordsAtPos(7); const lineStart = cm.state.doc.line(2).from; const to = cm.coordsAtPos(lineStart); return [{ x: from.left - 2, y: (from.top + from.bottom) / 2 }, { x: to.left + 30, y: (to.top + to.bottom) / 2 }, { x: to.left + 2, y: (to.top + to.bottom) / 2 }]; })()`,
+		);
+		await app.drag(points);
+		await wait(300);
+		const selection = await readSelection();
+		expect(selection.head).toBe(NOTE.indexOf('Beta'));
+	});
+
 	it('moves the left arrow at the start of the text to the end of the line above', async () => {
 		const editor = await NoteEditor.open(app, NOTE);
 		await editor.caret(1, 3);

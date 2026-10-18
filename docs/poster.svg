@@ -11,10 +11,11 @@
     <text x="80" y="235" font-size="40" fill="#b9a6ff">Outline your notes.</text>
     <text x="80" y="300" font-size="24" fill="#d8ceff">Zoom, fold and drag every bullet.</text>
     <text x="80" y="335" font-size="24" fill="#d8ceff">Still plain Markdown. Obsidian plugin.</text>
+    <text x="80" y="370" font-size="24" fill="#d8ceff">Bullets stay out of your text. Same spacing in every theme.</text>
     <g font-size="20" fill="#2e1f5e" font-weight="600">
-      <rect x="80" y="400" width="130" height="44" rx="22" fill="#b9a6ff"/><text x="110" y="429">Zoom</text>
-      <rect x="226" y="400" width="110" height="44" rx="22" fill="#b9a6ff"/><text x="252" y="429">Fold</text>
-      <rect x="352" y="400" width="110" height="44" rx="22" fill="#b9a6ff"/><text x="378" y="429">Drag</text>
+      <rect x="80" y="410" width="130" height="44" rx="22" fill="#b9a6ff"/><text x="110" y="439">Zoom</text>
+      <rect x="226" y="410" width="110" height="44" rx="22" fill="#b9a6ff"/><text x="252" y="439">Fold</text>
+      <rect x="352" y="410" width="110" height="44" rx="22" fill="#b9a6ff"/><text x="378" y="439">Drag</text>
     </g>
     <text x="80" y="590" font-size="22" fill="#b9a6ff">github.com/imhalawa/obsidian-flow</text>
   </g>
