@@ -60,6 +60,7 @@ function moreElement(crumbs: readonly HeaderCrumb[], host: HeaderPathHost): HTML
 			'aria-haspopup': 'menu',
 		},
 	});
+	button.createSpan({ cls: TEXT_CLASS, text: MORE_LABEL });
 	button.addEventListener('click', () => {
 		const hidden = Array.from(
 			button.parentElement?.querySelectorAll<HTMLElement>(

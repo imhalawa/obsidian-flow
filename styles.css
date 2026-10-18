@@ -40,9 +40,8 @@
 	max-width: var(--flow-crumb-max-width);
 	transition: max-width var(--anim-duration-fast) ease-out;
 	height: auto;
-	padding: var(--size-2-1) var(--size-4-1);
+	padding: 0;
 	border: none;
-	border-radius: var(--radius-s);
 	background: transparent;
 	box-shadow: none;
 	color: inherit;
@@ -52,6 +51,8 @@
 
 .flow-crumbs__text {
 	min-width: 0;
+	padding: var(--size-2-1) var(--size-4-1);
+	border-radius: var(--radius-s);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -61,7 +62,7 @@
 	content: '\203A';
 	flex: none;
 	width: var(--flow-crumb-chevron-width);
-	margin-right: var(--size-4-1);
+	margin: 0 var(--size-4-1);
 	color: var(--text-muted);
 	font-size: 1.5em;
 	line-height: 1;
@@ -97,11 +98,18 @@
 }
 
 .flow-crumbs button.flow-crumbs__crumb:hover {
-	background: var(--background-modifier-hover);
 	color: var(--text-normal);
 }
 
+.flow-crumbs button.flow-crumbs__crumb:hover .flow-crumbs__text {
+	background: var(--background-modifier-hover);
+}
+
 .flow-crumbs button.flow-crumbs__crumb:focus-visible {
+	outline: none;
+}
+
+.flow-crumbs button.flow-crumbs__crumb:focus-visible .flow-crumbs__text {
 	box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
 }
 
