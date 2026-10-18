@@ -104,7 +104,8 @@ describe('callout bullets in real Obsidian', () => {
 		expect(box.widgetLeft - box.bulletRight).toBeLessThan(14);
 		expect(Math.abs(box.bulletMiddle - box.titleMiddle)).toBeLessThanOrEqual(2);
 		expect(box.widgetTop - box.lineTop).toBeLessThan(2);
-		expect(box.lineBottom - box.widgetBottom).toBeLessThan(2);
+		expect(box.lineBottom - box.widgetBottom).toBeGreaterThanOrEqual(6);
+		expect(box.lineBottom - box.widgetBottom).toBeLessThan(11);
 	});
 
 	it.each([1, 2, 3, 4, 5])(
@@ -133,7 +134,8 @@ describe('callout bullets in real Obsidian', () => {
 		for (const index of [0, 1, 2]) {
 			const box = (await layout(index))!;
 			expect(box.widgetTop - box.lineTop).toBeLessThan(2);
-			expect(box.lineBottom - box.widgetBottom).toBeLessThan(2);
+			expect(box.lineBottom - box.widgetBottom).toBeGreaterThanOrEqual(6);
+			expect(box.lineBottom - box.widgetBottom).toBeLessThan(11);
 		}
 	});
 
@@ -334,7 +336,7 @@ describe('callout bullets in real Obsidian', () => {
 
 		const guide = () =>
 			app.evaluate<Guide | null>(`(() => {
-				const line = activeDocument.querySelector('${ACTIVE} .roamer-callout-parent');
+				const line = activeDocument.querySelector('${ACTIVE} .roamer-callout-linked');
 				const bullet = line?.querySelector('.list-bullet');
 				if (!line || !bullet) return null;
 				const style = getComputedStyle(line, '::after');
@@ -361,7 +363,7 @@ describe('callout bullets in real Obsidian', () => {
 				child: number;
 				text: number;
 			}>(`(() => {
-				const line = activeDocument.querySelector('${ACTIVE} .roamer-callout-parent');
+				const line = activeDocument.querySelector('${ACTIVE} .roamer-callout-linked');
 				const icon = line.querySelector('.callout-icon').getBoundingClientRect();
 				const bullet = line.querySelector('.list-bullet').getBoundingClientRect();
 				const childLine = line.nextElementSibling;
@@ -372,19 +374,19 @@ describe('callout bullets in real Obsidian', () => {
 			expect(gaps.title - gaps.text).toBeLessThanOrEqual(14);
 		});
 
-		it('draws no line for a callout bullet without children', async () => {
-			await open('- a\n\t- > [!warning] Callout\n\t  > body\n\t- z', 3, 2);
+		it('draws no line for the last callout bullet', async () => {
+			await open('- a\n\t- z\n\t- > [!warning] Callout\n\t  > body', 1, 2);
 			expect(await guide()).toBeNull();
 		});
 
-		it('draws no line while the callout bullet is folded and draws it again when unfolded', async () => {
+		it('keeps the line of a folded callout bullet and draws the whole callout again when unfolded', async () => {
 			const editor = await open(PARENT_NOTE, 5, 2);
 			await editor.caret(1, 6);
 			expect(await editor.runCommand('fold-item')).toBe(true);
 			await editor.caret(5, 2);
 			await wait(800);
 			expect(await widgetCount()).toBe(1);
-			expect(await guide()).toBeNull();
+			expect(await guide()).not.toBeNull();
 			await editor.caret(1, 6);
 			await editor.runCommand('unfold-item');
 			await editor.caret(5, 2);
@@ -404,7 +406,7 @@ describe('callout bullets in real Obsidian', () => {
 			expect(await widgetCount()).toBe(2);
 			expect(
 				await app.evaluate<number>(
-					`activeDocument.querySelectorAll('${ACTIVE} .roamer-callout-parent').length`,
+					`activeDocument.querySelectorAll('${ACTIVE} .roamer-callout-linked').length`,
 				),
 			).toBe(2);
 		});
@@ -445,6 +447,66 @@ describe('callout bullets in real Obsidian', () => {
 			expect(box.width).toBeGreaterThanOrEqual(box.minimum - 1);
 			if (box.wrapped) expect(box.shift).toBe('0px');
 			expect(await editor.text()).toBe(NARROW_NOTE);
+		});
+	});
+
+	describe('sibling callout bullets', () => {
+		const SIBLINGS = [
+			'- root',
+			'	- > [!check] One',
+			'	  > first',
+			'	- > [!warning] Two',
+			'	  > second',
+			'	- > [!question] Three',
+			'	  > third',
+			'	- Action items',
+		].join(String.fromCharCode(10));
+
+		interface Row {
+			linked: boolean;
+			bulletBottom: number;
+			guideTop: number;
+			guideBottom: number;
+			lineHeight: number;
+			lineTop: number;
+			widgetBottom: number;
+		}
+
+		const rows = () =>
+			app.evaluate<
+				Row[]
+			>(`[...activeDocument.querySelectorAll('${ACTIVE} .roamer-callout-line')].map((line) => {
+				const bullet = line.querySelector('.list-bullet').getBoundingClientRect();
+				const widget = line.querySelector('.roamer-callout-widget').getBoundingClientRect();
+				const style = getComputedStyle(line, '::after');
+				const box = line.getBoundingClientRect();
+				const top = parseFloat(style.top);
+				return { linked: line.classList.contains('roamer-callout-linked'), bulletBottom: bullet.bottom - box.top, guideTop: top, guideBottom: top + parseFloat(style.height), lineHeight: box.height, lineTop: box.top, widgetBottom: widget.bottom };
+			})`);
+
+		it('leads a line from the bullet of each callout down to the next bullet', async () => {
+			await open(SIBLINGS, 7, 3);
+			const found = await rows();
+			expect(found).toHaveLength(3);
+			for (const row of found) {
+				expect(row.linked).toBe(true);
+				expect(row.guideTop - row.bulletBottom).toBeGreaterThanOrEqual(0);
+				expect(row.guideTop - row.bulletBottom).toBeLessThanOrEqual(3);
+				expect(Math.abs(row.guideBottom - row.lineHeight)).toBeLessThanOrEqual(1);
+			}
+		});
+
+		it('keeps the same space after every callout', async () => {
+			await open(SIBLINGS, 7, 3);
+			const found = await rows();
+			const gaps = found.map((row, index) => {
+				const next = found[index + 1];
+				return next ? next.lineTop - row.widgetBottom : -1;
+			});
+			expect(gaps[0]).toBeGreaterThanOrEqual(6);
+			expect(Math.abs((gaps[0] ?? 0) - (gaps[1] ?? 0))).toBeLessThanOrEqual(1);
+			const after = found[2]!.lineHeight - (found[2]!.widgetBottom - found[2]!.lineTop);
+			expect(Math.abs(after - (gaps[0] ?? 0))).toBeLessThanOrEqual(1);
 		});
 	});
 

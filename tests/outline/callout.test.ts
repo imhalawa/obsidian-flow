@@ -13,7 +13,7 @@ describe('findCallouts', () => {
 				startLine: 0,
 				endLine: 0,
 				markerColumn: 2,
-				hasChildren: false,
+				linked: false,
 				title: '> [!tip] Title',
 				markdown: '> [!tip] Title',
 			},
@@ -68,7 +68,7 @@ describe('findCallouts', () => {
 				startLine: 0,
 				endLine: 2,
 				markerColumn: 2,
-				hasChildren: false,
+				linked: true,
 				title: '> [!tip] T',
 				markdown: '> [!tip] T\n> one\n> two',
 			},
@@ -114,13 +114,15 @@ describe('findCallouts', () => {
 		});
 	});
 
-	it('tells whether the callout bullet has children', () => {
-		expect(
-			callouts(['- > [!tip] T', '  > a', '	- child']).map((block) => block.hasChildren),
-		).toEqual([true]);
-		expect(
-			callouts(['- > [!tip] T', '  > a', '- next']).map((block) => block.hasChildren),
-		).toEqual([false]);
+	it.each([
+		['a child follows', ['- > [!tip] T', '  > a', '	- child'], true],
+		['a sibling follows', ['- > [!tip] T', '  > a', '- next'], true],
+		['a blank line and a sibling follow', ['- > [!tip] T', '', '- next'], true],
+		['nothing follows', ['- > [!tip] T', '  > a'], false],
+		['only a shallower item follows', ['- root', '	- > [!tip] T', '- other'], false],
+		['text follows', ['- > [!tip] T', 'text'], false],
+	])('tells whether the callout bullet is linked when %s', (_name, lines, linked) => {
+		expect(callouts(lines).map((block) => block.linked)).toEqual([linked]);
 	});
 
 	it('does not take the first line of the next callout bullet as body', () => {

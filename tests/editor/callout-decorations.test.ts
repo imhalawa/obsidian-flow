@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	CALLOUT_AFTER_CLASS,
 	CALLOUT_LINE_CLASS,
-	CALLOUT_PARENT_CLASS,
+	CALLOUT_LINKED_CLASS,
 	calloutDecorations,
 } from '../../src/editor/callout-decorations';
 
@@ -49,7 +49,7 @@ const decorate = (doc: string, anchor: number, head: number) => {
 
 const NOTE = ['- a', '\t- > [!tip] T', '\t  > body', '\t- next'].join('\n');
 
-const PARENT = `${CALLOUT_LINE_CLASS} ${CALLOUT_PARENT_CLASS}`;
+const LINKED = `${CALLOUT_LINE_CLASS} ${CALLOUT_LINKED_CLASS}`;
 const NO_CHILDREN = '- > [!tip] T\n  > body\n- z';
 const WITH_CHILD = '- > [!tip] T\n  > body\n  - child\n- z';
 
@@ -58,7 +58,7 @@ describe('calloutDecorations', () => {
 		const second = NOTE.indexOf('\t- >');
 		const bodyEnd = NOTE.indexOf('\n\t- next');
 		expect(decorate(NOTE, 0, 0)).toEqual([
-			{ from: second, to: second, kind: 'line', cls: CALLOUT_LINE_CLASS },
+			{ from: second, to: second, kind: 'line', cls: LINKED },
 			{ from: second + 3, to: bodyEnd, kind: 'replace', markdown: '> [!tip] T\n> body' },
 			{ from: bodyEnd + 1, to: bodyEnd + 1, kind: 'line', cls: CALLOUT_AFTER_CLASS },
 		]);
@@ -87,13 +87,7 @@ describe('calloutDecorations', () => {
 	it('does not mark the line after a callout that is a quote', () => {
 		const note = '- > [!tip] A\n- > [!note] B\n- c';
 		const kinds = decorate(note, note.length, note.length).map((item) => item.cls ?? item.kind);
-		expect(kinds).toEqual([
-			CALLOUT_LINE_CLASS,
-			'replace',
-			CALLOUT_LINE_CLASS,
-			'replace',
-			CALLOUT_AFTER_CLASS,
-		]);
+		expect(kinds).toEqual([LINKED, 'replace', LINKED, 'replace', CALLOUT_AFTER_CLASS]);
 	});
 
 	it('does not mark a line after the last line of the note', () => {
@@ -127,19 +121,25 @@ describe('calloutDecorations', () => {
 		expect(items.filter((item) => item.kind === 'replace')).toHaveLength(1);
 	});
 
-	it('marks a callout bullet that has children as a parent', () => {
+	it('marks a callout bullet that has children as linked', () => {
 		const classes = decorate(WITH_CHILD, WITH_CHILD.length, WITH_CHILD.length).map(
 			(item) => item.cls,
 		);
-		expect(classes[0]).toBe(PARENT);
+		expect(classes[0]).toBe(LINKED);
 	});
 
-	it('does not mark a callout bullet without children as a parent', () => {
+	it('does not mark the last callout bullet as linked', () => {
+		const note = '- z\n- > [!tip] T\n  > body';
+		const lines = decorate(note, 0, 0).filter((item) => item.kind === 'line');
+		expect(lines[0]?.cls).toBe(CALLOUT_LINE_CLASS);
+	});
+
+	it('links a callout bullet that only has a sibling after it', () => {
 		const note = '- > [!tip] T\n  > body\n- z';
-		expect(decorate(note, note.length, note.length)[0]?.cls).toBe(CALLOUT_LINE_CLASS);
+		expect(decorate(note, note.length, note.length)[0]?.cls).toBe(LINKED);
 	});
 
-	it('does not mark a folded callout bullet as a parent', () => {
+	it('keeps a folded callout bullet linked', () => {
 		const state = EditorState.create({
 			doc: WITH_CHILD,
 			selection: EditorSelection.single(WITH_CHILD.length),
@@ -152,7 +152,7 @@ describe('calloutDecorations', () => {
 			calloutDecorations(folded, (markdown) => new TextWidget(markdown)),
 			WITH_CHILD.length,
 		);
-		expect(items[0]?.cls).toBe(CALLOUT_LINE_CLASS);
+		expect(items[0]?.cls).toBe(LINKED);
 	});
 
 	it.each([

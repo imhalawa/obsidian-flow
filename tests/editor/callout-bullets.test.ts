@@ -83,7 +83,7 @@ describe('bulletCallouts', () => {
 		expect(count(changed)).toBe(2);
 	});
 
-	it('drops the guide class of a callout bullet when it is folded', () => {
+	it('keeps the linked class of a callout bullet when it is folded', () => {
 		const doc = '- > [!tip] t\n  - child\n- z';
 		const state = EditorState.create({
 			doc,
@@ -106,15 +106,15 @@ describe('bulletCallouts', () => {
 			}
 			return found;
 		};
-		expect(firstClass(state)).toContain('roamer-callout-parent');
+		expect(firstClass(state)).toContain('roamer-callout-linked');
 		const folded = state.update({
 			effects: foldEffect.of({ from: 12, to: doc.indexOf('\n- z') }),
 		}).state;
-		expect(firstClass(folded)).toBe('roamer-callout-line');
+		expect(firstClass(folded)).toContain('roamer-callout-linked');
 		const unfolded = folded.update({
 			effects: unfoldEffect.of({ from: 12, to: doc.indexOf('\n- z') }),
 		}).state;
-		expect(firstClass(unfolded)).toContain('roamer-callout-parent');
+		expect(firstClass(unfolded)).toContain('roamer-callout-linked');
 	});
 });
 

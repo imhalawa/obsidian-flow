@@ -6,12 +6,12 @@ import { outlineOfState } from './outline-of-state';
 
 // TODO(obsidian-update): callout bullets are a plugin-only rendering, intentionally different from Obsidian's raw text. See docs/obsidian-internals.md.
 export const CALLOUT_LINE_CLASS = 'roamer-callout-line';
-export const CALLOUT_PARENT_CLASS = 'roamer-callout-parent';
+export const CALLOUT_LINKED_CLASS = 'roamer-callout-linked';
 export const CALLOUT_AFTER_CLASS = 'roamer-callout-after';
 
 const calloutLine = Decoration.line({ class: CALLOUT_LINE_CLASS });
-const calloutParentLine = Decoration.line({
-	class: `${CALLOUT_LINE_CLASS} ${CALLOUT_PARENT_CLASS}`,
+const linkedLine = Decoration.line({
+	class: `${CALLOUT_LINE_CLASS} ${CALLOUT_LINKED_CLASS}`,
 });
 const afterCallout = Decoration.line({ class: CALLOUT_AFTER_CLASS });
 const blocks = new WeakMap<Text, CalloutBlock[]>();
@@ -55,8 +55,8 @@ export function calloutDecorations(
 		const head = doc.line(block.startLine + 1);
 		const bodyEnd = doc.line(block.endLine + 1).to;
 		const folded = isFolded(state, head.to);
-		const drawsGuide = block.hasChildren && !folded;
-		builder.add(head.from, head.from, drawsGuide ? calloutParentLine : calloutLine);
+
+		builder.add(head.from, head.from, block.linked ? linkedLine : calloutLine);
 		builder.add(
 			head.from + block.markerColumn,
 			folded ? head.to : bodyEnd,

@@ -230,6 +230,7 @@
 	display: inline-block;
 	min-width: 10em;
 	width: calc(100% - 1px);
+	margin-bottom: var(--size-4-2);
 	vertical-align: top;
 	text-indent: 0;
 	white-space: normal;
@@ -250,11 +251,11 @@
 	display: none;
 }
 
-.cm-line.roamer-callout-parent {
+.cm-line.roamer-callout-linked {
 	position: relative;
 }
 
-.cm-line.roamer-callout-parent::after {
+.cm-line.roamer-callout-linked::after {
 	content: '';
 	position: absolute;
 	top: var(--roamer-guide-top, 0);
