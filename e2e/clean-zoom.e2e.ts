@@ -87,16 +87,19 @@ describe('clean zoom in real Obsidian', () => {
 		expect(parseFloat(shift)).toBeGreaterThan(30);
 	});
 
-	it('hides the indentation guides of the levels that are not shown', async () => {
+	it('hides the indent steps of the levels that are not shown without clipping the line', async () => {
 		const editor = await NoteEditor.open(app, NOTE);
 		await wait(300);
 		await editor.caret(2, 5);
 		await editor.runCommand('zoom-in');
 		await wait(300);
-		const clipped = await app.evaluate<boolean>(
-			`(() => { const line = activeDocument.querySelector(".workspace-leaf.mod-active .cm-line.roamer-zoom-line"); const style = getComputedStyle(line); return style.clipPath !== "none" && parseFloat(style.insetInlineStart) < 0; })()`,
+		const result = await app.evaluate<{ clip: string; offset: number; hidden: string[] }>(
+			`(() => { const line = activeDocument.querySelector(".workspace-leaf.mod-active .cm-line.roamer-zoom-line"); const style = getComputedStyle(line); const hidden = Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .roamer-zoom-hidden-indent")).flatMap((el) => [getComputedStyle(el).visibility, getComputedStyle(el.closest(".cm-indent")).visibility]); return { clip: style.clipPath, offset: parseFloat(style.insetInlineStart), hidden }; })()`,
 		);
-		expect(clipped).toBe(true);
+		expect(result.clip).toBe('none');
+		expect(result.offset).toBeLessThan(0);
+		expect(result.hidden.length).toBeGreaterThan(0);
+		for (const visibility of result.hidden) expect(visibility).toBe('hidden');
 	});
 
 	it('shifts nothing when the zoomed item is at the top level', async () => {

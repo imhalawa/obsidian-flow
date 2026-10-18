@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { shiftedLines, zoomIndentColumns } from '../../src/outline/zoom-shift';
+import { hiddenIndentLength, shiftedLines, zoomIndentColumns } from '../../src/outline/zoom-shift';
 import { parseOutline } from '../../src/outline/outline-tree';
 
 const NOTE = ['# T', '- a', '\t- b', '\t\t- c', '\t\t  more c', '\t- d', '- e'];
@@ -52,5 +52,20 @@ describe('shiftedLines', () => {
 		expect(shiftedLines(['- a', '  - b', '    - c'], 4, { fromLine: 1, toLine: 2 }, 2)).toEqual(
 			[1, 2],
 		);
+	});
+});
+
+describe('hiddenIndentLength', () => {
+	it.each([
+		['one tab for one level', '		- c', 4, 4, 1],
+		['two tabs for two levels', '		- c', 4, 8, 2],
+		['four spaces for one level', '    - b', 4, 4, 4],
+		['two spaces for a two column shift', '  - b', 4, 2, 2],
+		['two spaces and a tab that reaches the next tab stop', '  	- b', 4, 4, 3],
+		['nothing when no column is hidden', '	- x', 4, 0, 0],
+		['only the indent when the shift is larger', '	- x', 4, 8, 1],
+		['nothing for a line without indent', '- x', 4, 4, 0],
+	])('counts the characters for %s', (_name, text, tabSize, columns, expected) => {
+		expect(hiddenIndentLength(text, tabSize, columns)).toBe(expected);
 	});
 });

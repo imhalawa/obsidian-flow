@@ -125,19 +125,15 @@
 	cursor: pointer;
 }
 
-/* TODO(obsidian-update): clean zoom hack: clip-path and transform over CodeMirror layers; may break when Obsidian changes its editor layout. See docs/obsidian-internals.md. */
+/* TODO(obsidian-update): clean zoom moves lines with a relative offset; may break when Obsidian changes its editor layout. See docs/obsidian-internals.md. */
 .roamer-zoom-line {
 	position: relative;
 	inset-inline-start: calc(var(--roamer-zoom-shift, 0px) * -1);
-	clip-path: inset(0 0 0 var(--roamer-zoom-shift, 0px));
 }
 
-.roamer-zoom-root {
-	clip-path: inset(0 0 0 max(0px, calc(var(--roamer-zoom-shift, 0px) - var(--size-4-5))));
-}
-
-.markdown-source-view.mod-cm6 .roamer-zoom-root .cm-indent::before {
-	border-color: transparent;
+.roamer-zoom-hidden-indent,
+.cm-indent:has(> .roamer-zoom-hidden-indent) {
+	visibility: hidden;
 }
 
 @keyframes roamer-line-reveal {

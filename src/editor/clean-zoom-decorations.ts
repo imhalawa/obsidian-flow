@@ -1,18 +1,18 @@
 import { RangeSetBuilder, type EditorState } from '@codemirror/state';
 import { Decoration, type DecorationSet } from '@codemirror/view';
-import { shiftedLines, zoomIndentColumns } from '../outline/zoom-shift';
+import { hiddenIndentLength, shiftedLines, zoomIndentColumns } from '../outline/zoom-shift';
 import { outlineOfState } from './outline-of-state';
 import { zoomField } from './zoom-field';
 
 export const ZOOM_LINE_CLASS = 'roamer-zoom-line';
 
-// TODO(obsidian-update): clean zoom is a hack that shifts and clips CodeMirror lines; Obsidian layout changes can break it. See docs/obsidian-internals.md.
-export const ZOOM_ROOT_CLASS = 'roamer-zoom-root';
+export const HIDDEN_INDENT_CLASS = 'roamer-zoom-hidden-indent';
 
+// TODO(obsidian-update): clean zoom shifts CodeMirror lines in CSS and hides the indent they leave behind; Obsidian layout changes can break it. See docs/obsidian-internals.md.
 const zoomLine = Decoration.line({ class: ZOOM_LINE_CLASS });
-const zoomRootLine = Decoration.line({ class: `${ZOOM_LINE_CLASS} ${ZOOM_ROOT_CLASS}` });
+const hiddenIndent = Decoration.mark({ class: HIDDEN_INDENT_CLASS });
 
-/** Returns the line decorations that mark the zoomed lines that move to the left edge. */
+/** Returns the decorations that mark the zoomed lines that move to the left edge and hide the indent they leave behind. */
 export function cleanZoomDecorations(state: EditorState): DecorationSet {
 	const zoom = state.field(zoomField, false);
 	if (!zoom) return Decoration.none;
@@ -22,8 +22,10 @@ export function cleanZoomDecorations(state: EditorState): DecorationSet {
 	const range = { fromLine: startLine, toLine: state.doc.lineAt(zoom.to).number - 1 };
 	const builder = new RangeSetBuilder<Decoration>();
 	for (const line of shiftedLines(lines, state.tabSize, range, columns)) {
-		const from = state.doc.line(line + 1).from;
-		builder.add(from, from, line === startLine ? zoomRootLine : zoomLine);
+		const { from, text } = state.doc.line(line + 1);
+		builder.add(from, from, zoomLine);
+		const hidden = hiddenIndentLength(text, state.tabSize, columns);
+		if (hidden > 0) builder.add(from, from + hidden, hiddenIndent);
 	}
 	return builder.finish();
 }
