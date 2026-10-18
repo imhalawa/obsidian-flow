@@ -124,7 +124,7 @@ describe('mouse back and forward in real Obsidian', () => {
 			await popoutEditor.runCommand('zoom-in');
 			const crumbs = () =>
 				app.evaluate<string[]>(
-					'Array.from(window.__popoutLeaf.view.containerEl.querySelectorAll(".roamer-crumbs__crumb:not(.is-hidden)")).map((el) => el.textContent)',
+					'Array.from(window.__popoutLeaf.view.containerEl.querySelectorAll(".roamer-crumbs__crumb:not(.is-hidden):not(.is-root)")).map((el) => el.textContent)',
 				);
 			expect(await crumbs()).toEqual(['a', 'b']);
 			await app.pressSideButton(popout.x, popout.y, 'back');
