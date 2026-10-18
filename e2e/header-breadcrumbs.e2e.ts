@@ -360,6 +360,52 @@ describe('long and formatted crumb labels', () => {
 	});
 });
 
+describe('the chevrons between crumbs', () => {
+	beforeAll(async () => {
+		await app.evaluate('(app.workspace.leftSplit.collapse(), true)');
+	});
+
+	beforeEach(async () => {
+		await app.movePointer(5, 600);
+	});
+
+	interface Chevron {
+		centre: number;
+		gapMiddle: number;
+	}
+
+	/** Measures each chevron after the first against the gap between the text before and after it. */
+	const chevrons = () =>
+		app.evaluate<Chevron[]>(
+			`(() => { const shown = Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .flow-crumbs__crumb:not(.is-hidden)")); return shown.slice(1).map((crumb, index) => { const before = getComputedStyle(crumb, "::before"); const left = parseFloat(before.marginLeft); const width = parseFloat(before.width); const box = crumb.getBoundingClientRect(); const text = crumb.querySelector(".flow-crumbs__text").getBoundingClientRect(); const previous = shown[index].querySelector(".flow-crumbs__text").getBoundingClientRect(); return { centre: box.left + left + width / 2, gapMiddle: (previous.right + text.left) / 2 }; }); })()`,
+		);
+
+	it('centres each chevron in the gap between two crumbs', async () => {
+		const editor = await openInFolder(NOTE);
+		await editor.caret(3, 4);
+		await editor.runCommand('zoom-in');
+		const measured = await chevrons();
+		expect(measured.length).toBeGreaterThan(0);
+		for (const chevron of measured) {
+			expect(Math.abs(chevron.centre - chevron.gapMiddle)).toBeLessThanOrEqual(1);
+		}
+	});
+
+	it('highlights only the text of a crumb the pointer is over', async () => {
+		const editor = await openInFolder(NOTE);
+		await editor.caret(3, 4);
+		await editor.runCommand('zoom-in');
+		const point = await editor.crumbPoint('Some Idea');
+		await app.movePointer(point.x, point.y);
+		await wait(400);
+		const backgrounds = await app.evaluate<{ crumb: string; text: string }>(
+			'(() => { const crumb = Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .flow-crumbs__crumb")).find((el) => el.textContent === "Some Idea"); return { crumb: getComputedStyle(crumb).backgroundColor, text: getComputedStyle(crumb.querySelector(".flow-crumbs__text")).backgroundColor }; })()',
+		);
+		expect(backgrounds.crumb).toBe('rgba(0, 0, 0, 0)');
+		expect(backgrounds.text).not.toBe('rgba(0, 0, 0, 0)');
+	});
+});
+
 describe('the header path across panes and plugin state in real Obsidian', () => {
 	it('shows each pane its own path', async () => {
 		const first = await openInFolder(NOTE);
