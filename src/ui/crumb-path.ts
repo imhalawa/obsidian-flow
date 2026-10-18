@@ -42,13 +42,13 @@ function crumbElement(crumb: PanelCrumb, host: CrumbPathHost): HTMLElement {
 function moreElement(levels: readonly PanelCrumb[], host: CrumbPathHost): HTMLElement {
 	const button = createEl('button', {
 		cls: `${CRUMB_CLASS} ${MORE_CLASS} ${HIDDEN_CLASS}`,
-		text: MORE_LABEL,
 		attr: {
 			type: 'button',
 			'aria-label': MORE_DESCRIPTION,
 			'aria-haspopup': 'menu',
 		},
 	});
+	button.createSpan({ cls: TEXT_CLASS, text: MORE_LABEL });
 	button.addEventListener('click', () => {
 		const hidden = Array.from(
 			button.parentElement?.querySelectorAll<HTMLElement>(
