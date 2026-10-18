@@ -76,11 +76,11 @@ describe('tree commands', () => {
 
 	it('acts on every item of a selection and keeps its direction', async () => {
 		const editor = await NoteEditor.open(app, '- p\n- a\n- b');
-		await editor.select({ anchor: { line: 2, ch: 3 }, head: { line: 1, ch: 0 } });
+		await editor.select({ anchor: { line: 2, ch: 3 }, head: { line: 1, ch: 2 } });
 		await editor.runCommand('indent-item');
 		expect(await editor.text()).toBe('- p\n\t- a\n\t- b');
 		expect(await editor.selections()).toEqual([
-			{ anchor: { line: 2, ch: 4 }, head: { line: 1, ch: 1 } },
+			{ anchor: { line: 2, ch: 4 }, head: { line: 1, ch: 3 } },
 		]);
 	});
 

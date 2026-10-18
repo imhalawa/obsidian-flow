@@ -5,6 +5,7 @@ import { bulletLight } from './editor/bullet-light-field';
 import { bulletCallouts } from './editor/callout-bullets';
 import { CalloutWidget, layoutCallouts } from './editor/callout-widget';
 import { embedLines } from './editor/embed-lines';
+import { keepBulletsOutOfSelection } from './editor/bullet-selection';
 import { foldReveal } from './editor/fold-reveal';
 import { indentSpacing } from './editor/indent-spacing';
 import { registerItemDrag } from './editor/register-item-drag';
@@ -25,6 +26,9 @@ export default class RoamerPlugin extends Plugin {
 		registerCommands(this);
 		registerZoomMenu(this);
 		this.registerEditorExtension(indentSpacing(() => this.settings.fixedIndentSpacing));
+		this.registerEditorExtension(
+			keepBulletsOutOfSelection(() => this.settings.keepBulletOutOfSelection),
+		);
 		this.registerEditorExtension(foldReveal());
 		this.registerEditorExtension(threadHighlight());
 		this.registerEditorExtension(bulletLight());
@@ -57,6 +61,7 @@ export default class RoamerPlugin extends Plugin {
 			homeStaysInItem: () => this.settings.homeStaysInItem,
 			selectAllStaysInItem: () => this.settings.selectAllStaysInItem,
 			tabIndentsItem: () => this.settings.tabIndentsItem,
+			bulletStaysOutOfText: () => this.settings.keepBulletOutOfSelection,
 		});
 		registerMouseHistory(this, { isEnabled: () => this.settings.useMouseHistory });
 		registerZoom(this, {

@@ -47,12 +47,12 @@ describe('RoamerPlugin lifecycle', () => {
 		expect((plugin as unknown as { settingTabs: unknown[] }).settingTabs).toHaveLength(1);
 	});
 
-	it('registers the indent spacing, fold reveal, thread highlight, bullet light, embed lines, bullet callouts, item pointer, drag, list keys, zoom and zoom path editor extensions', async () => {
+	it('registers the bullet selection, indent spacing, fold reveal, thread highlight, bullet light, embed lines, bullet callouts, item pointer, drag, list keys, zoom and zoom path editor extensions', async () => {
 		const plugin = makePlugin();
 		await plugin.onload();
 		expect(
 			(plugin as unknown as { editorExtensions: unknown[] }).editorExtensions,
-		).toHaveLength(11);
+		).toHaveLength(12);
 	});
 
 	it('wraps the history of the main window and restores it on unload', async () => {

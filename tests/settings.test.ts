@@ -37,6 +37,7 @@ describe('settings tab', () => {
 			'Home stays inside the item text',
 			'Select all starts with the item text',
 			'Tab and Shift-Tab move whole items',
+			'Keep the bullet out of text selections',
 		]);
 	});
 
@@ -60,6 +61,7 @@ describe('settings tab', () => {
 			'Move to the start of the item text before moving to the start of the line.',
 			'Select the text of the item first. Select all again to select the whole note.',
 			'Indent and outdent the item with its children. Turn this on to replace the editor keys.',
+			'Treat the bullet as its own object: the cursor and selections stay in the text, and Backspace at the start of a text never eats the bullet.',
 		]);
 	});
 
@@ -83,6 +85,7 @@ describe('settings tab', () => {
 			plugin.settings.homeStaysInItem,
 			plugin.settings.selectAllStaysInItem,
 			plugin.settings.tabIndentsItem,
+			plugin.settings.keepBulletOutOfSelection,
 		]);
 	});
 
@@ -155,6 +158,7 @@ describe('settings tab', () => {
 		[10 + 4, 'homeStaysInItem', true],
 		[10 + 5, 'selectAllStaysInItem', true],
 		[10 + 6, 'tabIndentsItem', false],
+		[10 + 7, 'keepBulletOutOfSelection', true],
 		[10 + 2, 'enterAddsFirstChild', true],
 	] as const)(
 		'saves list editing setting %i (%s) when its toggle changes',

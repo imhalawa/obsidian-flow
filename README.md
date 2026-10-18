@@ -14,6 +14,7 @@ Needs Obsidian 1.12.0 or newer. Built for desktop and mobile; only desktop (Linu
 - **Bullets and thread lines.** Select a bullet to zoom, select a thread line to fold its branch (hold Alt to fold every descendant). [Details](docs/bullets-and-thread-lines.md).
 - **List editing.** Smarter Enter, Backspace, Home and select all; optional Tab and Shift-Tab move whole items. [Details](docs/list-editing.md).
 - **Callout bullets.** A bullet starting with `> [!tip]` is drawn as a callout and still nests, folds and zooms. [Details](docs/callout-bullets.md).
+- **Bullets stay out of the text.** Selections and the cursor stay in the text of an item, never in its bullet, and Backspace never eats a bullet. [Details](docs/list-editing.md).
 - **Steady indent spacing.** Every level of a list gets the same width in any theme, so guide lines, bullets and fold arrows keep the same gaps. Turn it off to follow your theme.
 - **Drag and drop.** Drag an item by its bullet, also into another open note. [Details](docs/drag-and-drop.md).
 

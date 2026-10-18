@@ -1,9 +1,11 @@
 import { EditorSelection, type EditorState } from '@codemirror/state';
+import type { EditorView } from '@codemirror/view';
 import { backspaceAtItemStart } from '../outline/backspace-key';
 import { enterOnEmptyItem, enterOnParentItem } from '../outline/enter-key';
 import { homeColumn, itemTextRange, type LinePosition } from '../outline/home-select';
-import { itemAtLine } from '../outline/item-lookup';
+import { itemAtLine, itemStartingAt } from '../outline/item-lookup';
 import type { KeyEdit } from '../outline/key-edit';
+import { isAtItemTextStart } from '../outline/text-clamp';
 import { stateIndentStyle } from './editor-indent-style';
 import { isFolded, toggleBranch } from './fold-control';
 import { outlineOfState } from './outline-of-state';
@@ -117,6 +119,43 @@ export function selectItemText(target: ZoomTarget): boolean {
 	if (main.from <= from && main.to >= to) return false;
 	target.dispatch({
 		selection: EditorSelection.range(from, to),
+		scrollIntoView: true,
+		userEvent: 'select',
+	});
+	return true;
+}
+
+/** Tells whether the cursor is exactly at the start of the text of a list item, and gives its line and whether the item has text. */
+function atItemTextStart(
+	state: EditorState,
+): { lineStart: number; lineNumber: number; hasText: boolean } | null {
+	const caret = caretOf(state);
+	if (!caret) return null;
+	const line = state.doc.line(caret.line + 1);
+	const item = itemStartingAt(outlineOfState(state), caret.line);
+	if (!isAtItemTextStart(line.text, item, caret.column)) return null;
+	return {
+		lineStart: line.from,
+		lineNumber: line.number,
+		hasText: line.text.length > caret.column,
+	};
+}
+
+/** Handles Backspace at the start of the text of an item that has text and cannot merge by doing nothing, so the bullet is never eaten. */
+export function keepBulletOnBackspace(target: ZoomTarget): boolean {
+	return atItemTextStart(target.state)?.hasText === true;
+}
+
+/** Handles the left arrow at the start of an item's text by moving to the end of the line above, since the bullet is not part of the text; `extend` keeps the selection anchor. */
+export function leftAtItemStart(view: EditorView, extend: boolean): boolean {
+	const start = atItemTextStart(view.state);
+	if (!start || start.lineNumber === 1) return false;
+	const destination = view.moveByChar(EditorSelection.cursor(start.lineStart), false).head;
+	const anchor = view.state.selection.main.anchor;
+	view.dispatch({
+		selection: extend
+			? EditorSelection.range(anchor, destination)
+			: EditorSelection.cursor(destination),
 		scrollIntoView: true,
 		userEvent: 'select',
 	});

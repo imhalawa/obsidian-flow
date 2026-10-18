@@ -6,6 +6,7 @@ import {
 	enterInEmptyItem,
 	enterInParentItem,
 	homeInItem,
+	keepBulletOnBackspace,
 	selectItemText,
 } from '../../src/editor/list-keys';
 import { foldItem } from '../../src/editor/fold-control';
@@ -276,5 +277,34 @@ describe('enterInParentItem', () => {
 		expect(enterInParentItem(target)).toBe(true);
 		expect(foldedRanges(target.state).size).toBe(0);
 		expect(target.text).toBe('- a\n  - \n  - b');
+	});
+});
+
+describe('keepBulletOnBackspace', () => {
+	it.each([
+		['the start of the text of a bullet that has children', '- a\n  - b\n    - c', 8],
+		['the start of the text of the first bullet', '- a', 2],
+		['the start of the text of a task', '- x\n- [ ] a', 10],
+	])('does nothing at %s, so the bullet is kept', (_name, text, caret) => {
+		const target = new FakeZoomTarget(text, caret);
+		expect(keepBulletOnBackspace(target)).toBe(true);
+		expect(target.text).toBe(text);
+	});
+
+	it('leaves Backspace to Obsidian in an empty item', () => {
+		const target = new FakeZoomTarget('- ', 2);
+		expect(keepBulletOnBackspace(target)).toBe(false);
+	});
+
+	it.each([
+		['inside the text', '- abc', 4],
+		['with a selection', '- abc', 2],
+		['on a line that is not a list item', 'text', 0],
+	])('leaves Backspace alone %s', (_name, text, caret) => {
+		const target = new FakeZoomTarget(text, caret);
+		if (_name === 'with a selection') {
+			target.state = target.state.update({ selection: EditorSelection.range(2, 4) }).state;
+		}
+		expect(keepBulletOnBackspace(target)).toBe(false);
 	});
 });

@@ -9,6 +9,8 @@ import {
 	enterInEmptyItem,
 	enterInParentItem,
 	homeInItem,
+	keepBulletOnBackspace,
+	leftAtItemStart,
 	selectItemText,
 } from './list-keys';
 import { hasTreeTarget, runTreeEdit } from './tree-edit';
@@ -21,6 +23,7 @@ export interface ListKeysHost {
 	homeStaysInItem: () => boolean;
 	selectAllStaysInItem: () => boolean;
 	tabIndentsItem: () => boolean;
+	bulletStaysOutOfText: () => boolean;
 }
 
 /** Tells whether a position is on the first visual row of its line, so Home does not skip wrapped rows. */
@@ -53,7 +56,17 @@ export function registerListKeys(plugin: Plugin, host: ListKeysHost): void {
 				guarded(host.enterOutdentsEmptyItem, enterInEmptyItem)(view) ||
 				guarded(host.enterAddsFirstChild, enterInParentItem)(view),
 		},
-		{ key: 'Backspace', run: guarded(host.backspaceMergesItem, backspaceInItem) },
+		{
+			key: 'Backspace',
+			run: (view) =>
+				guarded(host.backspaceMergesItem, backspaceInItem)(view) ||
+				guarded(host.bulletStaysOutOfText, keepBulletOnBackspace)(view),
+		},
+		{
+			key: 'ArrowLeft',
+			run: guarded(host.bulletStaysOutOfText, (view) => leftAtItemStart(view, false)),
+			shift: guarded(host.bulletStaysOutOfText, (view) => leftAtItemStart(view, true)),
+		},
 		{
 			key: 'Home',
 			run: guarded(host.homeStaysInItem, (view) =>

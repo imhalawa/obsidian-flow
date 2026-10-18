@@ -28,6 +28,7 @@ const KEYS = {
 	a: { key: 'a', code: 'KeyA', keyCode: 65, text: null },
 	end: { key: 'End', code: 'End', keyCode: 35, text: null },
 	down: { key: 'ArrowDown', code: 'ArrowDown', keyCode: 40, text: null },
+	left: { key: 'ArrowLeft', code: 'ArrowLeft', keyCode: 37, text: null },
 	escape: { key: 'Escape', code: 'Escape', keyCode: 27, text: null },
 } satisfies Record<string, KeyDefinition>;
 

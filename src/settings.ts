@@ -17,6 +17,7 @@ export interface RoamerSettings {
 	homeStaysInItem: boolean;
 	selectAllStaysInItem: boolean;
 	tabIndentsItem: boolean;
+	keepBulletOutOfSelection: boolean;
 }
 
 export const DEFAULT_SETTINGS: RoamerSettings = {
@@ -35,6 +36,7 @@ export const DEFAULT_SETTINGS: RoamerSettings = {
 	homeStaysInItem: true,
 	selectAllStaysInItem: true,
 	tabIndentsItem: false,
+	keepBulletOutOfSelection: true,
 };
 
 type ToggleKey = {
@@ -154,6 +156,12 @@ export class RoamerSettingTab extends PluginSettingTab {
 			'Indent and outdent the item with its children. Turn this on to replace the editor keys.',
 			'tabIndentsItem',
 			null,
+		);
+		this.addToggle(
+			'Keep the bullet out of text selections',
+			'Treat the bullet as its own object: the cursor and selections stay in the text, and Backspace at the start of a text never eats the bullet.',
+			'keepBulletOutOfSelection',
+			() => this.app.workspace.updateOptions(),
 		);
 	}
 
