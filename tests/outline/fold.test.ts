@@ -35,6 +35,25 @@ describe('foldLookup', () => {
 	});
 });
 
+const callouts = ['- > [!tip] T', '  > body', '- > [!tip] lone', '- plain', '  more'];
+
+describe('foldLookup callout bullets', () => {
+	it('folds a callout bullet that has body lines but no children', () => {
+		expect(foldLookup(callouts, 4, 0)).toEqual({
+			kind: 'span',
+			span: { fromLine: 0, toLine: 1 },
+		});
+	});
+
+	it('reports a callout bullet with a title only as having no children', () => {
+		expect(foldLookup(callouts, 4, 2)).toEqual({ kind: 'no-children' });
+	});
+
+	it('reports a plain multi-line bullet as having no children', () => {
+		expect(foldLookup(callouts, 4, 3)).toEqual({ kind: 'no-children' });
+	});
+});
+
 describe('allFoldSpans', () => {
 	it('returns every parent item in document order', () => {
 		expect(allFoldSpans(lines, 4, { fromLine: 0, toLine: 8 })).toEqual([
@@ -58,5 +77,11 @@ describe('allFoldSpans', () => {
 	it('returns nothing for a note without parents', () => {
 		expect(allFoldSpans(['- a', '- b'], 4, { fromLine: 0, toLine: 1 })).toEqual([]);
 		expect(allFoldSpans([''], 4, { fromLine: 0, toLine: 0 })).toEqual([]);
+	});
+
+	it('includes a callout bullet with body lines', () => {
+		expect(allFoldSpans(callouts, 4, { fromLine: 0, toLine: 4 })).toEqual([
+			{ fromLine: 0, toLine: 1 },
+		]);
 	});
 });

@@ -1,6 +1,7 @@
 import type { Extension } from '@codemirror/state';
 import { ViewPlugin, type EditorView } from '@codemirror/view';
 import { editorLivePreviewField } from 'obsidian';
+import { isFoldable } from '../outline/fold';
 import { itemStartingAt } from '../outline/item-lookup';
 import type { OutlineNode } from '../outline/outline-tree';
 import {
@@ -143,12 +144,10 @@ function perform(
 function menuEntries(view: EditorView, host: ItemPointerHost, startLine: number): ItemMenuEntry[] {
 	const item = itemStartingAt(outlineOfState(view.state), startLine);
 	if (!item) return [];
-	return itemMenuActions(item.children.length > 0, isFolded(view.state, startLine)).map(
-		(action) => ({
-			title: ITEM_MENU_TITLES[action],
-			run: () => perform(view, host, action, startLine),
-		}),
-	);
+	return itemMenuActions(isFoldable(item), isFolded(view.state, startLine)).map((action) => ({
+		title: ITEM_MENU_TITLES[action],
+		run: () => perform(view, host, action, startLine),
+	}));
 }
 
 /** Follows a press on a bullet: a drag once the pointer moves far enough, otherwise a zoom when the button is released. */

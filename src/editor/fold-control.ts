@@ -1,6 +1,6 @@
 import { foldEffect, foldedRanges, unfoldEffect } from '@codemirror/language';
 import { EditorSelection, type EditorState, type StateEffect } from '@codemirror/state';
-import { allFoldSpans, foldLookup, type FoldSpan } from '../outline/fold';
+import { allFoldSpans, foldLookup, isFoldable, type FoldSpan } from '../outline/fold';
 import { itemStartingAt } from '../outline/item-lookup';
 import { parseOutline } from '../outline/outline-tree';
 import type { ZoomRange } from '../outline/zoom';
@@ -111,7 +111,7 @@ export function toggleBranch(target: ZoomTarget, startLine: number, deep: boolea
 	const tree = parseOutline(state.doc.toJSON(), state.tabSize);
 	const item = itemStartingAt(tree, startLine);
 	if (!item) return 'not-a-list-item';
-	if (item.children.length === 0) return 'no-children';
+	if (!isFoldable(item)) return 'no-children';
 	const span = { fromLine: item.startLine, toLine: item.endLine };
 	const folded = isFolded(state, startLine);
 	const spans = deep ? allFoldSpans(state.doc.toJSON(), state.tabSize, span) : [span];
@@ -132,7 +132,7 @@ export function toggleBranch(target: ZoomTarget, startLine: number, deep: boolea
 /** Tells whether the item that starts on a line has its children folded. */
 export function isFolded(state: EditorState, startLine: number): boolean {
 	const item = itemStartingAt(parseOutline(state.doc.toJSON(), state.tabSize), startLine);
-	if (!item || item.children.length === 0) return false;
+	if (!item || !isFoldable(item)) return false;
 	const span = { fromLine: item.startLine, toLine: item.endLine };
 	return foldsStartingAt(state, rangeOf(state, span).from).length > 0;
 }

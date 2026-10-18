@@ -6,6 +6,7 @@ export interface CalloutBlock {
 	endLine: number;
 	markerColumn: number;
 	hasChildren: boolean;
+	title: string;
 	markdown: string;
 }
 
@@ -20,7 +21,7 @@ export function startsWithQuote(line: string): boolean {
 }
 
 /** Tells whether an item is a plain bullet whose text opens a callout. */
-function opensCallout(item: OutlineNode): boolean {
+export function opensCallout(item: OutlineNode): boolean {
 	return BULLET_MARKER.test(item.marker) && item.checked === null && CALLOUT_HEAD.test(item.text);
 }
 
@@ -51,6 +52,7 @@ export function findCallouts(
 			endLine,
 			markerColumn: head.length - item.text.length,
 			hasChildren: item.children.length > 0,
+			title: item.text,
 			markdown: [item.text, ...body].join('\n'),
 		};
 	});

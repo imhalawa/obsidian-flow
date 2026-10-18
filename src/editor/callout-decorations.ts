@@ -34,12 +34,11 @@ function isEdited(state: EditorState, block: CalloutBlock): boolean {
 	);
 }
 
-/** Tells whether a fold covers part of the given range. */
-function isFolded(state: EditorState, from: number, to: number): boolean {
+/** Tells whether a fold starts at the end of the head line of a callout, so it hides the body and children. */
+function isFolded(state: EditorState, headEnd: number): boolean {
 	let folded = false;
-	foldedRanges(state).between(from, to, () => {
-		folded = true;
-		return false;
+	foldedRanges(state).between(headEnd, headEnd, (from) => {
+		if (from === headEnd) folded = true;
 	});
 	return folded;
 }
@@ -55,12 +54,15 @@ export function calloutDecorations(
 		if (isEdited(state, block)) continue;
 		const head = doc.line(block.startLine + 1);
 		const bodyEnd = doc.line(block.endLine + 1).to;
-		const drawsGuide = block.hasChildren && !isFolded(state, head.to, bodyEnd);
+		const folded = isFolded(state, head.to);
+		const drawsGuide = block.hasChildren && !folded;
 		builder.add(head.from, head.from, drawsGuide ? calloutParentLine : calloutLine);
 		builder.add(
 			head.from + block.markerColumn,
-			bodyEnd,
-			Decoration.replace({ widget: makeWidget(block.markdown) }),
+			folded ? head.to : bodyEnd,
+			Decoration.replace({
+				widget: makeWidget(folded ? block.title : block.markdown),
+			}),
 		);
 		if (block.endLine + 2 > doc.lines) continue;
 		const next = doc.line(block.endLine + 2);
