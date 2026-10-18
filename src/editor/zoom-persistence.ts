@@ -8,8 +8,8 @@ const windowTimers: SessionTimers = {
 	defer: (task) => {
 		void Promise.resolve().then(task);
 	},
-	later: (task, delayMs) => activeWindow.setTimeout(task, delayMs),
-	cancel: (id) => activeWindow.clearTimeout(id),
+	later: (task, delayMs) => window.setTimeout(task, delayMs),
+	cancel: (id) => window.clearTimeout(id),
 };
 
 /** Returns the extension that restores and remembers the zoom of the note shown in each editor. */
