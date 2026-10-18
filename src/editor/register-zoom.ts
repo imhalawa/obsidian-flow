@@ -5,7 +5,7 @@ import { zoomExtension } from './zoom-extension';
 import { ZoomMemory } from './zoom-memory';
 import { zoomPersistence } from './zoom-persistence';
 
-export const ZOOM_STORAGE_KEY = 'flow-outliner-zoom';
+export const ZOOM_STORAGE_KEY = 'roamer-zoom';
 
 export interface ZoomPluginHost {
 	rememberZoom(): boolean;
@@ -18,6 +18,7 @@ export function registerZoom(plugin: Plugin, host: ZoomPluginHost): ZoomMemory {
 	const app = plugin.app;
 	const memory = new ZoomMemory(
 		{
+			// TODO(obsidian-update): app.loadLocalStorage/saveLocalStorage are thin API; check they still exist after updates. See docs/obsidian-internals.md.
 			read: () => app.loadLocalStorage(ZOOM_STORAGE_KEY) as unknown,
 			write: (data) => app.saveLocalStorage(ZOOM_STORAGE_KEY, data),
 		},

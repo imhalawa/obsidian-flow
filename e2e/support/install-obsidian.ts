@@ -14,14 +14,14 @@ interface SnapInfo {
 
 /** Returns the directory that holds the downloaded Obsidian build. */
 export function cacheDirectory(): string {
-	return process.env['FLOW_E2E_CACHE'] ?? join(process.cwd(), '.e2e-cache');
+	return process.env['ROAMER_E2E_CACHE'] ?? join(process.cwd(), '.e2e-cache');
 }
 
 /** Returns the path of the Obsidian binary, downloading and unpacking it on first use. */
 export function ensureObsidian(): string {
 	if (process.platform === 'win32')
 		return (
-			process.env['FLOW_E2E_OBSIDIAN'] ??
+			process.env['ROAMER_E2E_OBSIDIAN'] ??
 			join(process.env['LOCALAPPDATA'] ?? '', 'Programs', 'Obsidian', 'Obsidian.exe')
 		);
 	const cache = cacheDirectory();

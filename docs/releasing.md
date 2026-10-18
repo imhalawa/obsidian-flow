@@ -48,7 +48,7 @@ Not done yet. Obsidian reviews a plugin once, after a pull request to [obsidianm
 
 - A public repository with `README.md` and `LICENSE` at the root.
 - A published (not draft) GitHub release whose tag equals the `manifest.json` version, with `main.js`, `manifest.json` and `styles.css` attached.
-- An entry with `id`, `name`, `author`, `description` and `repo`. They must match the manifest and be sentence case. The id `flow-outliner` can never change afterwards.
+- An entry with `id`, `name`, `author`, `description` and `repo`. They must match the manifest and be sentence case. The id `roamer` can never change afterwards.
 - A pass through the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines) and [submission requirements](https://docs.obsidian.md/Plugins/Releasing/Submission+requirements+for+plugins). Reviewers read the code, so keep network calls, `innerHTML` and Node-only APIs out.
 
 After approval, later versions need no new review. Users get them from new GitHub releases.

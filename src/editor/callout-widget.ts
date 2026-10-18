@@ -2,13 +2,13 @@ import { WidgetType, type EditorView } from '@codemirror/view';
 import { Component, MarkdownRenderer, editorInfoField, type App } from 'obsidian';
 import { CALLOUT_LINE_CLASS } from './callout-decorations';
 
-export const CALLOUT_WIDGET_CLASS = 'flow-callout-widget';
-const SHIFT_PROPERTY = '--flow-bullet-shift';
-const GUIDE_X_PROPERTY = '--flow-guide-x';
-const GUIDE_TOP_PROPERTY = '--flow-guide-top';
+export const CALLOUT_WIDGET_CLASS = 'roamer-callout-widget';
+const SHIFT_PROPERTY = '--roamer-bullet-shift';
+const GUIDE_X_PROPERTY = '--roamer-guide-x';
+const GUIDE_TOP_PROPERTY = '--roamer-guide-top';
 const GUIDE_GAP = 6;
 const WRAP_DISTANCE = 8;
-const LAYOUT_KEY = 'flow-callout-layout';
+const LAYOUT_KEY = 'roamer-callout-layout';
 const INTERACTIVE = 'a, button, input, .callout-fold';
 const components = new WeakMap<HTMLElement, Component>();
 const observers = new WeakMap<HTMLElement, ResizeObserver>();
@@ -21,6 +21,7 @@ export function layoutCallouts(view: EditorView): void {
 			Array.from(
 				view.contentDOM.querySelectorAll<HTMLElement>(`.${CALLOUT_LINE_CLASS}`),
 			).flatMap((line) => {
+				// TODO(obsidian-update): undocumented Obsidian callout and bullet markup (.list-bullet, .callout-title); layout breaks if renamed. See docs/obsidian-internals.md.
 				const bullet = line.querySelector('.list-bullet');
 				const title = line.querySelector('.callout-title');
 				const widget = line.querySelector(`.${CALLOUT_WIDGET_CLASS}`);

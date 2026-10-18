@@ -33,7 +33,7 @@ interface LineRange {
 	last: number;
 }
 
-const USER_EVENT = 'flow.drag-move';
+const USER_EVENT = 'roamer.drag-move';
 
 /** Returns the document offset of the start of a line. */
 function lineStart(lines: readonly string[], lineIndex: number): number {

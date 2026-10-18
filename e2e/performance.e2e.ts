@@ -50,10 +50,10 @@ describe('performance on a large note', () => {
 
 	it('zooms into an item and out again quickly', async () => {
 		const zoomIn = await measure(
-			`editor.setCursor({ line: ${Math.floor(LINES / 2)}, ch: 3 }); await frame(); const t = performance.now(); app.commands.executeCommandById('flow-outliner:zoom-in'); await frame(); return performance.now() - t;`,
+			`editor.setCursor({ line: ${Math.floor(LINES / 2)}, ch: 3 }); await frame(); const t = performance.now(); app.commands.executeCommandById('roamer:zoom-in'); await frame(); return performance.now() - t;`,
 		);
 		const zoomOut = await measure(
-			`const t = performance.now(); app.commands.executeCommandById('flow-outliner:zoom-reset'); await frame(); return performance.now() - t;`,
+			`const t = performance.now(); app.commands.executeCommandById('roamer:zoom-reset'); await frame(); return performance.now() - t;`,
 		);
 		report('zoom in ms', zoomIn.toFixed(0));
 		report('zoom reset ms', zoomOut.toFixed(0));
@@ -63,10 +63,10 @@ describe('performance on a large note', () => {
 
 	it('folds and unfolds every item quickly', async () => {
 		const fold = await measure(
-			`editor.setCursor({ line: 0, ch: 0 }); const t = performance.now(); app.commands.executeCommandById('flow-outliner:fold-all'); await frame(); return performance.now() - t;`,
+			`editor.setCursor({ line: 0, ch: 0 }); const t = performance.now(); app.commands.executeCommandById('roamer:fold-all'); await frame(); return performance.now() - t;`,
 		);
 		const unfold = await measure(
-			`const t = performance.now(); app.commands.executeCommandById('flow-outliner:unfold-all'); await frame(); return performance.now() - t;`,
+			`const t = performance.now(); app.commands.executeCommandById('roamer:unfold-all'); await frame(); return performance.now() - t;`,
 		);
 		report('fold all ms', fold.toFixed(0));
 		report('unfold all ms', unfold.toFixed(0));
@@ -100,7 +100,7 @@ describe('performance on a large note', () => {
 	it('moves an item in a large note quickly', async () => {
 		await editor.caret(Math.floor(LINES / 2), 3);
 		const moved = await measure(
-			`const t = performance.now(); app.commands.executeCommandById('flow-outliner:move-item-down'); await frame(); return performance.now() - t;`,
+			`const t = performance.now(); app.commands.executeCommandById('roamer:move-item-down'); await frame(); return performance.now() - t;`,
 		);
 		report('move item ms', moved.toFixed(0));
 		expect(moved).toBeLessThan(500);
@@ -119,10 +119,10 @@ describe('overhead compared with the plugin turned off', () => {
 		await NoteEditor.open(app, NOTE);
 		await new Promise((resolve) => setTimeout(resolve, 500));
 		const withPlugin = await typing();
-		await app.evaluate('app.plugins.disablePlugin("flow-outliner").then(() => true)');
+		await app.evaluate('app.plugins.disablePlugin("roamer").then(() => true)');
 		await new Promise((resolve) => setTimeout(resolve, 500));
 		const without = await typing();
-		await app.evaluate('app.plugins.enablePlugin("flow-outliner").then(() => true)');
+		await app.evaluate('app.plugins.enablePlugin("roamer").then(() => true)');
 		report('typing with plugin ms', withPlugin.toFixed(1));
 		report('typing without plugin ms', without.toFixed(1));
 		expect(withPlugin).toBeLessThan(without * 1.5 + 5);
@@ -130,7 +130,7 @@ describe('overhead compared with the plugin turned off', () => {
 
 	it('loads and unloads quickly', async () => {
 		const timings = await app.evaluate<{ off: number; on: number }>(
-			`(async () => { const a = performance.now(); await app.plugins.disablePlugin("flow-outliner"); const b = performance.now(); await app.plugins.enablePlugin("flow-outliner"); const c = performance.now(); return { off: b - a, on: c - b }; })()`,
+			`(async () => { const a = performance.now(); await app.plugins.disablePlugin("roamer"); const b = performance.now(); await app.plugins.enablePlugin("roamer"); const c = performance.now(); return { off: b - a, on: c - b }; })()`,
 		);
 		report('plugin unload ms', timings.off.toFixed(0));
 		report('plugin load ms', timings.on.toFixed(0));

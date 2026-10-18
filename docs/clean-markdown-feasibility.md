@@ -1,4 +1,4 @@
-# Can Flow Outliner go further without changing clean Markdown?
+# Can Roamer go further without changing clean Markdown?
 
 Date: 2026-10-15. Method: desk research on public sources (READMEs, source code, GitHub issues). Plugins covered: vslinko/obsidian-outliner, vslinko/obsidian-zoom, and Logseqer.
 
@@ -54,7 +54,7 @@ Hard limit: without ids, there is no stable block identity across edits. Anythin
 
 Themes from public issues, with counts of what was read.
 
-| Theme                                       | Evidence                                                                                                                                                                        | Implication for Flow                                                          |
+| Theme                                       | Evidence                                                                                                                                                                        | Implication for Roamer                                                        |
 | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | Drag and drop breaks after Obsidian updates | Outliner 444, 489, 506, 598 (Obsidian 1.12.7, 2026-06), 588 (pop-out windows)                                                                                                   | Highest regression risk. Test it, or ship it later.                           |
 | Fold state is lost or changes unexpectedly  | Zoom 92 (zoom out unfolds everything), Outliner 549 and 550 (folded block, vim), 258 (conflict with Obsidian's fold memory), 186                                                | Own fold state explicitly. Persist it and test the round trip.                |
@@ -87,7 +87,7 @@ Jobs 1, 2 and 4 need no markup. Only job 3 does, and only `^id`.
 
 ## Risks to plan for
 
-- Outliner leans on undocumented editor internals, so a new Obsidian release can break it. Flow should isolate those calls in one adapter module with tests.
+- Outliner leans on undocumented editor internals, so a new Obsidian release can break it. Roamer should isolate those calls in one adapter module with tests.
 - Sidecar state can go stale after sync or external edits. Always fall back to showing the full note.
 - Zoom's design is simple. Porting its idea is cheap, but its fold-setting dependency is a known pain.
 - Both source plugins are MIT. See `docs/reference-plugins.md` in the repo for the attribution rule.

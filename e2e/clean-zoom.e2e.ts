@@ -61,16 +61,16 @@ describe('clean zoom in real Obsidian', () => {
 		await wait(300);
 		const count = () =>
 			app.evaluate<number>(
-				'activeDocument.querySelectorAll(".workspace-leaf.mod-active .cm-line.flow-zoom-line").length',
+				'activeDocument.querySelectorAll(".workspace-leaf.mod-active .cm-line.roamer-zoom-line").length',
 			);
 		expect(await count()).toBe(2);
 		await app.evaluate(
-			'(app.plugins.plugins["flow-outliner"].settings.cleanZoom = false, app.workspace.updateOptions(), true)',
+			'(app.plugins.plugins["roamer"].settings.cleanZoom = false, app.workspace.updateOptions(), true)',
 		);
 		await wait(300);
 		expect(await count()).toBe(0);
 		await app.evaluate(
-			'(app.plugins.plugins["flow-outliner"].settings.cleanZoom = true, app.workspace.updateOptions(), true)',
+			'(app.plugins.plugins["roamer"].settings.cleanZoom = true, app.workspace.updateOptions(), true)',
 		);
 		await wait(300);
 		expect(await count()).toBe(2);
@@ -82,21 +82,24 @@ describe('clean zoom in real Obsidian', () => {
 		await editor.runCommand('zoom-in');
 		await wait(300);
 		const shift = await app.evaluate<string>(
-			'activeDocument.querySelector(".workspace-leaf.mod-active .cm-editor").style.getPropertyValue("--flow-zoom-shift")',
+			'activeDocument.querySelector(".workspace-leaf.mod-active .cm-editor").style.getPropertyValue("--roamer-zoom-shift")',
 		);
 		expect(parseFloat(shift)).toBeGreaterThan(30);
 	});
 
-	it('hides the indentation guides of the levels that are not shown', async () => {
+	it('hides the indent steps of the levels that are not shown without clipping the line', async () => {
 		const editor = await NoteEditor.open(app, NOTE);
 		await wait(300);
 		await editor.caret(2, 5);
 		await editor.runCommand('zoom-in');
 		await wait(300);
-		const clipped = await app.evaluate<boolean>(
-			`(() => { const line = activeDocument.querySelector(".workspace-leaf.mod-active .cm-line.flow-zoom-line"); const style = getComputedStyle(line); return style.clipPath !== "none" && parseFloat(style.insetInlineStart) < 0; })()`,
+		const result = await app.evaluate<{ clip: string; offset: number; hidden: string[] }>(
+			`(() => { const line = activeDocument.querySelector(".workspace-leaf.mod-active .cm-line.roamer-zoom-line"); const style = getComputedStyle(line); const hidden = Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .roamer-zoom-hidden-indent")).flatMap((el) => [getComputedStyle(el).visibility, getComputedStyle(el.closest(".cm-indent")).visibility]); return { clip: style.clipPath, offset: parseFloat(style.insetInlineStart), hidden }; })()`,
 		);
-		expect(clipped).toBe(true);
+		expect(result.clip).toBe('none');
+		expect(result.offset).toBeLessThan(0);
+		expect(result.hidden.length).toBeGreaterThan(0);
+		for (const visibility of result.hidden) expect(visibility).toBe('hidden');
 	});
 
 	it('shifts nothing when the zoomed item is at the top level', async () => {
@@ -105,7 +108,7 @@ describe('clean zoom in real Obsidian', () => {
 		await editor.runCommand('zoom-in');
 		await wait(300);
 		const marked = await app.evaluate<number>(
-			'activeDocument.querySelectorAll(".workspace-leaf.mod-active .cm-line.flow-zoom-line").length',
+			'activeDocument.querySelectorAll(".workspace-leaf.mod-active .cm-line.roamer-zoom-line").length',
 		);
 		expect(marked).toBe(0);
 	});
@@ -117,7 +120,7 @@ describe('clean zoom in real Obsidian', () => {
 		await editor.runCommand('zoom-reset');
 		await wait(300);
 		const marked = await app.evaluate<number>(
-			'activeDocument.querySelectorAll(".workspace-leaf.mod-active .cm-line.flow-zoom-line").length',
+			'activeDocument.querySelectorAll(".workspace-leaf.mod-active .cm-line.roamer-zoom-line").length',
 		);
 		expect(marked).toBe(0);
 	});
@@ -135,18 +138,92 @@ describe('clean zoom in real Obsidian', () => {
 
 	it('keeps the indentation when the setting is off', async () => {
 		await app.evaluate(
-			'(app.plugins.plugins["flow-outliner"].settings.cleanZoom = false, app.workspace.updateOptions(), true)',
+			'(app.plugins.plugins["roamer"].settings.cleanZoom = false, app.workspace.updateOptions(), true)',
 		);
 		const editor = await NoteEditor.open(app, NOTE);
 		await editor.caret(2, 5);
 		await editor.runCommand('zoom-in');
 		await wait(300);
 		const marked = await app.evaluate<number>(
-			'activeDocument.querySelectorAll(".workspace-leaf.mod-active .cm-line.flow-zoom-line").length',
+			'activeDocument.querySelectorAll(".workspace-leaf.mod-active .cm-line.roamer-zoom-line").length',
 		);
 		expect(marked).toBe(0);
 		await app.evaluate(
-			'(app.plugins.plugins["flow-outliner"].settings.cleanZoom = true, app.workspace.updateOptions(), true)',
+			'(app.plugins.plugins["roamer"].settings.cleanZoom = true, app.workspace.updateOptions(), true)',
 		);
+	});
+});
+
+describe('caret and selection while zoomed in real Obsidian', () => {
+	const SELECT = `(() => {
+		const cm = app.workspace.activeEditor.editor.cm;
+		cm.focus();
+		cm.dispatch({ selection: { anchor: cm.state.doc.line(3).from + 3, head: cm.state.doc.line(4).to } });
+		return true;
+	})()`;
+
+	const MEASURE = `(() => {
+		const cm = app.workspace.activeEditor.editor.cm;
+		const cursor = cm.dom.querySelector('.cm-cursor-primary');
+		const transform = (selector) => getComputedStyle(cm.dom.querySelector(selector)).transform;
+		return {
+			caretGap: cursor ? Math.abs(cursor.getBoundingClientRect().left - cm.coordsAtPos(cm.state.selection.main.head).left) : null,
+			cursorLayer: transform('.cm-cursorLayer'),
+			selectionLayer: transform('.cm-selectionLayer'),
+		};
+	})()`;
+
+	async function zoomedWithSelection(): Promise<{
+		caretGap: number | null;
+		cursorLayer: string;
+		selectionLayer: string;
+	}> {
+		const editor = await NoteEditor.open(app, NOTE);
+		await editor.caret(3, 5);
+		await editor.runCommand('zoom-in');
+		await app.evaluate(SELECT);
+		await wait(400);
+		return app.evaluate(MEASURE);
+	}
+
+	it('draws the caret where the text is', async () => {
+		const measured = await zoomedWithSelection();
+		expect(measured.caretGap).not.toBeNull();
+		expect(measured.caretGap).toBeLessThan(2);
+	});
+
+	it('leaves the caret and selection layers where the editor puts them', async () => {
+		const measured = await zoomedWithSelection();
+		expect(measured.cursorLayer).toBe('none');
+		expect(measured.selectionLayer).toBe('none');
+	});
+});
+
+describe('select all while zoomed in real Obsidian', () => {
+	const SELECTED = `(() => { const cm = app.workspace.activeEditor.editor.cm; const main = cm.state.selection.main; return cm.state.sliceDoc(main.from, main.to); })()`;
+
+	it('selects the zoomed item with what is under it and never the hidden lines', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		await editor.caret(2, 5);
+		await editor.runCommand('zoom-in');
+		await wait(300);
+		await app.pressKey('a', false, true);
+		await wait(150);
+		expect(await app.evaluate<string>(SELECTED)).toBe('c');
+		await app.pressKey('a', false, true);
+		await wait(150);
+		expect(await app.evaluate<string>(SELECTED)).toBe('c\n\t\t\t- d');
+		await app.pressKey('a', false, true);
+		await wait(150);
+		expect(await app.evaluate<string>(SELECTED)).toBe('c\n\t\t\t- d');
+	});
+
+	it('still selects the whole note when nothing is zoomed', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		await editor.caret(2, 5);
+		await app.pressKey('a', false, true);
+		await app.pressKey('a', false, true);
+		await wait(150);
+		expect(await app.evaluate<string>(SELECTED)).toBe(NOTE);
 	});
 });

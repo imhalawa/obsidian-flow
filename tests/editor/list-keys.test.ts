@@ -6,7 +6,9 @@ import {
 	enterInEmptyItem,
 	enterInParentItem,
 	homeInItem,
+	keepBulletOnBackspace,
 	selectItemText,
+	selectZoomedRange,
 } from '../../src/editor/list-keys';
 import { foldItem } from '../../src/editor/fold-control';
 import { zoomIn } from '../../src/editor/zoom-control';
@@ -44,7 +46,7 @@ describe('enterInEmptyItem', () => {
 		const target = new FakeZoomTarget('- a\n- ', 6);
 		enterInEmptyItem(target);
 		expect(target.dispatched).toHaveLength(1);
-		expect(target.dispatched[0]?.userEvent).toBe('flow.list-enter');
+		expect(target.dispatched[0]?.userEvent).toBe('roamer.list-enter');
 	});
 
 	it('scrolls the new cursor into view', () => {
@@ -103,7 +105,7 @@ describe('backspaceInItem', () => {
 		expect(backspaceInItem(target)).toBe(true);
 		expect(target.text).toBe('- onetwo');
 		expect(target.caret).toBe(5);
-		expect(target.dispatched[0]?.userEvent).toBe('flow.list-backspace');
+		expect(target.dispatched[0]?.userEvent).toBe('roamer.list-backspace');
 	});
 
 	it('does nothing in the middle of the text', () => {
@@ -249,7 +251,7 @@ describe('enterInParentItem', () => {
 		const target = new FakeZoomTarget('- a\n  - b', 3);
 		enterInParentItem(target);
 		expect(target.dispatched).toHaveLength(1);
-		expect(target.dispatched[0]?.userEvent).toBe('flow.list-enter');
+		expect(target.dispatched[0]?.userEvent).toBe('roamer.list-enter');
 	});
 
 	it('does nothing for an item without children', () => {
@@ -276,5 +278,61 @@ describe('enterInParentItem', () => {
 		expect(enterInParentItem(target)).toBe(true);
 		expect(foldedRanges(target.state).size).toBe(0);
 		expect(target.text).toBe('- a\n  - \n  - b');
+	});
+});
+
+describe('keepBulletOnBackspace', () => {
+	it.each([
+		['the start of the text of a bullet that has children', '- a\n  - b\n    - c', 8],
+		['the start of the text of the first bullet', '- a', 2],
+		['the start of the text of a task', '- x\n- [ ] a', 10],
+	])('does nothing at %s, so the bullet is kept', (_name, text, caret) => {
+		const target = new FakeZoomTarget(text, caret);
+		expect(keepBulletOnBackspace(target)).toBe(true);
+		expect(target.text).toBe(text);
+	});
+
+	it('leaves Backspace to Obsidian in an empty item', () => {
+		const target = new FakeZoomTarget('- ', 2);
+		expect(keepBulletOnBackspace(target)).toBe(false);
+	});
+
+	it.each([
+		['inside the text', '- abc', 4],
+		['with a selection', '- abc', 2],
+		['on a line that is not a list item', 'text', 0],
+	])('leaves Backspace alone %s', (_name, text, caret) => {
+		const target = new FakeZoomTarget(text, caret);
+		if (_name === 'with a selection') {
+			target.state = target.state.update({ selection: EditorSelection.range(2, 4) }).state;
+		}
+		expect(keepBulletOnBackspace(target)).toBe(false);
+	});
+});
+
+describe('selectZoomedRange', () => {
+	const NOTE = '- a\n- b\n  - c\n  - d\n- e';
+
+	it('selects the zoomed item and what is under it, not the whole note', () => {
+		const target = new FakeZoomTarget(NOTE, 6);
+		zoomIn(target);
+		expect(selectZoomedRange(target)).toBe(true);
+		expect(target.state.sliceDoc(target.selected.from, target.selected.to)).toBe(
+			'b\n  - c\n  - d',
+		);
+	});
+
+	it('stays within the zoom when it is pressed again', () => {
+		const target = new FakeZoomTarget(NOTE, 6);
+		zoomIn(target);
+		selectZoomedRange(target);
+		const first = target.selected;
+		expect(selectZoomedRange(target)).toBe(true);
+		expect(target.selected).toEqual(first);
+	});
+
+	it('does nothing while the whole note is shown', () => {
+		const target = new FakeZoomTarget(NOTE, 6);
+		expect(selectZoomedRange(target)).toBe(false);
 	});
 });

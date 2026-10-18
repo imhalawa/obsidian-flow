@@ -163,13 +163,13 @@ describe('drag and drop in real Obsidian', () => {
 
 	it('does not drag when the setting is off', async () => {
 		await app.evaluate(
-			'(app.plugins.plugins["flow-outliner"].settings.dragItems = false, app.workspace.updateOptions(), true)',
+			'(app.plugins.plugins["roamer"].settings.dragItems = false, app.workspace.updateOptions(), true)',
 		);
 		const pane = await open(NOTE);
 		await dragTo(pane, 3, 0, 'top', null);
 		expect(await pane.text()).toBe(NOTE);
 		await app.evaluate(
-			'(app.plugins.plugins["flow-outliner"].settings.dragItems = true, app.workspace.updateOptions(), true)',
+			'(app.plugins.plugins["roamer"].settings.dragItems = true, app.workspace.updateOptions(), true)',
 		);
 	});
 
@@ -200,7 +200,7 @@ describe('drag and drop in real Obsidian', () => {
 	it('drops an item as a sibling after a folded item with children', async () => {
 		const pane = await open(NOTE);
 		await app.evaluate(
-			'(app.workspace.activeEditor.editor.setCursor({ line: 0, ch: 3 }), app.commands.executeCommandById("flow-outliner:fold-item"), true)',
+			'(app.workspace.activeEditor.editor.setCursor({ line: 0, ch: 3 }), app.commands.executeCommandById("roamer:fold-item"), true)',
 		);
 		await wait(150);
 		await dragTo(pane, 4, 0, 'bottom', null);

@@ -2,13 +2,13 @@ import { Compartment, EditorState, type Extension } from '@codemirror/state';
 import { EditorView, type ViewUpdate } from '@codemirror/view';
 import { describe, expect, it } from 'vitest';
 import { zoomChange, zoomField } from '../../src/editor/zoom-field';
-import FlowPlugin from '../../src/main';
+import RoamerPlugin from '../../src/main';
 import { FakeApp } from '../support/fake-app';
 
 const NOTE = ['# One', '## Two', '- a', '- b', '- c'].join('\n');
 
 const loadedExtensions = async (): Promise<Extension[]> => {
-	const plugin = new FlowPlugin(new FakeApp() as never, {} as never);
+	const plugin = new RoamerPlugin(new FakeApp() as never, {} as never);
 	await plugin.onload();
 	return (plugin as unknown as { editorExtensions: Extension[] }).editorExtensions;
 };

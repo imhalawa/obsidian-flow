@@ -44,18 +44,22 @@ async function zoomedAt(width: number): Promise<NoteEditor> {
 }
 
 describe('a long zoom path in a real window', () => {
-	it.each([
-		[1950, ['Keep the watering schedule up to date in a clear and tidy way']],
-		[1600, []],
-	])(
+	it.each([1950, 1600])(
 		'cuts only the crumbs longer than the maximum width in a window %i px wide',
-		async (width, cut) => {
+		async (width) => {
 			const editor = await zoomedAt(width);
-			expect(await editor.clippedHeaderTexts()).toEqual(cut);
+			expect(await editor.clippedPanelTexts()).toEqual([
+				'Keep the watering schedule up to date in a clear and tidy way',
+			]);
 		},
 	);
 
-	it.each([1950, 1600, 1200])(
+	it('shows every level in a window 1950 px wide', async () => {
+		const editor = await zoomedAt(1950);
+		expect(await editor.crumbs()).toHaveLength(7);
+	});
+
+	it.each([1600, 1200])(
 		'keeps the first level and the current item with a … crumb between in a window %i px wide',
 		async (width) => {
 			const editor = await zoomedAt(width);

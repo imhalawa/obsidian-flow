@@ -1,5 +1,6 @@
 import type { EditorView } from '@codemirror/view';
 
+// TODO(obsidian-update): undocumented class of Obsidian's fold arrow; if it changes, fold clicks, bullet hover and drag start misbehave. See docs/obsidian-internals.md.
 const FOLD_INDICATOR = '.cm-fold-indicator';
 
 interface ClosestSearch {

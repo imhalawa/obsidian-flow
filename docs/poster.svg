@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="Roamer: outline your notes">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1b1530"/>
+      <stop offset="1" stop-color="#2e1f5e"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  <g font-family="Segoe UI, Helvetica, Arial, sans-serif" fill="#f2eeff">
+    <text x="80" y="170" font-size="96" font-weight="700">Roamer</text>
+    <text x="80" y="235" font-size="40" fill="#b9a6ff">Outline your notes.</text>
+    <text x="80" y="300" font-size="24" fill="#d8ceff">Zoom, fold and drag every bullet.</text>
+    <text x="80" y="335" font-size="24" fill="#d8ceff">Still plain Markdown. Obsidian plugin.</text>
+    <text x="80" y="370" font-size="24" fill="#d8ceff">Bullets stay out of your text. Same spacing in every theme.</text>
+    <g font-size="20" fill="#2e1f5e" font-weight="600">
+      <rect x="80" y="410" width="130" height="44" rx="22" fill="#b9a6ff"/><text x="110" y="439">Zoom</text>
+      <rect x="226" y="410" width="110" height="44" rx="22" fill="#b9a6ff"/><text x="252" y="439">Fold</text>
+      <rect x="352" y="410" width="110" height="44" rx="22" fill="#b9a6ff"/><text x="378" y="439">Drag</text>
+    </g>
+    <text x="80" y="590" font-size="22" fill="#b9a6ff">github.com/imhalawa/obsidian-flow</text>
+  </g>
+  <g font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="26" fill="#f2eeff">
+    <rect x="680" y="110" width="440" height="455" rx="20" fill="#120d22" stroke="#4a3a8a" stroke-width="2"/>
+    <g fill="#b9a6ff">
+      <circle cx="725" cy="177" r="7"/><circle cx="775" cy="237" r="7"/><circle cx="825" cy="297" r="7"/>
+      <circle cx="825" cy="357" r="7"/><circle cx="775" cy="417" r="7"/><circle cx="725" cy="477" r="7"/>
+    </g>
+    <g stroke="#4a3a8a" stroke-width="2"><line x1="725" y1="190" x2="725" y2="464"/><line x1="775" y1="250" x2="775" y2="404"/></g>
+    <text x="745" y="186">Project</text>
+    <text x="795" y="246">Ideas</text>
+    <text x="845" y="306">Zoom into a bullet</text>
+    <text x="845" y="366">Fold a branch</text>
+    <text x="795" y="426">Tasks</text>
+    <text x="745" y="486">Reading list</text>
+  </g>
+</svg>

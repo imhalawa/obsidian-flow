@@ -54,7 +54,7 @@ function indicatorMarkers(view: EditorView): RectangleMarker[] {
 	const y = top - origin.top + view.scrollDOM.scrollTop - INDICATOR_HEIGHT / 2;
 	const right =
 		view.contentDOM.getBoundingClientRect().right - origin.left + view.scrollDOM.scrollLeft;
-	return [new RectangleMarker('flow-drop-indicator', x, y, right - x, INDICATOR_HEIGHT)];
+	return [new RectangleMarker('roamer-drop-indicator', x, y, right - x, INDICATOR_HEIGHT)];
 }
 
 /** Returns the extension that draws the drop indicator of the item being dragged. */
@@ -63,7 +63,7 @@ export function dropIndicator(): Extension {
 		dropIndicatorField,
 		layer({
 			above: true,
-			class: 'flow-drop-layer',
+			class: 'roamer-drop-layer',
 			markers: indicatorMarkers,
 			update: (update) =>
 				update.docChanged ||

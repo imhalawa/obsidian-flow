@@ -2,7 +2,7 @@ import { unfoldEffect } from '@codemirror/language';
 import { StateEffect, StateField, type EditorState, type Transaction } from '@codemirror/state';
 import { Decoration, EditorView, type DecorationSet } from '@codemirror/view';
 
-export const REVEALED_LINE_CLASS = 'flow-line-revealed';
+export const REVEALED_LINE_CLASS = 'roamer-line-revealed';
 
 export const clearReveal = StateEffect.define<null>();
 

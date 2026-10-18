@@ -131,11 +131,11 @@ describe('switching and removing notes while zoomed', () => {
 
 	it('keeps no more than the most recent notes in the zoom memory', async () => {
 		await app.evaluate(
-			`(async () => { for (let i = 0; i < 230; i += 1) { const file = await app.vault.create('cap-' + i + '.md', '- a\\n\\t- b'); await app.workspace.getLeaf(false).openFile(file); const cm = app.workspace.activeEditor?.editor?.cm; if (cm) cm.dispatch({ selection: { anchor: 6 } }); app.commands.executeCommandById('flow-outliner:zoom-in'); } return true; })()`,
+			`(async () => { for (let i = 0; i < 230; i += 1) { const file = await app.vault.create('cap-' + i + '.md', '- a\\n\\t- b'); await app.workspace.getLeaf(false).openFile(file); const cm = app.workspace.activeEditor?.editor?.cm; if (cm) cm.dispatch({ selection: { anchor: 6 } }); app.commands.executeCommandById('roamer:zoom-in'); } return true; })()`,
 		);
 		await wait(1500);
 		const remembered = await app.evaluate<number>(
-			`Object.keys(app.loadLocalStorage('flow-outliner-zoom') ?? {}).length`,
+			`Object.keys(app.loadLocalStorage('roamer-zoom') ?? {}).length`,
 		);
 		expect(remembered).toBeGreaterThan(100);
 		expect(remembered).toBeLessThanOrEqual(200);

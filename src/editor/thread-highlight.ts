@@ -6,7 +6,7 @@ import { editorFontSize, firstRow } from './item-geometry';
 import { outlineOfState } from './outline-of-state';
 import { threadHoverField } from './thread-hover-field';
 
-const HIGHLIGHT_CLASS = 'flow-thread-highlight';
+const HIGHLIGHT_CLASS = 'roamer-thread-highlight';
 const BULLET_CLEARANCE_EMS = 0.4;
 
 /** Returns the marker that draws the hovered thread line from just below the bullet of its parent to the bottom of its last descendant. */
@@ -45,7 +45,7 @@ export function threadHighlight(): Extension {
 		threadHoverField,
 		layer({
 			above: false,
-			class: 'flow-thread-layer',
+			class: 'roamer-thread-layer',
 			update: needsRedraw,
 			markers: highlightMarkers,
 		}),

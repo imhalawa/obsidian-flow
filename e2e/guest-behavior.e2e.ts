@@ -7,6 +7,9 @@ let app: ObsidianApp;
 
 beforeAll(async () => {
 	app = await ObsidianApp.start();
+	await app.evaluate(
+		'(app.plugins.plugins["roamer"].settings.keepBulletOutOfSelection = false, app.workspace.updateOptions(), true)',
+	);
 });
 
 afterAll(async () => {
@@ -30,7 +33,7 @@ async function play(state: string, action: Action, shift: boolean): Promise<stri
 	return selection ? renderMarked(await editor.text(), selection) : '';
 }
 
-/** Results that Obsidian gives without the plugin, which the plugin must leave as they are. */
+/** Results that Obsidian gives without the plugin, which the plugin must leave as they are; the suite turns the bullet setting off, because that setting deliberately keeps the cursor out of a marker. */
 const NATIVE_RESULTS: [string, string, Action, boolean, string][] = [
 	['typing in a list item', '- one|', 'type', false, '- onex|'],
 	['typing in a heading', '# head|', 'type', false, '# headx|'],

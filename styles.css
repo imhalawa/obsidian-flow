@@ -1,19 +1,13 @@
-.flow-has-crumbs {
-	min-width: 0;
-	overflow: hidden;
+.roamer-crumb-panel {
+	padding: var(--size-2-1) var(--size-4-3);
+	border-bottom: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
 }
 
-.flow-has-crumbs > .view-header-title-parent {
-	min-width: 0;
-	flex-shrink: 8;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-.flow-crumbs {
-	--flow-crumb-max-width: 24em;
-	--flow-crumb-expanded-max-width: 100em;
-	--flow-crumb-chevron-width: 0.75em;
+.roamer-crumbs {
+	--roamer-crumb-max-width: 24em;
+	--roamer-crumb-expanded-max-width: 100em;
+	--roamer-crumb-chevron-width: 0.75em;
 	display: flex;
 	flex: 0 1 auto;
 	align-items: center;
@@ -23,21 +17,21 @@
 	white-space: nowrap;
 }
 
-.flow-crumbs.is-absent {
+.roamer-crumbs.is-absent {
 	display: none;
 }
 
-.flow-crumbs.is-natural .flow-crumbs__crumb {
+.roamer-crumbs.is-natural .roamer-crumbs__crumb {
 	flex: none;
 }
 
-.flow-crumbs__crumb {
+.roamer-crumbs__crumb {
 	position: relative;
 	display: flex;
 	flex: 0 2 auto;
 	align-items: center;
 	min-width: 0;
-	max-width: var(--flow-crumb-max-width);
+	max-width: var(--roamer-crumb-max-width);
 	transition: max-width var(--anim-duration-fast) ease-out;
 	height: auto;
 	padding: 0;
@@ -49,7 +43,7 @@
 	white-space: nowrap;
 }
 
-.flow-crumbs__text {
+.roamer-crumbs__text {
 	min-width: 0;
 	padding: var(--size-2-1) var(--size-4-1);
 	border-radius: var(--radius-s);
@@ -58,10 +52,10 @@
 	white-space: nowrap;
 }
 
-.flow-crumbs__crumb::before {
+.roamer-crumbs__crumb::before {
 	content: '\203A';
 	flex: none;
-	width: var(--flow-crumb-chevron-width);
+	width: var(--roamer-crumb-chevron-width);
 	margin: 0 var(--size-4-1);
 	color: var(--text-muted);
 	font-size: 1.5em;
@@ -69,27 +63,31 @@
 	text-align: center;
 }
 
-.flow-crumbs__crumb:first-child {
+.roamer-crumbs__crumb:first-child {
 	flex-shrink: 4;
 }
 
-.flow-crumbs__crumb.is-current {
+.roamer-crumbs__crumb.is-root::before {
+	content: none;
+}
+
+.roamer-crumbs__crumb.is-current {
 	flex-shrink: 1;
 	color: var(--text-normal);
 	font-weight: var(--font-semibold);
 }
 
-.flow-crumbs__crumb.is-hidden {
+.roamer-crumbs__crumb.is-hidden {
 	display: none;
 }
 
-.flow-crumbs__crumb.is-cut:hover,
-.flow-crumbs__crumb.is-cut:focus-visible {
+.roamer-crumbs__crumb.is-cut:hover,
+.roamer-crumbs__crumb.is-cut:focus-visible {
 	flex-shrink: 0;
-	max-width: var(--flow-crumb-expanded-max-width);
+	max-width: var(--roamer-crumb-expanded-max-width);
 }
 
-.flow-crumbs button.flow-crumbs__crumb {
+.roamer-crumbs button.roamer-crumbs__crumb {
 	height: auto;
 	border: none;
 	background: transparent;
@@ -97,51 +95,48 @@
 	cursor: pointer;
 }
 
-.flow-crumbs button.flow-crumbs__crumb:hover {
+.roamer-crumbs button.roamer-crumbs__crumb:hover {
 	color: var(--text-normal);
 }
 
-.flow-crumbs button.flow-crumbs__crumb:hover .flow-crumbs__text {
+.roamer-crumbs button.roamer-crumbs__crumb:hover .roamer-crumbs__text {
 	background: var(--background-modifier-hover);
 }
 
-.flow-crumbs button.flow-crumbs__crumb:focus-visible {
+.roamer-crumbs button.roamer-crumbs__crumb:focus-visible {
 	outline: none;
 }
 
-.flow-crumbs button.flow-crumbs__crumb:focus-visible .flow-crumbs__text {
+.roamer-crumbs button.roamer-crumbs__crumb:focus-visible .roamer-crumbs__text {
 	box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
 }
 
-.flow-crumbs__more {
+.roamer-crumbs__more {
 	flex-shrink: 0;
 }
 
-.flow-over-item-control .cm-content,
-.flow-over-item-control .cm-line {
+/* TODO(obsidian-update): overrides Obsidian's --list-indent, which Obsidian reads to lay out indents, bullets and fold arrows. See docs/obsidian-internals.md. */
+.markdown-source-view.mod-cm6 .cm-editor.roamer-indent {
+	--list-indent: 2.25em;
+}
+
+.roamer-over-item-control .cm-content,
+.roamer-over-item-control .cm-line {
 	cursor: pointer;
 }
 
-.flow-zoom-line {
+/* TODO(obsidian-update): clean zoom moves lines with a relative offset; may break when Obsidian changes its editor layout. See docs/obsidian-internals.md. */
+.roamer-zoom-line {
 	position: relative;
-	inset-inline-start: calc(var(--flow-zoom-shift, 0px) * -1);
-	clip-path: inset(0 0 0 var(--flow-zoom-shift, 0px));
+	inset-inline-start: calc(var(--roamer-zoom-shift, 0px) * -1);
 }
 
-.flow-zoom-root {
-	clip-path: inset(0 0 0 max(0px, calc(var(--flow-zoom-shift, 0px) - var(--size-4-5))));
+.roamer-zoom-hidden-indent,
+.cm-indent:has(> .roamer-zoom-hidden-indent) {
+	visibility: hidden;
 }
 
-.markdown-source-view.mod-cm6 .flow-zoom-root .cm-indent::before {
-	border-color: transparent;
-}
-
-.flow-zoomed .cm-selectionLayer,
-.flow-zoomed .cm-cursorLayer {
-	transform: translateX(calc(var(--flow-zoom-shift, 0px) * -1));
-}
-
-@keyframes flow-line-reveal {
+@keyframes roamer-line-reveal {
 	from {
 		opacity: 0;
 		transform: translateY(calc(var(--size-4-2) * -1));
@@ -153,10 +148,11 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-	.flow-line-revealed {
-		animation: flow-line-reveal var(--anim-duration-moderate) var(--anim-motion-swing) both;
+	.roamer-line-revealed {
+		animation: roamer-line-reveal var(--anim-duration-moderate) var(--anim-motion-swing) both;
 	}
 
+	/* TODO(obsidian-update): restyles Obsidian's fold arrow through undocumented classes. See docs/obsidian-internals.md. */
 	.markdown-source-view.mod-cm6 .cm-fold-indicator .collapse-indicator {
 		transition: opacity var(--anim-duration-fast) var(--anim-motion-smooth);
 	}
@@ -179,7 +175,7 @@
 	color: var(--icon-color-hover);
 }
 
-.flow-thread-highlight {
+.roamer-thread-highlight {
 	width: var(--size-2-1);
 	transform: translateX(-50%);
 	border-radius: var(--radius-s);
@@ -187,14 +183,14 @@
 	pointer-events: none;
 }
 
-.flow-is-dragging,
-.flow-is-dragging .cm-content,
-.flow-is-dragging .cm-line {
+.roamer-is-dragging,
+.roamer-is-dragging .cm-content,
+.roamer-is-dragging .cm-line {
 	cursor: grabbing;
 	user-select: none;
 }
 
-.flow-drop-indicator {
+.roamer-drop-indicator {
 	border-radius: var(--radius-s);
 	background: var(--interactive-accent);
 	pointer-events: none;
@@ -204,17 +200,20 @@
 	cursor: pointer;
 }
 
-.cm-line.flow-bullet-lit .list-bullet::after {
+.cm-line.roamer-bullet-lit .list-bullet::after {
 	background-color: var(--list-marker-color-hover);
 	box-shadow: 0 0 0 4px var(--background-modifier-hover);
 }
 
-.cm-line.flow-bullet-lit .cm-fold-indicator.is-collapsed ~ .cm-formatting-list .list-bullet::after {
+.cm-line.roamer-bullet-lit
+	.cm-fold-indicator.is-collapsed
+	~ .cm-formatting-list
+	.list-bullet::after {
 	background-color: var(--list-marker-color-collapsed);
 	box-shadow: 0 0 0 4px var(--background-modifier-active-hover);
 }
 
-.cm-line.flow-embed-line > .internal-embed {
+.cm-line.roamer-embed-line > .internal-embed {
 	display: inline-block;
 	box-sizing: border-box;
 	width: calc(100% - 1px);
@@ -223,25 +222,11 @@
 	text-indent: 0;
 }
 
-.cm-line.flow-embed-untitled > .internal-embed > .markdown-embed-title {
+.cm-line.roamer-embed-untitled > .internal-embed > .markdown-embed-title {
 	display: none;
 }
 
-.view-header-title.flow-title-link {
-	cursor: pointer;
-	border-radius: var(--radius-s);
-}
-
-.view-header-title.flow-title-link:hover {
-	color: var(--text-normal);
-	background-color: var(--background-modifier-hover);
-}
-
-.view-header-title.flow-title-link:focus-visible {
-	box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
-}
-
-.flow-callout-widget {
+.roamer-callout-widget {
 	display: inline-block;
 	min-width: 10em;
 	width: calc(100% - 1px);
@@ -250,36 +235,36 @@
 	white-space: normal;
 }
 
-.flow-callout-widget > .callout {
+.roamer-callout-widget > .callout {
 	--callout-padding: var(--size-4-3) var(--size-4-3) var(--size-4-3) var(--size-4-2);
 	margin: 0;
 }
 
-.cm-line.flow-callout-line .list-bullet {
+.cm-line.roamer-callout-line .list-bullet {
 	position: relative;
-	top: var(--flow-bullet-shift, 0px);
+	top: var(--roamer-bullet-shift, 0px);
 }
 
-.markdown-source-view.mod-cm6 .cm-line.flow-callout-line.HyperMD-quote::before,
-.markdown-source-view.mod-cm6 .cm-line.flow-callout-after.HyperMD-quote::before {
+.markdown-source-view.mod-cm6 .cm-line.roamer-callout-line.HyperMD-quote::before,
+.markdown-source-view.mod-cm6 .cm-line.roamer-callout-after.HyperMD-quote::before {
 	display: none;
 }
 
-.cm-line.flow-callout-parent {
+.cm-line.roamer-callout-parent {
 	position: relative;
 }
 
-.cm-line.flow-callout-parent::after {
+.cm-line.roamer-callout-parent::after {
 	content: '';
 	position: absolute;
-	top: var(--flow-guide-top, 0);
+	top: var(--roamer-guide-top, 0);
 	bottom: 0;
-	left: var(--flow-guide-x, -9999px);
+	left: var(--roamer-guide-x, -9999px);
 	border-left: var(--indentation-guide-width, 1px) solid
 		var(--indentation-guide-color, var(--background-modifier-border));
 	pointer-events: none;
 }
 
-.markdown-source-view.mod-cm6 .cm-fold-indicator.flow-chevron-hover svg.svg-icon {
+.markdown-source-view.mod-cm6 .cm-fold-indicator.roamer-chevron-hover svg.svg-icon {
 	color: var(--icon-color-hover);
 }

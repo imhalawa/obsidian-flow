@@ -52,7 +52,7 @@ describe('workspace API the plugin calls', () => {
 
 	it('round-trips values through local storage', async () => {
 		const stored = await app.evaluate<unknown>(
-			`(app.saveLocalStorage("flow-contract", { a: 1 }), app.loadLocalStorage("flow-contract"))`,
+			`(app.saveLocalStorage("roamer-contract", { a: 1 }), app.loadLocalStorage("roamer-contract"))`,
 		);
 		expect(stored).toEqual({ a: 1 });
 	});
@@ -104,14 +104,6 @@ describe('history the plugin wraps', () => {
 });
 
 describe('Obsidian DOM the plugin attaches to', () => {
-	it('keeps the header title container the breadcrumbs mount in', async () => {
-		expect(
-			await app.evaluate<boolean>(
-				`Boolean(app.workspace.activeEditor.containerEl.querySelector(".view-header-title-container"))`,
-			),
-		).toBe(true);
-	});
-
 	it.each([
 		'.cm-line',
 		'.cm-formatting-list',
@@ -148,12 +140,12 @@ describe('callout markup the plugin lays out', () => {
 	});
 
 	it.each([
-		'.flow-callout-widget .callout[data-callout="tip"]',
-		'.flow-callout-widget .callout-title',
-		'.flow-callout-widget .callout-title-inner',
-		'.flow-callout-widget .callout-icon',
-		'.flow-callout-widget .callout-content',
-		'.flow-callout-line .list-bullet',
+		'.roamer-callout-widget .callout[data-callout="tip"]',
+		'.roamer-callout-widget .callout-title',
+		'.roamer-callout-widget .callout-title-inner',
+		'.roamer-callout-widget .callout-icon',
+		'.roamer-callout-widget .callout-content',
+		'.roamer-callout-line .list-bullet',
 	])('renders %s around a callout bullet', async (selector) => {
 		const callouts = await NoteEditor.open(app, '- a\n- > [!tip] t\n  > body\n- z');
 		await callouts.caret(3, 2);

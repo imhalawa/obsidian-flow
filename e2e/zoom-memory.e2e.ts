@@ -13,10 +13,10 @@ afterAll(async () => {
 });
 
 const NOTE = 'intro\n- a\n\t- b\n\t\t- c\n\t- d\n- e';
-const STORAGE_KEY = 'flow-outliner-zoom';
+const STORAGE_KEY = 'roamer-zoom';
 
 const setRemember = (value: boolean) =>
-	app.evaluate(`(app.plugins.plugins["flow-outliner"].settings.rememberZoom = ${value}, true)`);
+	app.evaluate(`(app.plugins.plugins["roamer"].settings.rememberZoom = ${value}, true)`);
 
 describe('remembered zoom in real Obsidian', () => {
 	it('reopens a note at the item it was zoomed into', async () => {

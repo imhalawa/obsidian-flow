@@ -13,7 +13,7 @@ describe('dropWithin', () => {
 		expect(dropWithin(target, 0, { kind: 'after', targetLine: 3 })).toEqual({ ok: true });
 		expect(target.text).toBe('- c\n- d\n- a\n  - b');
 		expect(target.dispatched).toHaveLength(1);
-		expect(target.dispatched[0]?.userEvent).toBe('flow.drag-move');
+		expect(target.dispatched[0]?.userEvent).toBe('roamer.drag-move');
 	});
 
 	it('puts the cursor at the start of the text of the moved item', () => {
@@ -191,9 +191,9 @@ describe('dropAcross', () => {
 		const destination = new FakeZoomTarget('- x', 0);
 		dropAcross(source, 0, destination, after(0));
 		expect(source.dispatched).toHaveLength(1);
-		expect(source.dispatched[0]?.userEvent).toBe('flow.drag-move');
+		expect(source.dispatched[0]?.userEvent).toBe('roamer.drag-move');
 		expect(destination.dispatched).toHaveLength(1);
-		expect(destination.dispatched[0]?.userEvent).toBe('flow.drag-move');
+		expect(destination.dispatched[0]?.userEvent).toBe('roamer.drag-move');
 		expect(destination.dispatched[0]?.scrollIntoView).toBe(true);
 	});
 

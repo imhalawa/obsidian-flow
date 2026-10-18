@@ -11,12 +11,25 @@ Five editor keys act on list items, and one optional pair moves whole items. Eac
 | Select all (Ctrl-A or Cmd-A) | Cursor in an item whose text is not fully selected         | Selects the item text; pressing again selects the whole note                                             | Select all starts with the item text                |
 | Tab, Shift-Tab               | Cursor in an item                                          | Indents or outdents the item together with its children (off default)                                    | Tab and Shift-Tab move whole items                  |
 
+## The bullet stays out of the text
+
+Like in Logseq, the bullet is its own object and not part of the text you edit. With **Keep the bullet out of text selections** on (the default):
+
+- A cursor or selection end that lands in the indent or marker of an item (`- `, `1. `, `- [ ] `) moves to the start of the item text. This covers mouse drags, Shift with the arrow keys, double and triple click, and commands.
+- The left arrow at the start of the text goes to the end of the line above, since there is nothing to the left to step over.
+- Backspace at the start of the text that cannot merge (the item has children, the first item of a note, no item above) does nothing, so it never eats the bullet. A merge that is possible still happens as described above.
+- A selection of several lines still holds the bullets of the lines it spans, so copying it gives valid Markdown. Only its ends are kept in the text.
+
+Logseq does this structurally, with one text box for each block. Roamer cannot, because the bullet is real text of the note, so a selection transaction filter (`src/editor/bullet-selection.ts`) moves the ends instead. The decision is a pure function in `src/outline/text-clamp.ts`.
+
 ## Limits
 
 - Backspace merges only an item that has no children and one line. It merges only into an item line directly above, never across a blank line or into a continuation line. Anything else is left to Obsidian.
+- A multi-line selection that ends on an item always includes that item's bullet in its range, because the text between lines includes it.
 - Home leaves wrapped rows alone, so it still goes to the start of the visual row.
 - Every key does nothing with several cursors, with a selection (except Home with Shift and select all), and during text composition.
 - In a zoomed item a key never changes lines outside the zoom.
+- While you are zoomed, select all goes item text first, then the zoomed item with everything under it, and stops there. It never selects the hidden lines.
 - Enter adds a first child only when the first child is a bullet or a task; with an ordered first child Obsidian's own Enter applies.
 - Obsidian 1.14 already ends or outdents an empty item on Enter, so that key mostly makes the behavior independent of Obsidian's own.
 

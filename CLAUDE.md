@@ -1,4 +1,4 @@
-# Flow Outliner: project instructions
+# Roamer: project instructions
 
 Obsidian community plugin. Goal: one stable, tested plugin that combines the outliner and zoom behavior of `vslinko/obsidian-outliner` and `vslinko/obsidian-zoom`, then goes further toward RemNote, Roam Research and Logseq. It must work on the latest Obsidian release and never break. See `docs/reference-plugins.md`.
 

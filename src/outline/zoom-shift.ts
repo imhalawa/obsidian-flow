@@ -16,6 +16,16 @@ export function zoomIndentColumns(
 	return item ? visualWidth(item.indent, tabSize) : 0;
 }
 
+/** Returns how many leading whitespace characters of a line cover the given number of columns, or all of its indent when that is less. */
+export function hiddenIndentLength(text: string, tabSize: number, columns: number): number {
+	if (columns <= 0) return 0;
+	const indentLength = text.length - text.trimStart().length;
+	for (let length = 1; length <= indentLength; length += 1) {
+		if (visualWidth(text.slice(0, length), tabSize) >= columns) return length;
+	}
+	return indentLength;
+}
+
 /** Returns the zoomed lines that move left: the ones with content that are indented at least the given number of columns. */
 export function shiftedLines(
 	lines: readonly string[],

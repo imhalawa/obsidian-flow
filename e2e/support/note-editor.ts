@@ -72,14 +72,14 @@ export class NoteEditor {
 	/** Runs a plugin command by id and returns whether Obsidian ran it. */
 	runCommand(id: string): Promise<boolean> {
 		return this.app.evaluate<boolean>(
-			`app.commands.executeCommandById(${JSON.stringify(`flow-outliner:${id}`)})`,
+			`app.commands.executeCommandById(${JSON.stringify(`roamer:${id}`)})`,
 		);
 	}
 
 	/** Tells whether Obsidian offers a plugin command for the current cursor. */
 	isAvailable(id: string): Promise<boolean> {
 		return this.app.evaluate<boolean>(
-			`app.commands.commands[${JSON.stringify(`flow-outliner:${id}`)}].checkCallback(true)`,
+			`app.commands.commands[${JSON.stringify(`roamer:${id}`)}].checkCallback(true)`,
 		);
 	}
 
@@ -131,7 +131,7 @@ export class NoteEditor {
 	/** Returns the text of the lines that are marked as revealed by an unfold and the animation they run. */
 	revealedLines(): Promise<{ text: string; animation: string }[]> {
 		return this.app.evaluate<{ text: string; animation: string }[]>(
-			'Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .cm-line.flow-line-revealed")).map((el) => ({ text: el.textContent, animation: getComputedStyle(el).animationName }))',
+			'Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .cm-line.roamer-line-revealed")).map((el) => ({ text: el.textContent, animation: getComputedStyle(el).animationName }))',
 		);
 	}
 
@@ -142,17 +142,17 @@ export class NoteEditor {
 		);
 	}
 
-	/** Returns the labels of the crumbs the note header shows after the note name, hidden ones left out. */
+	/** Returns the labels of the zoom levels the panel at the top of the editor shows after the note crumb, hidden ones left out. */
 	crumbs(): Promise<string[]> {
 		return this.app.evaluate<string[]>(
-			'Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .view-header-title-container .flow-crumbs__crumb:not(.is-hidden)")).map((el) => el.textContent)',
+			'Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .cm-editor .roamer-crumbs .roamer-crumbs__crumb:not(.is-hidden):not(.is-root)")).map((el) => el.textContent)',
 		);
 	}
 
 	/** Returns the middle of the crumb with the given label in window coordinates. */
 	crumbPoint(label: string): Promise<{ x: number; y: number }> {
 		return this.app.evaluate<{ x: number; y: number }>(
-			`(() => { const crumb = Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .flow-crumbs__crumb:not(.is-hidden)")).find((el) => el.textContent === ${JSON.stringify(label)}); const box = crumb.getBoundingClientRect(); return { x: box.left + box.width / 2, y: box.top + box.height / 2 }; })()`,
+			`(() => { const crumb = Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .cm-editor .roamer-crumbs__crumb:not(.is-hidden)")).find((el) => el.textContent === ${JSON.stringify(label)}); const box = crumb.getBoundingClientRect(); return { x: box.left + box.width / 2, y: box.top + box.height / 2 }; })()`,
 		);
 	}
 
@@ -175,20 +175,6 @@ export class NoteEditor {
 		await this.app.click(point.x, point.y, false);
 	}
 
-	/** Gives the note title in the header the keyboard focus. */
-	async focusTitle(): Promise<void> {
-		await this.app.evaluate(
-			'(activeDocument.querySelector(".workspace-leaf.mod-active .view-header-title").focus(), true)',
-		);
-	}
-
-	/** Returns the cursor style the pointer shows over the note title in the header. */
-	titleCursor(): Promise<string> {
-		return this.app.evaluate<string>(
-			'getComputedStyle(activeDocument.querySelector(".workspace-leaf.mod-active .view-header-title")).cursor',
-		);
-	}
-
 	/** Tells whether the note title in the header has the keyboard focus, as it does when it is being renamed. */
 	titleHasFocus(): Promise<boolean> {
 		return this.app.evaluate<boolean>(
@@ -196,24 +182,60 @@ export class NoteEditor {
 		);
 	}
 
-	/** Returns the text of the whole note header title area. */
-	headerText(): Promise<string> {
+	/** Returns the text of the panel at the top of the editor, or an empty text when there is none. */
+	panelText(): Promise<string> {
 		return this.app.evaluate<string>(
-			'activeDocument.querySelector(".workspace-leaf.mod-active .view-header-title-container").textContent',
+			'activeDocument.querySelector(".workspace-leaf.mod-active .cm-editor .cm-panels-top .roamer-crumbs")?.textContent ?? ""',
 		);
 	}
 
-	/** Returns the texts in the note header that are cut short, folder names and visible crumbs alike. */
-	clippedHeaderTexts(): Promise<string[]> {
-		return this.app.evaluate<string[]>(
-			`Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .view-header-title-container .view-header-breadcrumb, .workspace-leaf.mod-active .view-header-title-container .flow-crumbs__crumb:not(.is-hidden) .flow-crumbs__text")).filter((el) => el.scrollWidth > el.clientWidth).map((el) => el.textContent)`,
+	/** Returns how many zoom paths the note header holds; the plugin leaves the header alone, so it is zero. */
+	headerPathCount(): Promise<number> {
+		return this.app.evaluate<number>(
+			'activeDocument.querySelectorAll(".workspace-leaf.mod-active .view-header .roamer-crumbs").length',
 		);
 	}
 
-	/** Limits the width of the header title area, in pixels, to make the path overflow. */
-	async limitHeaderWidth(pixels: number): Promise<void> {
+	/** Returns the label of the first crumb, which stands for the whole note. */
+	rootCrumbLabel(): Promise<string> {
+		return this.app.evaluate<string>(
+			'activeDocument.querySelector(".workspace-leaf.mod-active .cm-editor .roamer-crumbs__crumb.is-root")?.textContent ?? ""',
+		);
+	}
+
+	/** Clicks the first crumb, which shows the whole note. */
+	async clickRootCrumb(): Promise<void> {
+		const point = await this.app.evaluate<{ x: number; y: number }>(
+			'(() => { const box = activeDocument.querySelector(".workspace-leaf.mod-active .cm-editor .roamer-crumbs__crumb.is-root").getBoundingClientRect(); return { x: box.left + box.width / 2, y: box.top + box.height / 2 }; })()',
+		);
+		await this.app.click(point.x, point.y, false);
+	}
+
+	/** Gives the first crumb the keyboard focus. */
+	async focusRootCrumb(): Promise<void> {
 		await this.app.evaluate(
-			`(() => { const header = activeDocument.querySelector(".workspace-leaf.mod-active .view-header-title-container"); header.style.width = ${JSON.stringify(`${pixels}px`)}; header.style.flexGrow = "0"; return true; })()`,
+			'(activeDocument.querySelector(".workspace-leaf.mod-active .cm-editor .roamer-crumbs__crumb.is-root").focus(), true)',
+		);
+	}
+
+	/** Returns the cursor style the pointer shows over the first crumb. */
+	rootCrumbCursor(): Promise<string> {
+		return this.app.evaluate<string>(
+			'getComputedStyle(activeDocument.querySelector(".workspace-leaf.mod-active .cm-editor .roamer-crumbs__crumb.is-root")).cursor',
+		);
+	}
+
+	/** Returns the texts of the visible crumbs that are cut short. */
+	clippedPanelTexts(): Promise<string[]> {
+		return this.app.evaluate<string[]>(
+			`Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .cm-editor .roamer-crumbs__crumb:not(.is-hidden) .roamer-crumbs__text")).filter((el) => el.scrollWidth > el.clientWidth).map((el) => el.textContent)`,
+		);
+	}
+
+	/** Limits the width of the panel at the top of the editor, in pixels, to make the path overflow. */
+	async limitPanelWidth(pixels: number): Promise<void> {
+		await this.app.evaluate(
+			`(() => { const panel = activeDocument.querySelector(".workspace-leaf.mod-active .cm-editor .cm-panels-top"); panel.style.width = ${JSON.stringify(`${pixels}px`)}; return true; })()`,
 		);
 		await new Promise((resolve) => setTimeout(resolve, 300));
 	}
@@ -300,20 +322,6 @@ export class NoteEditor {
 		return info.folds;
 	}
 
-	/** Returns the ids of the blocks Obsidian found in the open note once it has saved and indexed it. */
-	async blockIds(): Promise<string[]> {
-		const read = () =>
-			this.app.evaluate<string[]>(
-				'Object.keys(app.metadataCache.getFileCache(app.workspace.getActiveFile())?.blocks ?? {})',
-			);
-		let ids = await read();
-		for (let attempt = 0; attempt < 40 && ids.length === 0; attempt += 1) {
-			await new Promise((resolve) => setTimeout(resolve, 250));
-			ids = await read();
-		}
-		return ids;
-	}
-
 	/** Focuses the editor, puts the caret at the end of the note and types text as a user does. */
 	async typeKeys(text: string): Promise<void> {
 		await this.app.evaluate(
@@ -332,7 +340,7 @@ export class NoteEditor {
 	/** Returns the boxes of an item's line, its embed and its bullet in window coordinates, or null when the line draws no embed. */
 	embedLayout(line: number): Promise<EmbedLayout | null> {
 		return this.app.evaluate<EmbedLayout | null>(
-			`(() => { const cm = app.workspace.activeEditor.editor.cm; const row = cm.domAtPos(cm.state.doc.line(${line + 1}).from).node; const lineEl = (row.nodeType === 1 ? row : row.parentElement).closest(".cm-line"); const embed = lineEl.querySelector(".internal-embed"); const bullet = lineEl.querySelector(".list-bullet"); if (!embed || !bullet) return null; const l = lineEl.getBoundingClientRect(); const e = embed.getBoundingClientRect(); const b = bullet.getBoundingClientRect(); return { marked: lineEl.classList.contains("flow-embed-line"), lineTop: l.top, lineBottom: l.bottom, embedTop: e.top, embedBottom: e.bottom, embedLeft: e.left, embedRight: e.right, bulletTop: b.top, bulletRight: b.right }; })()`,
+			`(() => { const cm = app.workspace.activeEditor.editor.cm; const row = cm.domAtPos(cm.state.doc.line(${line + 1}).from).node; const lineEl = (row.nodeType === 1 ? row : row.parentElement).closest(".cm-line"); const embed = lineEl.querySelector(".internal-embed"); const bullet = lineEl.querySelector(".list-bullet"); if (!embed || !bullet) return null; const l = lineEl.getBoundingClientRect(); const e = embed.getBoundingClientRect(); const b = bullet.getBoundingClientRect(); return { marked: lineEl.classList.contains("roamer-embed-line"), lineTop: l.top, lineBottom: l.bottom, embedTop: e.top, embedBottom: e.bottom, embedLeft: e.left, embedRight: e.right, bulletTop: b.top, bulletRight: b.right }; })()`,
 		);
 	}
 
@@ -359,7 +367,7 @@ export class NoteEditor {
 		return this.app.evaluate<
 			{ left: number; right: number; top: number; bottom: number; background: string }[]
 		>(
-			'Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .flow-thread-highlight")).map((el) => { const box = el.getBoundingClientRect(); return { left: box.left, right: box.right, top: box.top, bottom: box.bottom, background: getComputedStyle(el).backgroundColor }; })',
+			'Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .roamer-thread-highlight")).map((el) => { const box = el.getBoundingClientRect(); return { left: box.left, right: box.right, top: box.top, bottom: box.bottom, background: getComputedStyle(el).backgroundColor }; })',
 		);
 	}
 
@@ -373,7 +381,7 @@ export class NoteEditor {
 	/** Tells whether the pointer shows the clickable cursor over an item control. */
 	pointerIsOverControl(): Promise<boolean> {
 		return this.app.evaluate<boolean>(
-			'app.workspace.activeEditor.editor.cm.dom.classList.contains("flow-over-item-control")',
+			'app.workspace.activeEditor.editor.cm.dom.classList.contains("roamer-over-item-control")',
 		);
 	}
 
@@ -387,7 +395,7 @@ export class NoteEditor {
 	/** Returns the indexes of the lines whose bullet is lit. */
 	litBulletLines(): Promise<number[]> {
 		return this.app.evaluate<number[]>(
-			'(() => { const cm = app.workspace.activeEditor.editor.cm; return Array.from(cm.dom.querySelectorAll(".cm-line.flow-bullet-lit")).map((el) => cm.state.doc.lineAt(cm.posAtDOM(el)).number - 1); })()',
+			'(() => { const cm = app.workspace.activeEditor.editor.cm; return Array.from(cm.dom.querySelectorAll(".cm-line.roamer-bullet-lit")).map((el) => cm.state.doc.lineAt(cm.posAtDOM(el)).number - 1); })()',
 		);
 	}
 

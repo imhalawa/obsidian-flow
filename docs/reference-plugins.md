@@ -1,6 +1,6 @@
 # Reference plugins
 
-Flow Outliner combines two existing plugins into one and goes further. Both are by Viacheslav Slinko and MIT licensed.
+Roamer combines two existing plugins into one and goes further. Both are by Viacheslav Slinko and MIT licensed.
 
 | Plugin                                                            | Version checked | What it does                                                                                                         |
 | ----------------------------------------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------- |
@@ -10,7 +10,7 @@ Flow Outliner combines two existing plugins into one and goes further. Both are 
 ## Direction
 
 1. Reach feature parity with both plugins, with behavior covered by tests.
-2. Go beyond them toward RemNote, Roam Research and Logseq: block references, bullet-as-node navigation and richer folding. Scope each step with superpowers brainstorming first.
+2. Go beyond them toward RemNote, Roam Research and Logseq: bullet-as-node navigation and richer folding. Scope each step with superpowers brainstorming first.
 
 ## Licensing and attribution
 

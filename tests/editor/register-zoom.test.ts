@@ -7,7 +7,7 @@ import { Plugin } from '../mocks/obsidian';
 import { FakeApp } from '../support/fake-app';
 
 const anchor = [{ text: 'a', nth: 0 }];
-const KEY = 'flow-outliner-zoom';
+const KEY = 'roamer-zoom';
 
 let app: FakeApp;
 let plugin: Plugin;

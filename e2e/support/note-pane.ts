@@ -39,7 +39,7 @@ export class NotePane {
 
 	/** Returns the number of drag handles the editor draws, which is none. */
 	handleCount(): Promise<number> {
-		return this.evaluate<number>('cm.dom.querySelectorAll(".flow-drag-handle").length');
+		return this.evaluate<number>('cm.dom.querySelectorAll(".roamer-drag-handle").length');
 	}
 
 	/** Returns the box of the first row of a line in window coordinates. */
@@ -58,7 +58,7 @@ export class NotePane {
 
 	/** Returns the number of drop indicator lines on screen in this editor. */
 	indicatorCount(): Promise<number> {
-		return this.evaluate<number>('cm.dom.querySelectorAll(".flow-drop-indicator").length');
+		return this.evaluate<number>('cm.dom.querySelectorAll(".roamer-drop-indicator").length');
 	}
 
 	/** Undoes the last change in this editor. */

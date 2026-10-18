@@ -12,11 +12,10 @@ export default defineConfig({
 			provider: 'v8',
 			include: ['src/**/*.ts', 'scripts/lib/**/*.ts'],
 			exclude: [
-				'src/ui/header-path.ts',
-				'src/editor/zoom-header.ts',
+				'src/ui/crumb-path.ts',
+				'src/editor/register-zoom-panel.ts',
 				'src/editor/clean-zoom.ts',
 				'src/editor/zoom-persistence.ts',
-				'src/editor/block-id-hiding.ts',
 				'src/editor/item-pointer.ts',
 				'src/editor/register-item-pointer.ts',
 				'src/ui/item-menu.ts',

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import FlowPlugin from '../src/main';
-import { FlowSettingTab } from '../src/settings';
+import RoamerPlugin from '../src/main';
+import { RoamerSettingTab } from '../src/settings';
 import { Setting } from './mocks/obsidian';
 import { FakeApp } from './support/fake-app';
 
@@ -10,9 +10,9 @@ beforeEach(() => {
 
 const showTab = async () => {
 	const app = new FakeApp();
-	const plugin = new FlowPlugin(app as never, {} as never);
+	const plugin = new RoamerPlugin(app as never, {} as never);
 	await plugin.onload();
-	new FlowSettingTab(app as never, plugin).display();
+	new RoamerSettingTab(app as never, plugin).display();
 	return { app, plugin };
 };
 
@@ -22,7 +22,7 @@ describe('settings tab', () => {
 		expect(Setting.created.map((setting) => setting.name)).toEqual([
 			'Remember zoom per note',
 			'Show the zoomed item at the left edge',
-			'Hide block ids',
+			'Use the same indent spacing in every theme',
 			'Hide embed titles in bullets',
 			'Show callout bullets as callouts',
 			'Bullets and thread lines',
@@ -37,6 +37,7 @@ describe('settings tab', () => {
 			'Home stays inside the item text',
 			'Select all starts with the item text',
 			'Tab and Shift-Tab move whole items',
+			'Keep the bullet out of text selections',
 		]);
 	});
 
@@ -45,7 +46,7 @@ describe('settings tab', () => {
 		expect(Setting.created.map((setting) => setting.description)).toEqual([
 			'Reopen each note at the item you zoomed into.',
 			'Move the zoomed item to the left edge of the note and hide the indent guides of the levels above it.',
-			'Hide the id at the end of an item unless the cursor is on its line.',
+			'Give every level of a list the same width, so guide lines, bullets and fold arrows keep the same gaps in any theme.',
 			'Hide the title bar of a note embedded in a bullet, so the bullet lines up with the first line of the embed.',
 			'Draw a bullet that starts with > [!tip] as a callout, with its bullet beside it. Put the cursor in it to edit the text.',
 			'',
@@ -60,6 +61,7 @@ describe('settings tab', () => {
 			'Move to the start of the item text before moving to the start of the line.',
 			'Select the text of the item first. Select all again to select the whole note.',
 			'Indent and outdent the item with its children. Turn this on to replace the editor keys.',
+			'Treat the bullet as its own object: the cursor and selections stay in the text, and Backspace at the start of a text never eats the bullet.',
 		]);
 	});
 
@@ -68,7 +70,7 @@ describe('settings tab', () => {
 		expect(Setting.created.map((setting) => setting.toggle?.value)).toEqual([
 			plugin.settings.rememberZoom,
 			plugin.settings.cleanZoom,
-			plugin.settings.hideBlockIds,
+			plugin.settings.fixedIndentSpacing,
 			plugin.settings.hideEmbedTitles,
 			plugin.settings.bulletCallouts,
 			undefined,
@@ -83,6 +85,7 @@ describe('settings tab', () => {
 			plugin.settings.homeStaysInItem,
 			plugin.settings.selectAllStaysInItem,
 			plugin.settings.tabIndentsItem,
+			plugin.settings.keepBulletOutOfSelection,
 		]);
 	});
 
@@ -101,11 +104,12 @@ describe('settings tab', () => {
 		expect(app.updateOptionsCalls).toBe(1);
 	});
 
-	it('saves hide block ids and refreshes the editors when its toggle changes', async () => {
+	it('saves use the same indent spacing and refreshes the editors when its toggle changes', async () => {
 		const { app, plugin } = await showTab();
+		expect(plugin.settings.fixedIndentSpacing).toBe(true);
 		await Setting.created[2]?.toggle?.handler?.(false);
-		expect(plugin.settings.hideBlockIds).toBe(false);
-		expect(await plugin.loadData()).toMatchObject({ hideBlockIds: false });
+		expect(plugin.settings.fixedIndentSpacing).toBe(false);
+		expect(await plugin.loadData()).toMatchObject({ fixedIndentSpacing: false });
 		expect(app.updateOptionsCalls).toBe(1);
 	});
 
@@ -154,6 +158,7 @@ describe('settings tab', () => {
 		[10 + 4, 'homeStaysInItem', true],
 		[10 + 5, 'selectAllStaysInItem', true],
 		[10 + 6, 'tabIndentsItem', false],
+		[10 + 7, 'keepBulletOutOfSelection', true],
 		[10 + 2, 'enterAddsFirstChild', true],
 	] as const)(
 		'saves list editing setting %i (%s) when its toggle changes',

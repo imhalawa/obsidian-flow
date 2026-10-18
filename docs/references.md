@@ -26,6 +26,10 @@ Check these before guessing at API behavior.
 - [obsidian-outliner](https://github.com/vslinko/obsidian-outliner): list indent, move, fold behavior on CodeMirror 6.
 - [Roam Research](https://roamresearch.com/) and [RemNote](https://www.remnote.com/): block references, zoom, bullets as nodes.
 
+## Obsidian internals
+
+- [Obsidian internals Roamer depends on](obsidian-internals.md): undocumented APIs, DOM selectors and hacks, with the test that guards each.
+
 ## Testing
 
 - [Vitest](https://vitest.dev)

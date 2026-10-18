@@ -32,7 +32,6 @@ export interface ItemPointerHost {
 	isBulletDragEnabled: () => boolean;
 	isThreadFoldEnabled: () => boolean;
 	beginDrag: (view: EditorView, startLine: number, first: PointerEvent) => void;
-	copyLink: (view: EditorView, startLine: number) => void;
 	showMenu: (event: MouseEvent, entries: ItemMenuEntry[]) => void;
 }
 
@@ -41,8 +40,8 @@ type PointerHit =
 	| { kind: 'chevron'; startLine: number }
 	| { kind: 'thread'; parent: OutlineNode; guideX: number };
 
-const OVER_ITEM_CLASS = 'flow-over-item-control';
-const CHEVRON_HOVER_CLASS = 'flow-chevron-hover';
+const OVER_ITEM_CLASS = 'roamer-over-item-control';
+const CHEVRON_HOVER_CLASS = 'roamer-chevron-hover';
 /** Returns the horizontal middle of the marker of an item, where its thread line runs, or null when it is not drawn. */
 function guideX(view: EditorView, item: OutlineNode): number | null {
 	const span = markerSpan(
@@ -137,7 +136,6 @@ function perform(
 	startLine: number,
 ): void {
 	if (action === 'zoom') dispatchZoom(view, startLine, 'visit');
-	else if (action === 'copy-link') host.copyLink(view, startLine);
 	else toggleBranch(view, startLine, false);
 }
 

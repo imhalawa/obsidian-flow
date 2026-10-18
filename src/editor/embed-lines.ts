@@ -8,8 +8,8 @@ import {
 } from '@codemirror/view';
 import { isEmbedItem } from '../outline/embed-item';
 
-export const EMBED_LINE_CLASS = 'flow-embed-line';
-export const EMBED_UNTITLED_CLASS = 'flow-embed-untitled';
+export const EMBED_LINE_CLASS = 'roamer-embed-line';
+export const EMBED_UNTITLED_CLASS = 'roamer-embed-untitled';
 
 const titledLine = Decoration.line({ class: EMBED_LINE_CLASS });
 const untitledLine = Decoration.line({ class: `${EMBED_LINE_CLASS} ${EMBED_UNTITLED_CLASS}` });
