@@ -23,8 +23,7 @@ interface CalloutLayout {
 	widgetBottom: number;
 	widgetRight: number;
 	bulletRight: number;
-	bulletMiddle: number;
-	titleMiddle: number;
+	dotTop: number;
 }
 
 const ACTIVE = '.workspace-leaf.mod-active';
@@ -52,7 +51,7 @@ const layout = (index: number) =>
 		const w = widget.getBoundingClientRect();
 		const b = bullet.getBoundingClientRect();
 		const t = title.getBoundingClientRect();
-		return { lineTop: l.top, lineBottom: l.bottom, lineRight: l.right, widgetLeft: w.left, widgetTop: w.top, widgetBottom: w.bottom, widgetRight: w.right, bulletRight: b.right, bulletMiddle: b.top + b.height / 2, titleMiddle: t.top + t.height / 2 };
+		return { lineTop: l.top, lineBottom: l.bottom, lineRight: l.right, widgetLeft: w.left, widgetTop: w.top, widgetBottom: w.bottom, widgetRight: w.right, bulletRight: b.right, dotTop: b.top + parseFloat(getComputedStyle(bullet, '::after').top) };
 	})()`);
 
 const lineTexts = () =>
@@ -102,7 +101,7 @@ describe('callout bullets in real Obsidian', () => {
 		const box = (await layout(0))!;
 		expect(box.bulletRight).toBeLessThanOrEqual(box.widgetLeft + 1);
 		expect(box.widgetLeft - box.bulletRight).toBeLessThan(14);
-		expect(Math.abs(box.bulletMiddle - box.titleMiddle)).toBeLessThanOrEqual(2);
+		expect(Math.abs(box.dotTop - box.widgetTop)).toBeLessThanOrEqual(1);
 		expect(box.widgetTop - box.lineTop).toBeLessThan(2);
 		expect(box.lineBottom - box.widgetBottom).toBeGreaterThanOrEqual(6);
 		expect(box.lineBottom - box.widgetBottom).toBeLessThan(11);
@@ -113,7 +112,7 @@ describe('callout bullets in real Obsidian', () => {
 		async () => {
 			await open(NOTE, 4, 4);
 			const box = (await layout(0))!;
-			expect(Math.abs(box.bulletMiddle - box.titleMiddle)).toBeLessThanOrEqual(2);
+			expect(Math.abs(box.dotTop - box.widgetTop)).toBeLessThanOrEqual(1);
 		},
 	);
 
@@ -342,7 +341,7 @@ describe('callout bullets in real Obsidian', () => {
 				const style = getComputedStyle(line, '::after');
 				const l = line.getBoundingClientRect();
 				const b = bullet.getBoundingClientRect();
-				return { left: parseFloat(style.left), top: parseFloat(style.top), height: parseFloat(style.height), width: style.borderLeftWidth, position: getComputedStyle(line).position, lineHeight: l.height, bulletCenter: (b.left + b.right) / 2 - l.left, bulletBottom: b.bottom - l.top };
+				return { left: parseFloat(style.left), top: parseFloat(style.top), height: parseFloat(style.height), width: style.borderLeftWidth, position: getComputedStyle(line).position, lineHeight: l.height, bulletCenter: (b.left + b.right) / 2 - l.left, bulletBottom: b.top + parseFloat(getComputedStyle(bullet, '::after').top) + parseFloat(getComputedStyle(bullet, '::after').height) - l.top };
 			})()`);
 
 		it('continues the indentation line of the children from the bullet of the callout', async () => {
@@ -476,12 +475,13 @@ describe('callout bullets in real Obsidian', () => {
 			app.evaluate<
 				Row[]
 			>(`[...activeDocument.querySelectorAll('${ACTIVE} .roamer-callout-line')].map((line) => {
-				const bullet = line.querySelector('.list-bullet').getBoundingClientRect();
+				const bulletEl = line.querySelector('.list-bullet');
+				const bullet = bulletEl.getBoundingClientRect();
 				const widget = line.querySelector('.roamer-callout-widget').getBoundingClientRect();
 				const style = getComputedStyle(line, '::after');
 				const box = line.getBoundingClientRect();
 				const top = parseFloat(style.top);
-				return { linked: line.classList.contains('roamer-callout-linked'), bulletBottom: bullet.bottom - box.top, guideTop: top, guideBottom: top + parseFloat(style.height), lineHeight: box.height, lineTop: box.top, widgetBottom: widget.bottom };
+				return { linked: line.classList.contains('roamer-callout-linked'), bulletBottom: bullet.top + parseFloat(getComputedStyle(bulletEl, '::after').top) + parseFloat(getComputedStyle(bulletEl, '::after').height) - box.top, guideTop: top, guideBottom: top + parseFloat(style.height), lineHeight: box.height, lineTop: box.top, widgetBottom: widget.bottom };
 			})`);
 
 		it('leads a line from the bullet of each callout down to the next bullet', async () => {
