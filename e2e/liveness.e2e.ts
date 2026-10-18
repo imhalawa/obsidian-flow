@@ -107,7 +107,7 @@ describe('embedded items stay live', () => {
 			nextTop: number;
 			marked: boolean;
 		}>(
-			`(() => { const lines = Array.from(activeDocument.querySelectorAll('.workspace-leaf.mod-active .cm-line')); const hostLine = lines.find((l) => l.querySelector('.internal-embed')); const next = lines[lines.indexOf(hostLine) + 1]; const embed = hostLine.querySelector('.internal-embed').getBoundingClientRect(); return { embedBottom: embed.bottom, nextTop: next.getBoundingClientRect().top, marked: hostLine.classList.contains('flow-embed-line') }; })()`,
+			`(() => { const lines = Array.from(activeDocument.querySelectorAll('.workspace-leaf.mod-active .cm-line')); const hostLine = lines.find((l) => l.querySelector('.internal-embed')); const next = lines[lines.indexOf(hostLine) + 1]; const embed = hostLine.querySelector('.internal-embed').getBoundingClientRect(); return { embedBottom: embed.bottom, nextTop: next.getBoundingClientRect().top, marked: hostLine.classList.contains('roamer-embed-line') }; })()`,
 		);
 		expect(layout.marked).toBe(true);
 		expect(layout.nextTop).toBeGreaterThanOrEqual(layout.embedBottom - 1);
@@ -117,7 +117,7 @@ describe('embedded items stay live', () => {
 		const editor = await NoteEditor.open(app, '- plain');
 		const marked = () =>
 			app.evaluate<boolean>(
-				`activeDocument.querySelector('.workspace-leaf.mod-active .cm-line.flow-embed-line') !== null`,
+				`activeDocument.querySelector('.workspace-leaf.mod-active .cm-line.roamer-embed-line') !== null`,
 			);
 		expect(await marked()).toBe(false);
 		await editor.replace(0, 2, 7, '![[embed-source#^live01]]');
@@ -212,7 +212,7 @@ describe('plugin lifecycle stays clean', () => {
 		const editor = await NoteEditor.open(app, '- a\n\t- b\n\t\t- c\n- d');
 		for (let round = 0; round < 3; round += 1) {
 			await app.evaluate(
-				`(async () => { await app.plugins.disablePlugin("flow-outliner"); await app.plugins.enablePlugin("flow-outliner"); return true; })()`,
+				`(async () => { await app.plugins.disablePlugin("roamer"); await app.plugins.enablePlugin("roamer"); return true; })()`,
 			);
 			await wait(500);
 		}
@@ -220,7 +220,7 @@ describe('plugin lifecycle stays clean', () => {
 		await editor.runCommand('zoom-in');
 		await wait(400);
 		const copies = await app.evaluate<number>(
-			`activeDocument.querySelectorAll('.workspace-leaf.mod-active .flow-crumbs').length`,
+			`activeDocument.querySelectorAll('.workspace-leaf.mod-active .roamer-crumbs').length`,
 		);
 		expect(copies).toBe(1);
 		const zoomed = await editor.bulletPoint(2);
@@ -238,7 +238,7 @@ describe('plugin lifecycle stays clean', () => {
 			await createNote(`churn-${index}.md`, `- a ${index}\n\t- b\n\t\t- c`);
 		}
 		await app.evaluate(
-			`(async () => { const leaf = app.workspace.getLeaf(false); for (let i = 0; i < 25; i += 1) { await leaf.openFile(app.vault.getFileByPath('churn-' + i + '.md')); const cm = app.workspace.activeEditor?.editor?.cm; if (cm) cm.dispatch({ selection: { anchor: 6 } }); app.commands.executeCommandById('flow-outliner:zoom-in'); } return true; })()`,
+			`(async () => { const leaf = app.workspace.getLeaf(false); for (let i = 0; i < 25; i += 1) { await leaf.openFile(app.vault.getFileByPath('churn-' + i + '.md')); const cm = app.workspace.activeEditor?.editor?.cm; if (cm) cm.dispatch({ selection: { anchor: 6 } }); app.commands.executeCommandById('roamer:zoom-in'); } return true; })()`,
 		);
 		await wait(1500);
 		const errors = await app.evaluate<string[]>('window.__errors');
@@ -257,11 +257,11 @@ describe('real user sessions', () => {
 		await settle(embedText, (text) => text?.includes('titled') === true, 5000);
 		const untitled = () =>
 			app.evaluate<boolean>(
-				`activeDocument.querySelector('.workspace-leaf.mod-active .cm-line.flow-embed-untitled') !== null`,
+				`activeDocument.querySelector('.workspace-leaf.mod-active .cm-line.roamer-embed-untitled') !== null`,
 			);
 		const setting = (value: boolean) =>
 			app.evaluate(
-				`(app.plugins.plugins["flow-outliner"].settings.hideEmbedTitles = ${value}, app.workspace.updateOptions(), true)`,
+				`(app.plugins.plugins["roamer"].settings.hideEmbedTitles = ${value}, app.workspace.updateOptions(), true)`,
 			);
 		await setting(true);
 		expect(await settle(untitled, (value) => value, 1000)).toBe(true);

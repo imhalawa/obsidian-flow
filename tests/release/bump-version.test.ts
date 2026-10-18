@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { bumpVersionFiles } from '../../scripts/lib/bump-version';
 
-const manifest = { id: 'flow-outliner', version: '0.1.0', minAppVersion: '1.12.0' };
+const manifest = { id: 'roamer', version: '0.1.0', minAppVersion: '1.12.0' };
 const versions = { '0.1.0': '1.12.0' };
 
 describe('bumpVersionFiles', () => {
@@ -14,7 +14,7 @@ describe('bumpVersionFiles', () => {
 	it('keeps the other manifest fields', () => {
 		const result = bumpVersionFiles({ manifest, versions, version: '0.2.0' });
 
-		expect(result.manifest.id).toBe('flow-outliner');
+		expect(result.manifest.id).toBe('roamer');
 		expect(result.manifest.minAppVersion).toBe('1.12.0');
 	});
 

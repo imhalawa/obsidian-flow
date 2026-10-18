@@ -9,7 +9,7 @@ const DISPLAY = ':99';
 const SCREEN_SIZE = '3840x2160x24';
 const WINDOW_ORIGIN = process.platform === 'linux' ? 0 : -32000;
 const DEFAULT_WINDOW = { width: 1280, height: 900 };
-const PLUGIN_ID = 'flow-outliner';
+const PLUGIN_ID = 'roamer';
 const PLUGIN_FILES = ['main.js', 'manifest.json', 'styles.css'];
 
 interface KeyDefinition {
@@ -70,7 +70,7 @@ export class ObsidianApp {
 	}
 
 	private static async launch(): Promise<ObsidianApp> {
-		const workspace = mkdtempSync(join(tmpdir(), 'flow-e2e-'));
+		const workspace = mkdtempSync(join(tmpdir(), 'roamer-e2e-'));
 		const vault = join(workspace, 'vault');
 		const pluginDirectory = join(vault, '.obsidian', 'plugins', PLUGIN_ID);
 		mkdirSync(pluginDirectory, { recursive: true });
@@ -85,7 +85,7 @@ export class ObsidianApp {
 		mkdirSync(userData, { recursive: true });
 		writeFileSync(
 			join(userData, 'obsidian.json'),
-			JSON.stringify({ vaults: { flow: { path: vault, ts: 1, open: true } } }),
+			JSON.stringify({ vaults: { roamer: { path: vault, ts: 1, open: true } } }),
 		);
 		const display =
 			process.platform === 'linux'

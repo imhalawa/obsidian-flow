@@ -60,7 +60,7 @@ const layout = () =>
 				return [{ x: (box.left + box.right) / 2, left: box.left, right: box.right }];
 			});
 			const header = activeDocument.querySelector('.workspace-leaf.mod-active .view-header');
-			const crumbs = header.querySelector('.flow-crumbs');
+			const crumbs = header.querySelector('.roamer-crumbs');
 			const content = cm.contentDOM.getBoundingClientRect();
 			return {
 				width: innerWidth,

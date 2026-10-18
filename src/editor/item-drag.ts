@@ -23,7 +23,7 @@ interface DragSession {
 	destination: DropDestination | null;
 }
 
-const DRAGGING_CLASS = 'flow-is-dragging';
+const DRAGGING_CLASS = 'roamer-is-dragging';
 const views = new Set<EditorView>();
 
 /** Finds the editor under a point of the window, among the editors in the same window as the dragged one. */

@@ -9,7 +9,7 @@ import { ObsidianApp } from './support/obsidian-app';
 /**
  * Runs the behaviour specs copied from imhalawa/obsidian-roamer (e2e/specs) in real Obsidian.
  * A spec is run when its platform is linux or unset, it sets nothing, and every key is supported.
- * Specs that set a Roamer-only setting or press a key Flow does not touch are not generated.
+ * Specs that set a Roamer-only setting or press a key Roamer does not touch are not generated.
  */
 const SPEC_FILES: { file: string; settings: Record<string, boolean> }[] = [
 	{ file: 'DefaultObsidianBehaviour.spec.md', settings: {} },
@@ -21,7 +21,7 @@ const SPEC_FILES: { file: string; settings: Record<string, boolean> }[] = [
 	{ file: 'ListsMovementCommands.spec.md', settings: {} },
 ];
 
-/** Roamer specs that Flow does not match yet; each is a missing outliner behavior, not a change to Obsidian. */
+/** Roamer specs that Roamer does not match yet; each is a missing outliner behavior, not a change to Obsidian. */
 const NOT_YET_MATCHING = new Set([
 	"enter should delete list item if it's last item and it's on the top level",
 	"enter should delete list item if it's last item and it's on the top level and it's checkbox",
@@ -103,7 +103,7 @@ for (const { file, settings } of SPEC_FILES) {
 			it(spec.title, async () => {
 				for (const [key, value] of Object.entries(settings)) {
 					await app.evaluate(
-						`(app.plugins.plugins["flow-outliner"].settings[${JSON.stringify(key)}] = ${String(value)}, true)`,
+						`(app.plugins.plugins["roamer"].settings[${JSON.stringify(key)}] = ${String(value)}, true)`,
 					);
 				}
 				const { expected, actual } = await play(spec);
@@ -113,7 +113,7 @@ for (const { file, settings } of SPEC_FILES) {
 	});
 }
 
-describe('the list of specs Flow does not match yet', () => {
+describe('the list of specs Roamer does not match yet', () => {
 	it('names only specs that exist in the copied files', () => {
 		const titles = new Set(
 			SPEC_FILES.flatMap(({ file }) =>

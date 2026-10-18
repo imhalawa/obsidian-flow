@@ -38,13 +38,13 @@ const open = async (text: string, line: number, ch: number) => {
 
 const widgetCount = () =>
 	app.evaluate<number>(
-		`activeDocument.querySelectorAll('${ACTIVE} .flow-callout-widget').length`,
+		`activeDocument.querySelectorAll('${ACTIVE} .roamer-callout-widget').length`,
 	);
 
 const layout = (index: number) =>
 	app.evaluate<CalloutLayout | null>(`(() => {
-		const line = activeDocument.querySelectorAll('${ACTIVE} .flow-callout-line')[${index}];
-		const widget = line?.querySelector('.flow-callout-widget');
+		const line = activeDocument.querySelectorAll('${ACTIVE} .roamer-callout-line')[${index}];
+		const widget = line?.querySelector('.roamer-callout-widget');
 		const bullet = line?.querySelector('.list-bullet');
 		const title = line?.querySelector('.callout-title');
 		if (!line || !widget || !bullet || !title) return null;
@@ -73,7 +73,7 @@ describe('callout bullets in real Obsidian', () => {
 		await open(NOTE, 4, 4);
 		expect(
 			await app.evaluate<string[]>(
-				`[...activeDocument.querySelectorAll('${ACTIVE} .flow-callout-widget .callout')].map((callout) => callout.getAttribute('data-callout') + ':' + callout.querySelector('.callout-title-inner').textContent)`,
+				`[...activeDocument.querySelectorAll('${ACTIVE} .roamer-callout-widget .callout')].map((callout) => callout.getAttribute('data-callout') + ':' + callout.querySelector('.callout-title-inner').textContent)`,
 			),
 		).toEqual(['tip:Business pain']);
 	});
@@ -82,7 +82,7 @@ describe('callout bullets in real Obsidian', () => {
 		await open(NOTE, 4, 4);
 		expect(
 			await app.evaluate<string>(
-				`activeDocument.querySelector('${ACTIVE} .flow-callout-widget .callout-content').textContent`,
+				`activeDocument.querySelector('${ACTIVE} .roamer-callout-widget .callout-content').textContent`,
 			),
 		).toContain('First line');
 		expect(await lineTexts()).toEqual([
@@ -169,7 +169,7 @@ describe('callout bullets in real Obsidian', () => {
 		await open('- a\n- > [!my-type] custom\n- z', 2, 2);
 		expect(
 			await app.evaluate<string>(
-				`activeDocument.querySelector('${ACTIVE} .flow-callout-widget .callout').getAttribute('data-callout')`,
+				`activeDocument.querySelector('${ACTIVE} .roamer-callout-widget .callout').getAttribute('data-callout')`,
 			),
 		).toBe('my-type');
 	});
@@ -178,7 +178,7 @@ describe('callout bullets in real Obsidian', () => {
 		await open('- a\n- > [!tip] with **bold** and `code`\n- z', 2, 2);
 		expect(
 			await app.evaluate<string>(
-				`activeDocument.querySelector('${ACTIVE} .flow-callout-widget .callout-title-inner').innerHTML`,
+				`activeDocument.querySelector('${ACTIVE} .roamer-callout-widget .callout-title-inner').innerHTML`,
 			),
 		).toMatch(/<strong>bold<\/strong>.*<code>code<\/code>/);
 	});
@@ -213,7 +213,7 @@ describe('callout bullets in real Obsidian', () => {
 	it('hides the quote bar Obsidian keeps for the lines the callout replaced', async () => {
 		await open(NOTE, 0, 2);
 		const display = await app.evaluate<string[]>(
-			`[...activeDocument.querySelectorAll('${ACTIVE} .HyperMD-quote.flow-callout-line, ${ACTIVE} .HyperMD-quote.flow-callout-after')].map((line) => getComputedStyle(line, '::before').display)`,
+			`[...activeDocument.querySelectorAll('${ACTIVE} .HyperMD-quote.roamer-callout-line, ${ACTIVE} .HyperMD-quote.roamer-callout-after')].map((line) => getComputedStyle(line, '::before').display)`,
 		);
 		expect(display.length).toBeGreaterThan(0);
 		expect(display.every((value) => value === 'none')).toBe(true);
@@ -222,13 +222,13 @@ describe('callout bullets in real Obsidian', () => {
 	it('is drawn as plain text when the setting is switched off and as a callout when it is on again', async () => {
 		const editor = await open(NOTE, 4, 4);
 		await app.evaluate(
-			`(app.plugins.plugins["flow-outliner"].settings.bulletCallouts = false, app.workspace.updateOptions(), true)`,
+			`(app.plugins.plugins["roamer"].settings.bulletCallouts = false, app.workspace.updateOptions(), true)`,
 		);
 		await wait(600);
 		expect(await widgetCount()).toBe(0);
 		expect(await editor.text()).toBe(NOTE);
 		await app.evaluate(
-			`(app.plugins.plugins["flow-outliner"].settings.bulletCallouts = true, app.workspace.updateOptions(), true)`,
+			`(app.plugins.plugins["roamer"].settings.bulletCallouts = true, app.workspace.updateOptions(), true)`,
 		);
 		await wait(800);
 		expect(await widgetCount()).toBe(1);
@@ -298,7 +298,7 @@ describe('callout bullets in real Obsidian', () => {
 		const editor = await open('- a\n- > [!tip]- t\n  > body\n- z', 3, 2);
 		const collapsed = () =>
 			app.evaluate<boolean>(
-				`activeDocument.querySelector('${ACTIVE} .flow-callout-widget .callout').classList.contains('is-collapsed')`,
+				`activeDocument.querySelector('${ACTIVE} .roamer-callout-widget .callout').classList.contains('is-collapsed')`,
 			);
 		expect(await collapsed()).toBe(true);
 		const point = await app.evaluate<{ x: number; y: number }>(
@@ -334,7 +334,7 @@ describe('callout bullets in real Obsidian', () => {
 
 		const guide = () =>
 			app.evaluate<Guide | null>(`(() => {
-				const line = activeDocument.querySelector('${ACTIVE} .flow-callout-parent');
+				const line = activeDocument.querySelector('${ACTIVE} .roamer-callout-parent');
 				const bullet = line?.querySelector('.list-bullet');
 				if (!line || !bullet) return null;
 				const style = getComputedStyle(line, '::after');
@@ -361,7 +361,7 @@ describe('callout bullets in real Obsidian', () => {
 				child: number;
 				text: number;
 			}>(`(() => {
-				const line = activeDocument.querySelector('${ACTIVE} .flow-callout-parent');
+				const line = activeDocument.querySelector('${ACTIVE} .roamer-callout-parent');
 				const icon = line.querySelector('.callout-icon').getBoundingClientRect();
 				const bullet = line.querySelector('.list-bullet').getBoundingClientRect();
 				const childLine = line.nextElementSibling;
@@ -402,7 +402,7 @@ describe('callout bullets in real Obsidian', () => {
 			expect(await widgetCount()).toBe(2);
 			expect(
 				await app.evaluate<number>(
-					`activeDocument.querySelectorAll('${ACTIVE} .flow-callout-parent').length`,
+					`activeDocument.querySelectorAll('${ACTIVE} .roamer-callout-parent').length`,
 				),
 			).toBe(2);
 		});
@@ -435,10 +435,10 @@ describe('callout bullets in real Obsidian', () => {
 				shift: string;
 				wrapped: boolean;
 			}>(`(() => {
-				const line = activeDocument.querySelector('${ACTIVE} .flow-callout-line');
-				const widget = line.querySelector('.flow-callout-widget');
+				const line = activeDocument.querySelector('${ACTIVE} .roamer-callout-line');
+				const widget = line.querySelector('.roamer-callout-widget');
 				const bullet = line.querySelector('.list-bullet').getBoundingClientRect();
-				return { width: widget.getBoundingClientRect().width, minimum: parseFloat(getComputedStyle(widget).fontSize) * 10, shift: line.style.getPropertyValue('--flow-bullet-shift'), wrapped: widget.getBoundingClientRect().top >= bullet.bottom };
+				return { width: widget.getBoundingClientRect().width, minimum: parseFloat(getComputedStyle(widget).fontSize) * 10, shift: line.style.getPropertyValue('--roamer-bullet-shift'), wrapped: widget.getBoundingClientRect().top >= bullet.bottom };
 			})()`);
 			expect(box.width).toBeGreaterThanOrEqual(box.minimum - 1);
 			if (box.wrapped) expect(box.shift).toBe('0px');

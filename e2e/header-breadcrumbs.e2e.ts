@@ -24,35 +24,23 @@ async function openInFolder(text: string): Promise<NoteEditor> {
 	return NoteEditor.openAt(app, `Inbox/Test ${noteCounter}.md`, text);
 }
 
-describe('breadcrumbs in the note header in real Obsidian', () => {
-	it('shows the zoom path after the folder and the note name', async () => {
+describe('breadcrumbs in the panel at the top of the editor in real Obsidian', () => {
+	it('shows the note name and then the zoom path', async () => {
 		const editor = await openInFolder(NOTE);
 		await editor.caret(3, 4);
 		await editor.runCommand('zoom-in');
 		expect(await editor.crumbs()).toEqual(['Some Idea', 'Bullet 2', 'Bullet 3']);
-		const header = await editor.headerText();
-		expect(header.indexOf('Inbox')).toBeLessThan(header.indexOf('Some Idea'));
-		expect(header.indexOf(`Test ${noteCounter}`)).toBeLessThan(header.indexOf('Some Idea'));
+		const panel = await editor.panelText();
+		expect(await editor.rootCrumbLabel()).toBe(`Test ${noteCounter}`);
+		expect(panel.indexOf(`Test ${noteCounter}`)).toBeLessThan(panel.indexOf('Some Idea'));
 	});
 
-	it('draws the path inside the header, after the note title element', async () => {
+	it('draws the path in a panel above the text and leaves the note header alone', async () => {
 		const editor = await openInFolder(NOTE);
 		await editor.caret(1, 4);
 		await editor.runCommand('zoom-in');
-		const after = await app.evaluate<boolean>(
-			`(() => { const header = activeDocument.querySelector(".workspace-leaf.mod-active .view-header-title-container"); const title = header.querySelector(".view-header-title"); const crumbs = header.querySelector(".flow-crumbs"); return Boolean(title && crumbs && (title.compareDocumentPosition(crumbs) & Node.DOCUMENT_POSITION_FOLLOWING)); })()`,
-		);
-		expect(after).toBe(true);
-	});
-
-	it('draws nothing in the editor itself', async () => {
-		const editor = await openInFolder(NOTE);
-		await editor.caret(1, 4);
-		await editor.runCommand('zoom-in');
-		const count = await app.evaluate<number>(
-			'activeDocument.querySelectorAll(".workspace-leaf.mod-active .cm-editor .flow-breadcrumbs").length',
-		);
-		expect(count).toBe(0);
+		expect(await editor.panelText()).toContain('Some Idea');
+		expect(await editor.headerPathCount()).toBe(0);
 	});
 
 	it('removes the path when the whole note is shown again', async () => {
@@ -61,7 +49,7 @@ describe('breadcrumbs in the note header in real Obsidian', () => {
 		await editor.runCommand('zoom-in');
 		await editor.runCommand('zoom-reset');
 		expect(await editor.crumbs()).toEqual([]);
-		expect(await editor.headerText()).not.toContain('Bullet');
+		expect(await editor.panelText()).toBe('');
 	});
 
 	it('zooms to a level when its crumb is clicked with the mouse', async () => {
@@ -82,7 +70,7 @@ describe('breadcrumbs in the note header in real Obsidian', () => {
 		await editor.caret(1, 4);
 		await editor.runCommand('zoom-in');
 		const tag = await app.evaluate<string>(
-			'activeDocument.querySelector(".workspace-leaf.mod-active .flow-crumbs__crumb.is-current").tagName',
+			'activeDocument.querySelector(".workspace-leaf.mod-active .roamer-crumbs__crumb.is-current").tagName',
 		);
 		expect(tag).not.toBe('A');
 		expect(tag).not.toBe('BUTTON');
@@ -97,16 +85,16 @@ describe('breadcrumbs in the note header in real Obsidian', () => {
 		);
 		await wait(500);
 		expect(await editor.crumbs()).toEqual(['Some Idea', 'Bullet 2', 'Bullet 3']);
-		expect(await editor.headerText()).toContain(`Renamed ${noteCounter}`);
+		expect(await editor.rootCrumbLabel()).toBe(`Renamed ${noteCounter}`);
 	});
 });
 
-describe('the note title in the header while zoomed', () => {
+describe('the note crumb while zoomed', () => {
 	it('shows the whole note when it is clicked', async () => {
 		const editor = await openInFolder(NOTE);
 		await editor.caret(3, 4);
 		await editor.runCommand('zoom-in');
-		await editor.clickTitle();
+		await editor.clickRootCrumb();
 		expect(await editor.crumbs()).toEqual([]);
 		expect(await editor.visibleLines()).toHaveLength(6);
 	});
@@ -115,7 +103,7 @@ describe('the note title in the header while zoomed', () => {
 		const editor = await openInFolder(NOTE);
 		await editor.caret(3, 4);
 		await editor.runCommand('zoom-in');
-		await editor.focusTitle();
+		await editor.focusRootCrumb();
 		await app.pressKey('enter', false, false);
 		await wait(200);
 		expect(await editor.crumbs()).toEqual([]);
@@ -126,29 +114,16 @@ describe('the note title in the header while zoomed', () => {
 		const editor = await openInFolder(NOTE);
 		await editor.caret(3, 4);
 		await editor.runCommand('zoom-in');
-		expect(await editor.titleCursor()).toBe('pointer');
+		expect(await editor.rootCrumbCursor()).toBe('pointer');
 	});
 
-	it('goes back to the native cursor when the whole note is shown', async () => {
+	it('leaves the native note title alone, so a click on it still starts a rename', async () => {
 		const editor = await openInFolder(NOTE);
 		await editor.caret(3, 4);
 		await editor.runCommand('zoom-in');
-		await editor.runCommand('zoom-reset');
-		expect(await editor.titleCursor()).not.toBe('pointer');
-	});
-
-	it('still starts a rename when it is clicked and nothing is zoomed', async () => {
-		const editor = await openInFolder(NOTE);
 		await editor.clickTitle();
 		expect(await editor.titleHasFocus()).toBe(true);
-	});
-
-	it('does not start a rename when it is clicked to show the whole note', async () => {
-		const editor = await openInFolder(NOTE);
-		await editor.caret(3, 4);
-		await editor.runCommand('zoom-in');
-		await editor.clickTitle();
-		expect(await editor.titleHasFocus()).toBe(false);
+		expect(await editor.crumbs()).toEqual(['Some Idea', 'Bullet 2', 'Bullet 3']);
 	});
 });
 
@@ -163,7 +138,7 @@ describe('a path that does not fit the header', () => {
 		const editor = await openInFolder(DEEP);
 		await editor.caret(4, 6);
 		await editor.runCommand('zoom-in');
-		await editor.limitHeaderWidth(200);
+		await editor.limitPanelWidth(200);
 		expect(await editor.crumbs()).toEqual(['alpha', '…', 'echo']);
 	});
 
@@ -171,7 +146,7 @@ describe('a path that does not fit the header', () => {
 		const editor = await openInFolder(DEEP);
 		await editor.caret(4, 6);
 		await editor.runCommand('zoom-in');
-		await editor.limitHeaderWidth(900);
+		await editor.limitPanelWidth(900);
 		expect(await editor.crumbs()).toEqual(['alpha', 'bravo', 'charlie', 'delta', 'echo']);
 	});
 
@@ -179,7 +154,7 @@ describe('a path that does not fit the header', () => {
 		const editor = await openInFolder(DEEP);
 		await editor.caret(4, 6);
 		await editor.runCommand('zoom-in');
-		await editor.limitHeaderWidth(200);
+		await editor.limitPanelWidth(200);
 		await editor.clickCrumb('…');
 		await wait(200);
 		expect(await editor.menuEntries()).toEqual(['bravo', 'charlie', 'delta']);
@@ -196,9 +171,9 @@ describe('a path that does not fit the header', () => {
 		const editor = await openInFolder(DEEP);
 		await editor.caret(4, 6);
 		await editor.runCommand('zoom-in');
-		await editor.limitHeaderWidth(200);
+		await editor.limitPanelWidth(200);
 		await app.evaluate(
-			'activeDocument.querySelector(".workspace-leaf.mod-active .flow-crumbs__more").focus()',
+			'activeDocument.querySelector(".workspace-leaf.mod-active .roamer-crumbs__more").focus()',
 		);
 		await app.pressKey('enter', false, false);
 		await wait(200);
@@ -212,9 +187,9 @@ describe('a path that does not fit the header', () => {
 		);
 		await editor.caret(1, 4);
 		await editor.runCommand('zoom-in');
-		await editor.limitHeaderWidth(260);
+		await editor.limitPanelWidth(260);
 		const result = await app.evaluate<{ clipped: boolean; label: string | null }>(
-			`(() => { const crumb = activeDocument.querySelector(".workspace-leaf.mod-active .flow-crumbs__crumb.is-current"); const text = crumb.querySelector(".flow-crumbs__text"); return { clipped: text.scrollWidth > text.clientWidth, label: text.textContent }; })()`,
+			`(() => { const crumb = activeDocument.querySelector(".workspace-leaf.mod-active .roamer-crumbs__crumb.is-current"); const text = crumb.querySelector(".roamer-crumbs__text"); return { clipped: text.scrollWidth > text.clientWidth, label: text.textContent }; })()`,
 		);
 		expect(result.clipped).toBe(true);
 		expect(result.label).toBe('a very long current item title that cannot fit either');
@@ -224,8 +199,8 @@ describe('a path that does not fit the header', () => {
 		const editor = await openInFolder(DEEP);
 		await editor.caret(4, 6);
 		await editor.runCommand('zoom-in');
-		await editor.limitHeaderWidth(200);
-		await editor.limitHeaderWidth(900);
+		await editor.limitPanelWidth(200);
+		await editor.limitPanelWidth(900);
 		expect(await editor.crumbs()).toEqual(['alpha', 'bravo', 'charlie', 'delta', 'echo']);
 	});
 });
@@ -252,7 +227,7 @@ describe('long and formatted crumb labels', () => {
 	/** Reads the visible crumb with a label: its width, whether its text is cut and whether a card is drawn over the row. */
 	const crumbBox = (label: string) =>
 		app.evaluate<CrumbBox>(
-			`(() => { const crumb = Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .flow-crumbs__crumb:not(.is-hidden)")).find((el) => el.textContent === ${JSON.stringify(label)}); const text = crumb.querySelector(".flow-crumbs__text"); const overlay = getComputedStyle(crumb, "::after").content; return { width: crumb.getBoundingClientRect().width, cut: text.scrollWidth > text.clientWidth, overlay: overlay !== "none" && overlay !== "normal" }; })()`,
+			`(() => { const crumb = Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .roamer-crumbs__crumb:not(.is-hidden)")).find((el) => el.textContent === ${JSON.stringify(label)}); const text = crumb.querySelector(".roamer-crumbs__text"); const overlay = getComputedStyle(crumb, "::after").content; return { width: crumb.getBoundingClientRect().width, cut: text.scrollWidth > text.clientWidth, overlay: overlay !== "none" && overlay !== "normal" }; })()`,
 		);
 
 	/** Waits until the crumb with a label is wider than a width, then reads it. */
@@ -268,7 +243,7 @@ describe('long and formatted crumb labels', () => {
 	/** Returns the left and right edge of every visible crumb. */
 	const crumbSpans = () =>
 		app.evaluate<{ left: number; right: number }[]>(
-			'Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .flow-crumbs__crumb:not(.is-hidden)")).map((el) => { const box = el.getBoundingClientRect(); return { left: box.left, right: box.right }; })',
+			'Array.from(activeDocument.querySelectorAll(".workspace-leaf.mod-active .roamer-crumbs__crumb:not(.is-hidden)")).map((el) => { const box = el.getBoundingClientRect(); return { left: box.left, right: box.right }; })',
 		);
 
 	/** Zooms to the second item of a note and moves the pointer over the crumb with a label. */
@@ -347,7 +322,7 @@ describe('long and formatted crumb labels', () => {
 		await editor.caret(1, 4);
 		await editor.runCommand('zoom-in');
 		const result = await app.evaluate<{ name: string | null; label: string | null }>(
-			'(() => { const crumb = activeDocument.querySelector(".workspace-leaf.mod-active .flow-crumbs__crumb:not(.is-current)"); return { name: crumb.textContent, label: crumb.getAttribute("aria-label") }; })()',
+			'(() => { const crumb = activeDocument.querySelector(".workspace-leaf.mod-active .roamer-crumbs__crumb:not(.is-current):not(.is-root)"); return { name: crumb.textContent, label: crumb.getAttribute("aria-label") }; })()',
 		);
 		expect(result).toEqual({ name: LONG, label: null });
 	});
@@ -370,7 +345,7 @@ describe('the header path across panes and plugin state in real Obsidian', () =>
 		);
 		await wait(400);
 		const counts = await app.evaluate<number[]>(
-			'Array.from(activeDocument.querySelectorAll(".workspace-leaf")).filter((leaf) => leaf.querySelector(".view-header-title-container")).map((leaf) => leaf.querySelectorAll(".flow-crumbs__crumb:not(.is-hidden)").length)',
+			'Array.from(activeDocument.querySelectorAll(".workspace-leaf")).filter((leaf) => leaf.querySelector(".cm-editor")).map((leaf) => leaf.querySelectorAll(".roamer-crumbs__crumb:not(.is-hidden)").length)',
 		);
 		expect(counts.filter((count) => count > 0)).toHaveLength(1);
 	});
@@ -379,13 +354,13 @@ describe('the header path across panes and plugin state in real Obsidian', () =>
 		const editor = await openInFolder(NOTE);
 		await editor.caret(3, 4);
 		await editor.runCommand('zoom-in');
-		await app.evaluate('app.plugins.disablePlugin("flow-outliner")');
+		await app.evaluate('app.plugins.disablePlugin("roamer")');
 		await wait(300);
 		const left = await app.evaluate<number>(
-			'activeDocument.querySelectorAll(".flow-crumbs").length',
+			'activeDocument.querySelectorAll(".roamer-crumbs").length',
 		);
 		expect(left).toBe(0);
-		await app.evaluate('app.plugins.enablePlugin("flow-outliner")');
+		await app.evaluate('app.plugins.enablePlugin("roamer")');
 		await wait(500);
 	});
 });

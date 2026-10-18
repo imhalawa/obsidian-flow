@@ -268,12 +268,12 @@ describe('embeds in nested bullets in real Obsidian', () => {
 describe('embed titles in bullets in real Obsidian', () => {
 	const titleDisplay = () =>
 		app.evaluate<string>(
-			'getComputedStyle(activeDocument.querySelector(".workspace-leaf.mod-active .flow-embed-line .markdown-embed-title")).display',
+			'getComputedStyle(activeDocument.querySelector(".workspace-leaf.mod-active .roamer-embed-line .markdown-embed-title")).display',
 		);
 
 	const setHideTitles = async (hidden: boolean) => {
 		await app.evaluate(
-			`(app.plugins.plugins["flow-outliner"].settings.hideEmbedTitles = ${hidden}, app.workspace.updateOptions(), true)`,
+			`(app.plugins.plugins["roamer"].settings.hideEmbedTitles = ${hidden}, app.workspace.updateOptions(), true)`,
 		);
 		await wait(500);
 	};
@@ -294,7 +294,7 @@ describe('embed titles in bullets in real Obsidian', () => {
 	it('keeps the card clickable to its note while the title is hidden', async () => {
 		await openWithEmbed('![[Release Notes]]');
 		const links = await app.evaluate<number>(
-			'activeDocument.querySelectorAll(".workspace-leaf.mod-active .flow-embed-line .markdown-embed-link").length',
+			'activeDocument.querySelectorAll(".workspace-leaf.mod-active .roamer-embed-line .markdown-embed-link").length',
 		);
 		expect(links).toBe(1);
 	});
@@ -302,7 +302,7 @@ describe('embed titles in bullets in real Obsidian', () => {
 	it('lines the bullet up with the first line of the embed when the title is hidden', async () => {
 		const editor = await openWithEmbed('![[Release Notes]]');
 		const row = await app.evaluate<number>(
-			'(() => { const content = activeDocument.querySelector(".workspace-leaf.mod-active .flow-embed-line .markdown-embed-content"); const box = content.getBoundingClientRect(); return box.top; })()',
+			'(() => { const content = activeDocument.querySelector(".workspace-leaf.mod-active .roamer-embed-line .markdown-embed-content"); const box = content.getBoundingClientRect(); return box.top; })()',
 		);
 		const layout = await editor.embedLayout(1);
 		expect(row - layout!.embedTop).toBeLessThan(6);

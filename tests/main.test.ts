@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import FlowPlugin from '../src/main';
-import { DEFAULT_SETTINGS, FlowSettingTab } from '../src/settings';
+import RoamerPlugin from '../src/main';
+import { DEFAULT_SETTINGS, RoamerSettingTab } from '../src/settings';
 import { FakeApp } from './support/fake-app';
 
-const makePlugin = () => new FlowPlugin(new FakeApp() as never, {} as never);
+const makePlugin = () => new RoamerPlugin(new FakeApp() as never, {} as never);
 
-describe('FlowPlugin lifecycle', () => {
+describe('RoamerPlugin lifecycle', () => {
 	it('loads defaults when nothing is stored', async () => {
 		const plugin = makePlugin();
 		await plugin.onload();
@@ -47,18 +47,18 @@ describe('FlowPlugin lifecycle', () => {
 		expect((plugin as unknown as { settingTabs: unknown[] }).settingTabs).toHaveLength(1);
 	});
 
-	it('registers the block id hiding, fold reveal, thread highlight, bullet light, embed lines, bullet callouts, item pointer, drag, list keys, zoom and zoom path editor extensions', async () => {
+	it('registers the fold reveal, thread highlight, bullet light, embed lines, bullet callouts, item pointer, drag, list keys, zoom and zoom path editor extensions', async () => {
 		const plugin = makePlugin();
 		await plugin.onload();
 		expect(
 			(plugin as unknown as { editorExtensions: unknown[] }).editorExtensions,
-		).toHaveLength(11);
+		).toHaveLength(10);
 	});
 
 	it('wraps the history of the main window and restores it on unload', async () => {
 		const app = new FakeApp();
 		const original = app.mainWindow.history.back;
-		const plugin = new FlowPlugin(app as never, {} as never);
+		const plugin = new RoamerPlugin(app as never, {} as never);
 		await plugin.onload();
 		expect(app.mainWindow.history.back).not.toBe(original);
 		for (const cleanup of (plugin as unknown as { cleanups: (() => void)[] }).cleanups)
@@ -68,7 +68,7 @@ describe('FlowPlugin lifecycle', () => {
 
 	it('renders an empty settings tab without throwing', async () => {
 		const plugin = makePlugin();
-		const tab = new FlowSettingTab({} as never, plugin);
+		const tab = new RoamerSettingTab({} as never, plugin);
 		expect(() => tab.display()).not.toThrow();
 	});
 });

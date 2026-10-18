@@ -9,8 +9,9 @@ import {
 import { cleanZoomDecorations, ZOOM_LINE_CLASS } from './clean-zoom-decorations';
 import { zoomField } from './zoom-field';
 
-const ZOOMED_CLASS = 'flow-zoomed';
-const SHIFT_PROPERTY = '--flow-zoom-shift';
+const ZOOMED_CLASS = 'roamer-zoomed';
+const SHIFT_PROPERTY = '--roamer-zoom-shift';
+// TODO(obsidian-update): undocumented CodeMirror list marker class; if it changes, clean zoom cannot measure the shift and does not move the item. See docs/obsidian-internals.md.
 const MARKER_SELECTOR = '.cm-formatting-list';
 
 /** Reads how far the zoomed item sits from the left edge of its line in pixels, from the list marker the editor draws. */

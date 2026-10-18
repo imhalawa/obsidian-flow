@@ -1,5 +1,4 @@
 import type { Plugin } from 'obsidian';
-import { registerCopyItemLink, systemBlockLinkServices } from './copy-item-link';
 import { registerFoldCommands } from './fold-commands';
 import { registerIndentItem } from './indent-item';
 import { registerMoveItemDown } from './move-item-down';
@@ -15,5 +14,4 @@ export function registerCommands(plugin: Plugin): void {
 	registerMoveItemDown(plugin);
 	registerZoomCommands(plugin);
 	registerFoldCommands(plugin);
-	registerCopyItemLink(plugin, systemBlockLinkServices());
 }

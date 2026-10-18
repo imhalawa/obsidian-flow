@@ -44,7 +44,7 @@ describe('enterInEmptyItem', () => {
 		const target = new FakeZoomTarget('- a\n- ', 6);
 		enterInEmptyItem(target);
 		expect(target.dispatched).toHaveLength(1);
-		expect(target.dispatched[0]?.userEvent).toBe('flow.list-enter');
+		expect(target.dispatched[0]?.userEvent).toBe('roamer.list-enter');
 	});
 
 	it('scrolls the new cursor into view', () => {
@@ -103,7 +103,7 @@ describe('backspaceInItem', () => {
 		expect(backspaceInItem(target)).toBe(true);
 		expect(target.text).toBe('- onetwo');
 		expect(target.caret).toBe(5);
-		expect(target.dispatched[0]?.userEvent).toBe('flow.list-backspace');
+		expect(target.dispatched[0]?.userEvent).toBe('roamer.list-backspace');
 	});
 
 	it('does nothing in the middle of the text', () => {
@@ -249,7 +249,7 @@ describe('enterInParentItem', () => {
 		const target = new FakeZoomTarget('- a\n  - b', 3);
 		enterInParentItem(target);
 		expect(target.dispatched).toHaveLength(1);
-		expect(target.dispatched[0]?.userEvent).toBe('flow.list-enter');
+		expect(target.dispatched[0]?.userEvent).toBe('roamer.list-enter');
 	});
 
 	it('does nothing for an item without children', () => {

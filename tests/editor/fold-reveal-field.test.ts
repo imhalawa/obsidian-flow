@@ -89,7 +89,7 @@ describe('revealField', () => {
 	});
 
 	it('marks a revealed line with the class the stylesheet animates', () => {
-		expect(revealedClasses(unfolded())).toEqual(['flow-line-revealed']);
+		expect(revealedClasses(unfolded())).toEqual(['roamer-line-revealed']);
 	});
 
 	it('hands the revealed lines to the editor to draw', () => {

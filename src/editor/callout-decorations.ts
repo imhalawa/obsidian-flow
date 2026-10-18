@@ -4,9 +4,10 @@ import { Decoration, type DecorationSet, type WidgetType } from '@codemirror/vie
 import { findCallouts, startsWithQuote, type CalloutBlock } from '../outline/callout';
 import { outlineOfState } from './outline-of-state';
 
-export const CALLOUT_LINE_CLASS = 'flow-callout-line';
-export const CALLOUT_PARENT_CLASS = 'flow-callout-parent';
-export const CALLOUT_AFTER_CLASS = 'flow-callout-after';
+// TODO(obsidian-update): callout bullets are a plugin-only rendering, intentionally different from Obsidian's raw text. See docs/obsidian-internals.md.
+export const CALLOUT_LINE_CLASS = 'roamer-callout-line';
+export const CALLOUT_PARENT_CLASS = 'roamer-callout-parent';
+export const CALLOUT_AFTER_CLASS = 'roamer-callout-after';
 
 const calloutLine = Decoration.line({ class: CALLOUT_LINE_CLASS });
 const calloutParentLine = Decoration.line({

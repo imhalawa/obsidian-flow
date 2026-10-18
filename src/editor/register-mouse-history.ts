@@ -32,6 +32,7 @@ export function registerMouseHistory(plugin: Plugin, host: MouseHistoryHost): vo
 		restores.get(win)?.();
 		restores.delete(win);
 	};
+	// TODO(obsidian-update): wraps window.history; depends on mouse buttons 3 and 4 reaching history.back/forward. See docs/obsidian-internals.md.
 	const mainWindow = app.workspace.containerEl.ownerDocument.defaultView;
 	if (mainWindow) install(mainWindow);
 	app.workspace.onLayoutReady(() => {

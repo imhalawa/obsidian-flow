@@ -11,6 +11,7 @@ const FALLBACK_TAB_SIZE = 4;
 
 /** Reads the editor's indent unit and tab size, or null when Obsidian does not expose them. */
 function editorSettings(editor: object): { unit: string; tabSize: number } | null {
+	// TODO(obsidian-update): undocumented `editor.cm`; if Obsidian renames it, indent settings fall back to tabs. See docs/obsidian-internals.md.
 	const state = (editor as EditorWithState).cm?.state;
 	if (!state || typeof state.facet !== 'function' || typeof state.tabSize !== 'number')
 		return null;

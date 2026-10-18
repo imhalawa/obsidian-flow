@@ -106,14 +106,14 @@ describe('bulletCallouts', () => {
 			}
 			return found;
 		};
-		expect(firstClass(state)).toContain('flow-callout-parent');
+		expect(firstClass(state)).toContain('roamer-callout-parent');
 		const folded = state.update({
 			effects: foldEffect.of({ from: 12, to: doc.indexOf('\n- z') }),
 		}).state;
-		expect(firstClass(folded)).toBe('flow-callout-line');
+		expect(firstClass(folded)).toBe('roamer-callout-line');
 		const unfolded = folded.update({
 			effects: unfoldEffect.of({ from: 12, to: doc.indexOf('\n- z') }),
 		}).state;
-		expect(firstClass(unfolded)).toContain('flow-callout-parent');
+		expect(firstClass(unfolded)).toContain('roamer-callout-parent');
 	});
 });

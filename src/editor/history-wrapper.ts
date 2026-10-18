@@ -35,6 +35,7 @@ export function wrapHistory(win: HistoryWindow, host: HistoryWrapperHost): () =>
 			if (host.isEnabled() && host.step(direction)) return;
 			original.call(history);
 		};
+		// TODO(obsidian-update): replaces window.history.back/forward; Obsidian or Electron may stop routing the mouse buttons through them. See docs/obsidian-internals.md.
 		history[direction] = wrapper;
 		installed.set(direction, { original, wrapper });
 	}

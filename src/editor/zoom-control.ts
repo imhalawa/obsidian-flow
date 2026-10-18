@@ -32,6 +32,7 @@ interface EditorWithView {
 
 /** Returns the editor view of an editor when the zoom extension is active in it, or null. */
 export function zoomTargetOf(editor: object): ZoomTarget | null {
+	// TODO(obsidian-update): Obsidian's Editor has no public CodeMirror view; `editor.cm` is undocumented and may be renamed or removed. See docs/obsidian-internals.md.
 	const view = (editor as EditorWithView).cm;
 	if (!view || typeof view.dispatch !== 'function' || !view.state) return null;
 	if (view.state.field(zoomField, false) === undefined) return null;

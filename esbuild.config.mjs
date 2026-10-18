@@ -11,7 +11,7 @@ if you want to view the source, please visit the github repository of this plugi
 `;
 
 const prod = process.argv[2] === 'production';
-const devPluginDirectory = process.env.FLOW_DEV_PLUGIN_DIR;
+const devPluginDirectory = process.env.ROAMER_DEV_PLUGIN_DIR;
 
 /** Copies the build into a vault plugin folder under a dev id and name, so it never clashes with the released plugin. */
 async function installToVault(directory) {

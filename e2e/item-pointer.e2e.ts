@@ -15,7 +15,7 @@ afterAll(async () => {
 const NOTE = '- a\n\t- b\n\t\t- c\n- d';
 
 const setting = (name: string, value: boolean) =>
-	app.evaluate(`(app.plugins.plugins["flow-outliner"].settings.${name} = ${value}, true)`);
+	app.evaluate(`(app.plugins.plugins["roamer"].settings.${name} = ${value}, true)`);
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -284,11 +284,7 @@ describe('bullets and thread lines in real Obsidian', () => {
 		const bullet = await editor.bulletPoint(0);
 		await app.rightClick(bullet.x, bullet.y);
 		await wait(300);
-		expect(await editor.menuEntries()).toEqual([
-			'Zoom into item',
-			'Fold item',
-			'Copy link to item',
-		]);
+		expect(await editor.menuEntries()).toEqual(['Zoom into item', 'Fold item']);
 	});
 
 	it('folds the item from the menu and then offers to unfold it', async () => {
@@ -301,14 +297,5 @@ describe('bullets and thread lines in real Obsidian', () => {
 		await app.rightClick(bullet.x, bullet.y);
 		await wait(300);
 		expect(await editor.menuEntries()).toContain('Unfold item');
-	});
-
-	it('copies a link to the item from the menu and writes its id', async () => {
-		const editor = await NoteEditor.open(app, NOTE);
-		const bullet = await editor.bulletPoint(3);
-		await app.rightClick(bullet.x, bullet.y);
-		await wait(300);
-		await editor.chooseMenuEntry('Copy link to item');
-		expect(await editor.text()).toMatch(/- d \^[a-z0-9]{6}$/);
 	});
 });

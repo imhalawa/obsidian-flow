@@ -2,10 +2,6 @@
 
 Zoom shows one list item, or one heading, and everything under it. Everything else in the note is hidden, not changed.
 
-![A zoomed item with its path in the note header, light theme](screenshots/zoom-header-light.png)
-
-![A zoomed item with its path in the note header, dark theme](screenshots/zoom-header-dark.png)
-
 ## What you can zoom into
 
 - **A list item.** Select its bullet, or run **Zoom in** with the cursor in the item. The deepest item at the cursor is chosen.
@@ -15,17 +11,17 @@ Zoom shows one list item, or one heading, and everything under it. Everything el
 
 **Zoom out** goes up one step: from an item to its parent item, then to the heading it sits under, then to the next heading above, then to the whole note.
 
-## The path in the note header
+## The path above the text
 
-The path is drawn in Obsidian's own note header, after the folder and the note name:
+While you are zoomed, a panel above the text shows the path, starting with the note name:
 
-`Inbox / Test > Some Idea > Bullet 2 > Bullet 3`
+`Test > Some Idea > Bullet 2 > Bullet 3`
 
 - Headings above the zoomed target come first, outermost first, then list items down to the target. Headings are shown without their `#` marks, and an empty item as "Empty item".
-- Select a level to zoom to it. The last level is the current one and is not a link. The whole note is one step away with **Show the whole note** or the mouse back button.
-- When the path is wider than the header, the first level and the current level stay and the levels between them collapse into one `…` crumb. Select it (or Tab to it and press Enter or Space) for a menu of the hidden levels, top down.
-- If it still does not fit, text shrinks in this order: the folder path, the first level, the current level. The full text is the tooltip and the accessible label.
-- Each pane has its own path. It follows renames and is removed when the plugin is turned off.
+- Select a level to zoom to it. The last level is the current one and is not a link. Select the note name to show the whole note, or use **Show the whole note** or the mouse back button.
+- When the path is wider than the panel, the first level and the current level stay and the levels between them collapse into one `…` crumb. Select it (or Tab to it and press Enter or Space) for a menu of the hidden levels, top down.
+- If it still does not fit, text shrinks in this order: the first level, the current level. The full text is the tooltip and the accessible label.
+- Each pane has its own path. The note name follows renames, and the panel is removed when the plugin is turned off.
 
 ## The zoomed item at the left edge
 
@@ -39,10 +35,10 @@ Zoom is remembered per note as a structural address (heading text, item text and
 
 - The zoom is a CodeMirror state field. The text outside it is hidden with block replace decorations, which also keeps the cursor inside the zoom.
 - Headings, ranges, paths and addresses are pure functions in `src/outline/` (`headings.ts`, `zoom-view.ts`, `zoom-anchor.ts`) with tables of test cases.
-- The header is the only place that touches Obsidian's DOM for this feature (`src/editor/zoom-header.ts`, `src/ui/header-path.ts`). Obsidian has no API for the header, so the plugin finds the title container inside each note view and checks it exists before drawing. Which levels hide is decided by a pure function (`src/ui/fit-crumbs.ts`) from measured widths.
+- The path is a CodeMirror panel above the text (`showPanel`, `src/editor/zoom-panel.ts`, `src/ui/crumb-path.ts`). It uses only public CodeMirror API and no Obsidian header class, and it also works on mobile. The first crumb is the note name and shows the whole note. Which levels hide is decided by a pure function (`src/ui/fit-crumbs.ts`) from measured widths.
 - The shift to the left edge is a line class with the number of levels, multiplied by the width of one indent level measured from the editor, so it follows the theme's indent width.
 
 ## Limits
 
-- The header path needs Obsidian's note header. If the header cannot be found the plugin shows one notice and the path is not drawn.
+- The path takes one line above the text of the note while you are zoomed. The native note title is not changed.
 - The left edge shift is measured from the indent the editor draws, so a theme that draws a very different indent width can show a small offset.

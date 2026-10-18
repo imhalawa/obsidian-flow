@@ -18,7 +18,7 @@ afterAll(async () => {
 /** Switches the "Use mouse back and forward for zoom" setting. */
 async function useMouseHistory(enabled: boolean): Promise<void> {
 	await app.evaluate(
-		`(app.plugins.plugins["flow-outliner"].settings.useMouseHistory = ${String(enabled)}, true)`,
+		`(app.plugins.plugins["roamer"].settings.useMouseHistory = ${String(enabled)}, true)`,
 	);
 }
 
@@ -124,7 +124,7 @@ describe('mouse back and forward in real Obsidian', () => {
 			await popoutEditor.runCommand('zoom-in');
 			const crumbs = () =>
 				app.evaluate<string[]>(
-					'Array.from(window.__popoutLeaf.view.containerEl.querySelectorAll(".flow-crumbs__crumb:not(.is-hidden)")).map((el) => el.textContent)',
+					'Array.from(window.__popoutLeaf.view.containerEl.querySelectorAll(".roamer-crumbs__crumb:not(.is-hidden)")).map((el) => el.textContent)',
 				);
 			expect(await crumbs()).toEqual(['a', 'b']);
 			await app.pressSideButton(popout.x, popout.y, 'back');

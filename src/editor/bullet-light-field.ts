@@ -1,7 +1,7 @@
 import { StateEffect, StateField, type EditorState, type Extension } from '@codemirror/state';
 import { Decoration, EditorView, type DecorationSet } from '@codemirror/view';
 
-export const BULLET_LIT_CLASS = 'flow-bullet-lit';
+export const BULLET_LIT_CLASS = 'roamer-bullet-lit';
 
 export const setLitBullet = StateEffect.define<number | null>();
 

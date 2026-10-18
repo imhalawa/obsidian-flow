@@ -23,7 +23,7 @@ async function openWithCaret(text: string, line: number, ch: number): Promise<No
 /** Changes a setting of the plugin for the next key press. */
 async function setSetting(key: string, value: boolean): Promise<void> {
 	await app.evaluate(
-		`(app.plugins.plugins["flow-outliner"].settings[${JSON.stringify(key)}] = ${String(value)}, true)`,
+		`(app.plugins.plugins["roamer"].settings[${JSON.stringify(key)}] = ${String(value)}, true)`,
 	);
 }
 

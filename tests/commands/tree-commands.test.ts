@@ -35,7 +35,6 @@ describe('tree commands', () => {
 			['unfold-item', 'Unfold item'],
 			['fold-all', 'Fold all items'],
 			['unfold-all', 'Unfold all items'],
-			['copy-item-link', 'Copy link to item'],
 		]);
 	});
 

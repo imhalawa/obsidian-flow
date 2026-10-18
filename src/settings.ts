@@ -1,10 +1,9 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
-import type FlowPlugin from './main';
+import type RoamerPlugin from './main';
 
-export interface FlowSettings {
+export interface RoamerSettings {
 	rememberZoom: boolean;
 	cleanZoom: boolean;
-	hideBlockIds: boolean;
 	hideEmbedTitles: boolean;
 	bulletCallouts: boolean;
 	clickBulletToZoom: boolean;
@@ -19,10 +18,9 @@ export interface FlowSettings {
 	tabIndentsItem: boolean;
 }
 
-export const DEFAULT_SETTINGS: FlowSettings = {
+export const DEFAULT_SETTINGS: RoamerSettings = {
 	rememberZoom: true,
 	cleanZoom: true,
-	hideBlockIds: true,
 	hideEmbedTitles: true,
 	bulletCallouts: true,
 	clickBulletToZoom: true,
@@ -38,11 +36,11 @@ export const DEFAULT_SETTINGS: FlowSettings = {
 };
 
 type ToggleKey = {
-	[Key in keyof FlowSettings]: FlowSettings[Key] extends boolean ? Key : never;
-}[keyof FlowSettings];
+	[Key in keyof RoamerSettings]: RoamerSettings[Key] extends boolean ? Key : never;
+}[keyof RoamerSettings];
 
 /** Returns the defaults with every stored value that is a boolean laid over them. */
-export function mergeSettings(stored: unknown): FlowSettings {
+export function mergeSettings(stored: unknown): RoamerSettings {
 	const merged = { ...DEFAULT_SETTINGS };
 	if (typeof stored !== 'object' || stored === null) return merged;
 	const values = stored as Record<string, unknown>;
@@ -53,10 +51,10 @@ export function mergeSettings(stored: unknown): FlowSettings {
 	return merged;
 }
 
-export class FlowSettingTab extends PluginSettingTab {
+export class RoamerSettingTab extends PluginSettingTab {
 	constructor(
 		app: App,
-		private readonly plugin: FlowPlugin,
+		private readonly plugin: RoamerPlugin,
 	) {
 		super(app, plugin);
 	}
@@ -73,12 +71,6 @@ export class FlowSettingTab extends PluginSettingTab {
 			'Show the zoomed item at the left edge',
 			'Move the zoomed item to the left edge of the note and hide the indent guides of the levels above it.',
 			'cleanZoom',
-			() => this.app.workspace.updateOptions(),
-		);
-		this.addToggle(
-			'Hide block ids',
-			'Hide the id at the end of an item unless the cursor is on its line.',
-			'hideBlockIds',
 			() => this.app.workspace.updateOptions(),
 		);
 		this.addToggle(

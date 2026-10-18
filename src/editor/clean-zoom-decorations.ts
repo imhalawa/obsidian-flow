@@ -4,9 +4,10 @@ import { shiftedLines, zoomIndentColumns } from '../outline/zoom-shift';
 import { outlineOfState } from './outline-of-state';
 import { zoomField } from './zoom-field';
 
-export const ZOOM_LINE_CLASS = 'flow-zoom-line';
+export const ZOOM_LINE_CLASS = 'roamer-zoom-line';
 
-export const ZOOM_ROOT_CLASS = 'flow-zoom-root';
+// TODO(obsidian-update): clean zoom is a hack that shifts and clips CodeMirror lines; Obsidian layout changes can break it. See docs/obsidian-internals.md.
+export const ZOOM_ROOT_CLASS = 'roamer-zoom-root';
 
 const zoomLine = Decoration.line({ class: ZOOM_LINE_CLASS });
 const zoomRootLine = Decoration.line({ class: `${ZOOM_LINE_CLASS} ${ZOOM_ROOT_CLASS}` });

@@ -52,7 +52,7 @@ export function enterInEmptyItem(target: ZoomTarget): boolean {
 	if (!caret) return false;
 	const lines = state.doc.toJSON();
 	const edit = enterOnEmptyItem(lines, stateIndentStyle(state, lines), caret.line, caret.column);
-	return edit !== null && applyKeyEdit(target, edit, 'flow.list-enter');
+	return edit !== null && applyKeyEdit(target, edit, 'roamer.list-enter');
 }
 
 /** Handles Enter at the end of an item with children by adding a new first child, unfolding the item first. */
@@ -64,7 +64,7 @@ export function enterInParentItem(target: ZoomTarget): boolean {
 	if (!edit) return false;
 	const item = itemAtLine(outlineOfState(state), caret.line);
 	if (item && isFolded(state, item.startLine)) toggleBranch(target, item.startLine, false);
-	return applyKeyEdit(target, edit, 'flow.list-enter');
+	return applyKeyEdit(target, edit, 'roamer.list-enter');
 }
 
 /** Handles Backspace at the start of an item's text by merging it into the item above. */
@@ -73,7 +73,7 @@ export function backspaceInItem(target: ZoomTarget): boolean {
 	const caret = caretOf(state);
 	if (!caret) return false;
 	const edit = backspaceAtItemStart(state.doc.toJSON(), state.tabSize, caret.line, caret.column);
-	return edit !== null && applyKeyEdit(target, edit, 'flow.list-backspace');
+	return edit !== null && applyKeyEdit(target, edit, 'roamer.list-backspace');
 }
 
 /** Handles Home by moving the cursor to the start of the item text; `extend` keeps the selection anchor. */

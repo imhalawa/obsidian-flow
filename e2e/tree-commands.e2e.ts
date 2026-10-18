@@ -18,23 +18,22 @@ const shapeOf = (text: string) => lezerShape(text.split('\n'));
 describe('plugin in real Obsidian', () => {
 	it('registers its commands', async () => {
 		const ids = await app.evaluate<string[]>(
-			'Object.keys(app.commands.commands).filter((id) => id.startsWith("flow-outliner:"))',
+			'Object.keys(app.commands.commands).filter((id) => id.startsWith("roamer:"))',
 		);
 		expect(ids.sort()).toEqual([
-			'flow-outliner:copy-item-link',
-			'flow-outliner:fold-all',
-			'flow-outliner:fold-item',
-			'flow-outliner:indent-item',
-			'flow-outliner:move-item-down',
-			'flow-outliner:move-item-up',
-			'flow-outliner:outdent-item',
-			'flow-outliner:unfold-all',
-			'flow-outliner:unfold-item',
-			'flow-outliner:zoom-history-back',
-			'flow-outliner:zoom-history-forward',
-			'flow-outliner:zoom-in',
-			'flow-outliner:zoom-out',
-			'flow-outliner:zoom-reset',
+			'roamer:fold-all',
+			'roamer:fold-item',
+			'roamer:indent-item',
+			'roamer:move-item-down',
+			'roamer:move-item-up',
+			'roamer:outdent-item',
+			'roamer:unfold-all',
+			'roamer:unfold-item',
+			'roamer:zoom-history-back',
+			'roamer:zoom-history-forward',
+			'roamer:zoom-in',
+			'roamer:zoom-out',
+			'roamer:zoom-reset',
 		]);
 	});
 });

@@ -62,9 +62,9 @@ describe('folds in real Obsidian', () => {
 		await editor.runCommand('fold-item');
 		await editor.runCommand('unfold-item');
 		expect(await editor.revealedLines()).toEqual([
-			{ text: '\t- b', animation: 'flow-line-reveal' },
-			{ text: '\t\t- c', animation: 'flow-line-reveal' },
-			{ text: '\t- d', animation: 'flow-line-reveal' },
+			{ text: '\t- b', animation: 'roamer-line-reveal' },
+			{ text: '\t\t- c', animation: 'roamer-line-reveal' },
+			{ text: '\t- d', animation: 'roamer-line-reveal' },
 		]);
 		await new Promise((resolve) => setTimeout(resolve, 900));
 		expect(await editor.revealedLines()).toEqual([]);
