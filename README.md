@@ -20,7 +20,7 @@ Needs Obsidian 1.12.0 or newer. Built for desktop and mobile; only desktop (Linu
 
 ## Install
 
-- **Beta:** add `imhalawa/obsidian-flow` in the [BRAT](https://github.com/TfTHacker/obsidian42-brat) plugin with **Add beta plugin**.
+- **Beta:** add `imhalawa/obsidian-roamer` in the [BRAT](https://github.com/TfTHacker/obsidian42-brat) plugin with **Add beta plugin**.
 - **Manual:** download `main.js`, `manifest.json` and `styles.css` from a release into `<Vault>/.obsidian/plugins/roamer/`, then enable it in **Settings → Community plugins**.
 
 ## Commands

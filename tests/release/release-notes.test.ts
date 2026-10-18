@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseCommitSubject, renderReleaseNotes } from '../../scripts/lib/release-notes';
 
-const repositoryUrl = 'https://github.com/imhalawa/obsidian-flow';
+const repositoryUrl = 'https://github.com/imhalawa/obsidian-roamer';
 
 describe('parseCommitSubject', () => {
 	it.each([
