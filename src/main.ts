@@ -6,6 +6,7 @@ import { bulletCallouts } from './editor/callout-bullets';
 import { CalloutWidget, layoutCallouts } from './editor/callout-widget';
 import { embedLines } from './editor/embed-lines';
 import { foldReveal } from './editor/fold-reveal';
+import { indentSpacing } from './editor/indent-spacing';
 import { registerItemDrag } from './editor/register-item-drag';
 import { registerListKeys } from './editor/register-list-keys';
 import { registerMouseHistory } from './editor/register-mouse-history';
@@ -23,6 +24,7 @@ export default class RoamerPlugin extends Plugin {
 		this.addSettingTab(new RoamerSettingTab(this.app, this));
 		registerCommands(this);
 		registerZoomMenu(this);
+		this.registerEditorExtension(indentSpacing(() => this.settings.fixedIndentSpacing));
 		this.registerEditorExtension(foldReveal());
 		this.registerEditorExtension(threadHighlight());
 		this.registerEditorExtension(bulletLight());

@@ -107,6 +107,11 @@
 	flex-shrink: 0;
 }
 
+/* TODO(obsidian-update): overrides Obsidian's --list-indent, which Obsidian reads to lay out indents, bullets and fold arrows. See docs/obsidian-internals.md. */
+.markdown-source-view.mod-cm6 .cm-editor.roamer-indent {
+	--list-indent: 2.25em;
+}
+
 .roamer-over-item-control .cm-content,
 .roamer-over-item-control .cm-line {
 	cursor: pointer;

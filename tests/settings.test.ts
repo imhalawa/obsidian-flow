@@ -22,6 +22,7 @@ describe('settings tab', () => {
 		expect(Setting.created.map((setting) => setting.name)).toEqual([
 			'Remember zoom per note',
 			'Show the zoomed item at the left edge',
+			'Use the same indent spacing in every theme',
 			'Hide embed titles in bullets',
 			'Show callout bullets as callouts',
 			'Bullets and thread lines',
@@ -44,6 +45,7 @@ describe('settings tab', () => {
 		expect(Setting.created.map((setting) => setting.description)).toEqual([
 			'Reopen each note at the item you zoomed into.',
 			'Move the zoomed item to the left edge of the note and hide the indent guides of the levels above it.',
+			'Give every level of a list the same width, so guide lines, bullets and fold arrows keep the same gaps in any theme.',
 			'Hide the title bar of a note embedded in a bullet, so the bullet lines up with the first line of the embed.',
 			'Draw a bullet that starts with > [!tip] as a callout, with its bullet beside it. Put the cursor in it to edit the text.',
 			'',
@@ -66,6 +68,7 @@ describe('settings tab', () => {
 		expect(Setting.created.map((setting) => setting.toggle?.value)).toEqual([
 			plugin.settings.rememberZoom,
 			plugin.settings.cleanZoom,
+			plugin.settings.fixedIndentSpacing,
 			plugin.settings.hideEmbedTitles,
 			plugin.settings.bulletCallouts,
 			undefined,
@@ -98,10 +101,19 @@ describe('settings tab', () => {
 		expect(app.updateOptionsCalls).toBe(1);
 	});
 
+	it('saves use the same indent spacing and refreshes the editors when its toggle changes', async () => {
+		const { app, plugin } = await showTab();
+		expect(plugin.settings.fixedIndentSpacing).toBe(true);
+		await Setting.created[2]?.toggle?.handler?.(false);
+		expect(plugin.settings.fixedIndentSpacing).toBe(false);
+		expect(await plugin.loadData()).toMatchObject({ fixedIndentSpacing: false });
+		expect(app.updateOptionsCalls).toBe(1);
+	});
+
 	it('saves hide embed titles in bullets and refreshes the editors when its toggle changes', async () => {
 		const { app, plugin } = await showTab();
 		expect(plugin.settings.hideEmbedTitles).toBe(true);
-		await Setting.created[2]?.toggle?.handler?.(false);
+		await Setting.created[3]?.toggle?.handler?.(false);
 		expect(plugin.settings.hideEmbedTitles).toBe(false);
 		expect(await plugin.loadData()).toMatchObject({ hideEmbedTitles: false });
 		expect(app.updateOptionsCalls).toBe(1);
@@ -110,7 +122,7 @@ describe('settings tab', () => {
 	it('saves show callout bullets as callouts and refreshes the editors when its toggle changes', async () => {
 		const { app, plugin } = await showTab();
 		expect(plugin.settings.bulletCallouts).toBe(true);
-		await Setting.created[3]?.toggle?.handler?.(false);
+		await Setting.created[4]?.toggle?.handler?.(false);
 		expect(plugin.settings.bulletCallouts).toBe(false);
 		expect(await plugin.loadData()).toMatchObject({ bulletCallouts: false });
 		expect(app.updateOptionsCalls).toBe(1);
@@ -118,32 +130,32 @@ describe('settings tab', () => {
 
 	it('saves click bullet to zoom when its toggle changes', async () => {
 		const { plugin } = await showTab();
-		await Setting.created[5]?.toggle?.handler?.(false);
+		await Setting.created[6]?.toggle?.handler?.(false);
 		expect(plugin.settings.clickBulletToZoom).toBe(false);
 		expect(await plugin.loadData()).toMatchObject({ clickBulletToZoom: false });
 	});
 
 	it('saves click thread line to fold when its toggle changes', async () => {
 		const { plugin } = await showTab();
-		await Setting.created[6]?.toggle?.handler?.(false);
+		await Setting.created[7]?.toggle?.handler?.(false);
 		expect(plugin.settings.clickThreadLineToFold).toBe(false);
 		expect(await plugin.loadData()).toMatchObject({ clickThreadLineToFold: false });
 	});
 
 	it('saves use mouse back and forward for zoom when its toggle changes', async () => {
 		const { plugin } = await showTab();
-		await Setting.created[7]?.toggle?.handler?.(false);
+		await Setting.created[8]?.toggle?.handler?.(false);
 		expect(plugin.settings.useMouseHistory).toBe(false);
 		expect(await plugin.loadData()).toMatchObject({ useMouseHistory: false });
 	});
 
 	it.each([
-		[9 + 1, 'enterOutdentsEmptyItem', true],
-		[9 + 3, 'backspaceMergesItem', true],
-		[9 + 4, 'homeStaysInItem', true],
-		[9 + 5, 'selectAllStaysInItem', true],
-		[9 + 6, 'tabIndentsItem', false],
-		[9 + 2, 'enterAddsFirstChild', true],
+		[10 + 1, 'enterOutdentsEmptyItem', true],
+		[10 + 3, 'backspaceMergesItem', true],
+		[10 + 4, 'homeStaysInItem', true],
+		[10 + 5, 'selectAllStaysInItem', true],
+		[10 + 6, 'tabIndentsItem', false],
+		[10 + 2, 'enterAddsFirstChild', true],
 	] as const)(
 		'saves list editing setting %i (%s) when its toggle changes',
 		async (index, key, initial) => {
@@ -157,7 +169,7 @@ describe('settings tab', () => {
 
 	it('saves drag items and refreshes the editors when its toggle changes', async () => {
 		const { app, plugin } = await showTab();
-		await Setting.created[8]?.toggle?.handler?.(false);
+		await Setting.created[9]?.toggle?.handler?.(false);
 		expect(plugin.settings.dragItems).toBe(false);
 		expect(await plugin.loadData()).toMatchObject({ dragItems: false });
 		expect(app.updateOptionsCalls).toBe(1);

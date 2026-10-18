@@ -68,7 +68,14 @@ The path used to be injected into the note header (`.view-header-title-container
 - **How it breaks:** Renamed callout classes or a changed callout structure misplace the bullet or guide. Content is never altered.
 - **Guards:** `tests/editor/callout-bullets.test.ts`, `tests/editor/callout-decorations.test.ts`; `e2e/callout-bullets.e2e.ts`, `e2e/obsidian-contract.e2e.ts` ("callout markup the plugin lays out").
 
-## 6. Other things worth watching
+## 6. Indent spacing (`--list-indent`)
+
+- **What:** With the setting on, Roamer adds a class to every editor (`EditorView.editorAttributes`) and `styles.css` sets `--list-indent: 2.25em` on it, the width of Obsidian's default.
+- **Why:** Themes change `--list-indent`, which moves guide lines, bullets and fold arrows apart unevenly. Verified in Obsidian 1.14: when the variable changes, Obsidian lays out the indent steps, the hanging indent (`padding-inline-start`, `text-indent`), the bullet and the fold arrow together, and the bullet stays a fixed 12 px right of the fold arrow.
+- **How it breaks:** Obsidian stops reading `--list-indent`, or a theme sets it on an element below `.cm-editor`. Indents then follow the theme, which is the same as the setting being off.
+- **Guards:** `tests/editor/indent-spacing.test.ts`, `e2e/indent-spacing.e2e.ts` (a theme override must not win).
+
+## 7. Other things worth watching
 
 - `app.loadLocalStorage` and `app.saveLocalStorage` store the remembered zoom (`src/editor/register-zoom.ts`). They are thin API. Guard: `e2e/obsidian-contract.e2e.ts` ("round-trips values through local storage").
 - `app.workspace.updateOptions()` applies settings to open editors (`src/settings.ts`). Guard: the same contract spec.

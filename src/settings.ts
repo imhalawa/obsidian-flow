@@ -4,6 +4,7 @@ import type RoamerPlugin from './main';
 export interface RoamerSettings {
 	rememberZoom: boolean;
 	cleanZoom: boolean;
+	fixedIndentSpacing: boolean;
 	hideEmbedTitles: boolean;
 	bulletCallouts: boolean;
 	clickBulletToZoom: boolean;
@@ -21,6 +22,7 @@ export interface RoamerSettings {
 export const DEFAULT_SETTINGS: RoamerSettings = {
 	rememberZoom: true,
 	cleanZoom: true,
+	fixedIndentSpacing: true,
 	hideEmbedTitles: true,
 	bulletCallouts: true,
 	clickBulletToZoom: true,
@@ -71,6 +73,12 @@ export class RoamerSettingTab extends PluginSettingTab {
 			'Show the zoomed item at the left edge',
 			'Move the zoomed item to the left edge of the note and hide the indent guides of the levels above it.',
 			'cleanZoom',
+			() => this.app.workspace.updateOptions(),
+		);
+		this.addToggle(
+			'Use the same indent spacing in every theme',
+			'Give every level of a list the same width, so guide lines, bullets and fold arrows keep the same gaps in any theme.',
+			'fixedIndentSpacing',
 			() => this.app.workspace.updateOptions(),
 		);
 		this.addToggle(
