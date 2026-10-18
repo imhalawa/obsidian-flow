@@ -389,7 +389,9 @@ describe('callout bullets in real Obsidian', () => {
 			await editor.runCommand('unfold-item');
 			await editor.caret(5, 2);
 			await wait(800);
-			expect(await guide()).not.toBeNull();
+			const again = (await guide())!;
+			expect(Math.abs(again.left - again.bulletCenter)).toBeLessThanOrEqual(1.5);
+			expect(again.top).toBeGreaterThanOrEqual(again.bulletBottom);
 			expect(await editor.text()).toBe(PARENT_NOTE);
 		});
 

@@ -4,7 +4,7 @@ import { CALLOUT_LINE_CLASS } from './callout-decorations';
 
 export const CALLOUT_WIDGET_CLASS = 'roamer-callout-widget';
 const SHIFT_PROPERTY = '--roamer-bullet-shift';
-const GUIDE_X_PROPERTY = '--roamer-guide-x';
+export const GUIDE_X_PROPERTY = '--roamer-guide-x';
 const GUIDE_TOP_PROPERTY = '--roamer-guide-top';
 const GUIDE_GAP = 6;
 const WRAP_DISTANCE = 8;

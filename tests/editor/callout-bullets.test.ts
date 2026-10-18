@@ -2,7 +2,7 @@ import { codeFolding, foldEffect, unfoldEffect } from '@codemirror/language';
 import { EditorSelection, EditorState } from '@codemirror/state';
 import { EditorView, WidgetType, type DecorationSet } from '@codemirror/view';
 import { describe, expect, it } from 'vitest';
-import { bulletCallouts } from '../../src/editor/callout-bullets';
+import { bulletCallouts, hasFoldChange } from '../../src/editor/callout-bullets';
 
 class TextWidget extends WidgetType {
 	toDOM(): HTMLElement {
@@ -115,5 +115,30 @@ describe('bulletCallouts', () => {
 			effects: unfoldEffect.of({ from: 12, to: doc.indexOf('\n- z') }),
 		}).state;
 		expect(firstClass(unfolded)).toContain('roamer-callout-parent');
+	});
+});
+
+describe('hasFoldChange', () => {
+	const state = EditorState.create({
+		doc: ['- a', '  - b'].join('\n'),
+		extensions: [codeFolding()],
+	});
+
+	it.each([
+		['a fold', state.update({ effects: foldEffect.of({ from: 3, to: 9 }) })],
+		['an unfold', state.update({ effects: unfoldEffect.of({ from: 3, to: 9 }) })],
+	])('is true for %s', (_name, transaction) => {
+		expect(hasFoldChange([transaction])).toBe(true);
+	});
+
+	it.each([
+		['a selection move', state.update({ selection: EditorSelection.single(2) })],
+		['an edit', state.update({ changes: { from: 0, insert: 'x' } })],
+	])('is false for %s', (_name, transaction) => {
+		expect(hasFoldChange([transaction])).toBe(false);
+	});
+
+	it('is false for no transactions', () => {
+		expect(hasFoldChange([])).toBe(false);
 	});
 });
