@@ -48,8 +48,8 @@ The path used to be injected into the note header (`.view-header-title-container
 
 ## 4. Clean zoom (zoomed item at the left edge)
 
-- **How it works:** A zoomed item keeps its original indent in the document. To show it at the left edge, Roamer marks the zoomed lines with line decorations, measures how far the list marker sits from the left of the line (`.cm-formatting-list`), and publishes that as the CSS variable `--roamer-zoom-shift`. `styles.css` then moves the lines left (`inset-inline-start`), cuts off the empty space with `clip-path: inset(...)`, and moves the selection and cursor layers back with `transform: translateX(...)` so they stay aligned with the text.
-- **Why it is a hack:** CodeMirror and Obsidian have no concept of a view that starts at a deeper indent. The plugin changes geometry in CSS over layers it does not own (`.cm-selectionLayer`, `.cm-cursorLayer`, `.cm-indent`), so any change to how Obsidian lays out or measures the editor can misplace the cursor, selection or guides.
+- **How it works:** A zoomed item keeps its original indent in the document. To show it at the left edge, Roamer marks the zoomed lines with line decorations, measures how far the list marker sits from the left of the line (`.cm-formatting-list`), and publishes that as the CSS variable `--roamer-zoom-shift`. `styles.css` then moves the lines left (`inset-inline-start`) and clips the empty space with `clip-path`. Because the lines really move, CodeMirror measures the caret and selection at the right place, so those layers are left alone.
+- **Why it is a hack:** CodeMirror and Obsidian have no concept of a view that starts at a deeper indent. The plugin changes geometry in CSS over lines and guides it does not own (`.cm-line`, `.cm-indent`), so a change to how Obsidian lays out the editor can misplace the text or guides.
 - **Files:** `src/editor/clean-zoom.ts`, `src/editor/clean-zoom-decorations.ts`, `styles.css` (`.roamer-zoom-line`, `.roamer-zoom-root`, `.roamer-zoomed`).
 - **How it breaks:** The cursor or selection is offset from the text, indent guides show, or the item stays indented. It never changes the note.
 - **Isolation:** It is a setting (clean zoom), can be switched off, and only adds decorations and CSS. If the marker cannot be measured, no shift is applied.
@@ -57,7 +57,8 @@ The path used to be injected into the note header (`.view-header-title-container
 
 ### Research
 
-_To be added._
+- A translate on `.cm-cursorLayer` and `.cm-selectionLayer` was removed: it double-shifted the caret (about 100 px to the left of the text while zoomed). `e2e/clean-zoom.e2e.ts` guards it.
+- Candidate for a less hacky version: hide the indent with `Decoration.replace` plus `atomicRanges` instead of moving and clipping lines. Obsidian sets an inline hanging indent (`padding-inline-start` and `text-indent`) per line, which would have to be overridden. Not tried yet.
 
 ## 5. Callout bullets are a plugin-only rendering
 

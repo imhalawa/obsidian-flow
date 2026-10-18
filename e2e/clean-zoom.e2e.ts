@@ -150,3 +150,48 @@ describe('clean zoom in real Obsidian', () => {
 		);
 	});
 });
+
+describe('caret and selection while zoomed in real Obsidian', () => {
+	const SELECT = `(() => {
+		const cm = app.workspace.activeEditor.editor.cm;
+		cm.focus();
+		cm.dispatch({ selection: { anchor: cm.state.doc.line(3).from + 3, head: cm.state.doc.line(4).to } });
+		return true;
+	})()`;
+
+	const MEASURE = `(() => {
+		const cm = app.workspace.activeEditor.editor.cm;
+		const cursor = cm.dom.querySelector('.cm-cursor-primary');
+		const transform = (selector) => getComputedStyle(cm.dom.querySelector(selector)).transform;
+		return {
+			caretGap: cursor ? Math.abs(cursor.getBoundingClientRect().left - cm.coordsAtPos(cm.state.selection.main.head).left) : null,
+			cursorLayer: transform('.cm-cursorLayer'),
+			selectionLayer: transform('.cm-selectionLayer'),
+		};
+	})()`;
+
+	async function zoomedWithSelection(): Promise<{
+		caretGap: number | null;
+		cursorLayer: string;
+		selectionLayer: string;
+	}> {
+		const editor = await NoteEditor.open(app, NOTE);
+		await editor.caret(3, 5);
+		await editor.runCommand('zoom-in');
+		await app.evaluate(SELECT);
+		await wait(400);
+		return app.evaluate(MEASURE);
+	}
+
+	it('draws the caret where the text is', async () => {
+		const measured = await zoomedWithSelection();
+		expect(measured.caretGap).not.toBeNull();
+		expect(measured.caretGap).toBeLessThan(2);
+	});
+
+	it('leaves the caret and selection layers where the editor puts them', async () => {
+		const measured = await zoomedWithSelection();
+		expect(measured.cursorLayer).toBe('none');
+		expect(measured.selectionLayer).toBe('none');
+	});
+});

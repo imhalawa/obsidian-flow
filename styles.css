@@ -127,11 +127,6 @@
 	border-color: transparent;
 }
 
-.roamer-zoomed .cm-selectionLayer,
-.roamer-zoomed .cm-cursorLayer {
-	transform: translateX(calc(var(--roamer-zoom-shift, 0px) * -1));
-}
-
 @keyframes roamer-line-reveal {
 	from {
 		opacity: 0;
