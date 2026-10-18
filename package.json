@@ -1,6 +1,6 @@
 {
 	"name": "roamer",
-	"version": "0.1.0-beta.8",
+	"version": "0.1.0-beta.9",
 	"description": "An outliner experience for Obsidian, in the spirit of RemNote, Roam Research and Logseq.",
 	"main": "main.js",
 	"type": "module",
