@@ -11,6 +11,7 @@ import {
 	homeInItem,
 	keepBulletOnBackspace,
 	leftAtItemStart,
+	selectZoomedRange,
 	selectItemText,
 } from './list-keys';
 import { hasTreeTarget, runTreeEdit } from './tree-edit';
@@ -76,7 +77,12 @@ export function registerListKeys(plugin: Plugin, host: ListKeysHost): void {
 				homeInItem(view, true, (position) => onFirstRow(view, position)),
 			),
 		},
-		{ key: 'Mod-a', run: guarded(host.selectAllStaysInItem, selectItemText) },
+		{
+			key: 'Mod-a',
+			run: (view) =>
+				guarded(host.selectAllStaysInItem, selectItemText)(view) ||
+				(!view.composing && selectZoomedRange(view)),
+		},
 		{ key: 'Tab', run: tabKey(indentItem), shift: tabKey(outdentItem) },
 	];
 	plugin.registerEditorExtension(Prec.high(keymap.of(bindings)));

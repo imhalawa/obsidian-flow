@@ -29,6 +29,7 @@ Logseq does this structurally, with one text box for each block. Roamer cannot, 
 - Home leaves wrapped rows alone, so it still goes to the start of the visual row.
 - Every key does nothing with several cursors, with a selection (except Home with Shift and select all), and during text composition.
 - In a zoomed item a key never changes lines outside the zoom.
+- While you are zoomed, select all goes item text first, then the zoomed item with everything under it, and stops there. It never selects the hidden lines.
 - Enter adds a first child only when the first child is a bullet or a task; with an ordered first child Obsidian's own Enter applies.
 - Obsidian 1.14 already ends or outdents an empty item on Enter, so that key mostly makes the behavior independent of Obsidian's own.
 

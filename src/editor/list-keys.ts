@@ -5,7 +5,7 @@ import { enterOnEmptyItem, enterOnParentItem } from '../outline/enter-key';
 import { homeColumn, itemTextRange, type LinePosition } from '../outline/home-select';
 import { itemAtLine, itemStartingAt } from '../outline/item-lookup';
 import type { KeyEdit } from '../outline/key-edit';
-import { isAtItemTextStart } from '../outline/text-clamp';
+import { clampToItemText, isAtItemTextStart } from '../outline/text-clamp';
 import { stateIndentStyle } from './editor-indent-style';
 import { isFolded, toggleBranch } from './fold-control';
 import { outlineOfState } from './outline-of-state';
@@ -156,6 +156,26 @@ export function leftAtItemStart(view: EditorView, extend: boolean): boolean {
 		selection: extend
 			? EditorSelection.range(anchor, destination)
 			: EditorSelection.cursor(destination),
+		scrollIntoView: true,
+		userEvent: 'select',
+	});
+	return true;
+}
+
+/** Handles select all while zoomed by selecting the text of the zoomed item and everything under it, never the hidden lines. */
+export function selectZoomedRange(target: ZoomTarget): boolean {
+	const state = target.state;
+	const zoom = state.field(zoomField, false);
+	if (!zoom) return false;
+	const line = state.doc.lineAt(zoom.from);
+	const item = itemStartingAt(outlineOfState(state), line.number - 1);
+	const from = line.from + clampToItemText(line.text, item, 0);
+	const main = state.selection.main;
+	if (state.selection.ranges.length === 1 && main.from === from && main.to === zoom.to) {
+		return true;
+	}
+	target.dispatch({
+		selection: EditorSelection.range(from, zoom.to),
 		scrollIntoView: true,
 		userEvent: 'select',
 	});

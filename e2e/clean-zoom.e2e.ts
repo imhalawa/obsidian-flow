@@ -198,3 +198,32 @@ describe('caret and selection while zoomed in real Obsidian', () => {
 		expect(measured.selectionLayer).toBe('none');
 	});
 });
+
+describe('select all while zoomed in real Obsidian', () => {
+	const SELECTED = `(() => { const cm = app.workspace.activeEditor.editor.cm; const main = cm.state.selection.main; return cm.state.sliceDoc(main.from, main.to); })()`;
+
+	it('selects the zoomed item with what is under it and never the hidden lines', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		await editor.caret(2, 5);
+		await editor.runCommand('zoom-in');
+		await wait(300);
+		await app.pressKey('a', false, true);
+		await wait(150);
+		expect(await app.evaluate<string>(SELECTED)).toBe('c');
+		await app.pressKey('a', false, true);
+		await wait(150);
+		expect(await app.evaluate<string>(SELECTED)).toBe('c\n\t\t\t- d');
+		await app.pressKey('a', false, true);
+		await wait(150);
+		expect(await app.evaluate<string>(SELECTED)).toBe('c\n\t\t\t- d');
+	});
+
+	it('still selects the whole note when nothing is zoomed', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		await editor.caret(2, 5);
+		await app.pressKey('a', false, true);
+		await app.pressKey('a', false, true);
+		await wait(150);
+		expect(await app.evaluate<string>(SELECTED)).toBe(NOTE);
+	});
+});

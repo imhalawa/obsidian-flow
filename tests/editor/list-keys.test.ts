@@ -8,6 +8,7 @@ import {
 	homeInItem,
 	keepBulletOnBackspace,
 	selectItemText,
+	selectZoomedRange,
 } from '../../src/editor/list-keys';
 import { foldItem } from '../../src/editor/fold-control';
 import { zoomIn } from '../../src/editor/zoom-control';
@@ -306,5 +307,32 @@ describe('keepBulletOnBackspace', () => {
 			target.state = target.state.update({ selection: EditorSelection.range(2, 4) }).state;
 		}
 		expect(keepBulletOnBackspace(target)).toBe(false);
+	});
+});
+
+describe('selectZoomedRange', () => {
+	const NOTE = '- a\n- b\n  - c\n  - d\n- e';
+
+	it('selects the zoomed item and what is under it, not the whole note', () => {
+		const target = new FakeZoomTarget(NOTE, 6);
+		zoomIn(target);
+		expect(selectZoomedRange(target)).toBe(true);
+		expect(target.state.sliceDoc(target.selected.from, target.selected.to)).toBe(
+			'b\n  - c\n  - d',
+		);
+	});
+
+	it('stays within the zoom when it is pressed again', () => {
+		const target = new FakeZoomTarget(NOTE, 6);
+		zoomIn(target);
+		selectZoomedRange(target);
+		const first = target.selected;
+		expect(selectZoomedRange(target)).toBe(true);
+		expect(target.selected).toEqual(first);
+	});
+
+	it('does nothing while the whole note is shown', () => {
+		const target = new FakeZoomTarget(NOTE, 6);
+		expect(selectZoomedRange(target)).toBe(false);
 	});
 });
