@@ -2,7 +2,7 @@
 
 ![Roamer: outline your notes](docs/poster.svg)
 
-Outliner for Obsidian, in the spirit of RemNote, Roam Research and Logseq. Zoom into any bullet, fold branches, move items with the keyboard or by dragging. Your notes stay plain Markdown: zoom and folds are view state, so they only ever contain text you would write yourself.
+Outline editing for Obsidian. Zoom into any bullet, fold branches, move items with the keyboard or by dragging. Your notes stay plain Markdown: zoom and folds are view state, so they only ever contain text you would write yourself.
 
 Needs Obsidian 1.12.0 or newer. Built for desktop and mobile; only desktop (Linux) is tested so far.
 
@@ -72,7 +72,7 @@ npm run check
 | `npm run test:mutation` | Mutation testing with Stryker                                                             |
 | `npm run test:e2e`      | Tests in real Obsidian on Linux, see [docs/end-to-end-tests.md](docs/end-to-end-tests.md) |
 
-Guidance: [CLAUDE.md](CLAUDE.md), [docs/references.md](docs/references.md), [docs/reference-plugins.md](docs/reference-plugins.md), [docs/releasing.md](docs/releasing.md).
+Guidance: [CLAUDE.md](CLAUDE.md), [docs/references.md](docs/references.md), [docs/releasing.md](docs/releasing.md).
 
 ## License
 
