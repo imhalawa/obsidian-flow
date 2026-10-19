@@ -230,6 +230,8 @@
 	display: inline-block;
 	min-width: 10em;
 	width: calc(100% - 1px);
+	margin-top: var(--roamer-callout-top, 0px);
+	margin-bottom: var(--size-4-2);
 	vertical-align: top;
 	text-indent: 0;
 	white-space: normal;
@@ -240,21 +242,16 @@
 	margin: 0;
 }
 
-.cm-line.roamer-callout-line .list-bullet {
-	position: relative;
-	top: var(--roamer-bullet-shift, 0px);
-}
-
 .markdown-source-view.mod-cm6 .cm-line.roamer-callout-line.HyperMD-quote::before,
 .markdown-source-view.mod-cm6 .cm-line.roamer-callout-after.HyperMD-quote::before {
 	display: none;
 }
 
-.cm-line.roamer-callout-parent {
+.cm-line.roamer-callout-linked {
 	position: relative;
 }
 
-.cm-line.roamer-callout-parent::after {
+.cm-line.roamer-callout-linked::after {
 	content: '';
 	position: absolute;
 	top: var(--roamer-guide-top, 0);

@@ -3,15 +3,23 @@ import { Component, MarkdownRenderer, editorInfoField, type App } from 'obsidian
 import { CALLOUT_LINE_CLASS } from './callout-decorations';
 
 export const CALLOUT_WIDGET_CLASS = 'roamer-callout-widget';
-const SHIFT_PROPERTY = '--roamer-bullet-shift';
-const GUIDE_X_PROPERTY = '--roamer-guide-x';
+const TOP_PROPERTY = '--roamer-callout-top';
+export const GUIDE_X_PROPERTY = '--roamer-guide-x';
 const GUIDE_TOP_PROPERTY = '--roamer-guide-top';
-const GUIDE_GAP = 6;
+const GUIDE_GAP = 2;
 const WRAP_DISTANCE = 8;
+const DOT_OFFSET = 9.6;
+const DOT_SIZE = 4.8;
 const LAYOUT_KEY = 'roamer-callout-layout';
 const INTERACTIVE = 'a, button, input, .callout-fold';
 const components = new WeakMap<HTMLElement, Component>();
 const observers = new WeakMap<HTMLElement, ResizeObserver>();
+
+/** Parses a computed length in pixels, or returns the fallback when it is not a number. */
+function pixels(value: string, fallback: number): number {
+	const parsed = parseFloat(value);
+	return Number.isNaN(parsed) ? fallback : parsed;
+}
 
 /** Reads the geometry of the callout lines and sets the properties that place their bullet and the guide of their children. */
 export function layoutCallouts(view: EditorView): void {
@@ -26,27 +34,31 @@ export function layoutCallouts(view: EditorView): void {
 				const title = line.querySelector('.callout-title');
 				const widget = line.querySelector(`.${CALLOUT_WIDGET_CLASS}`);
 				if (!bullet || !title || !widget) return [];
-				const current = parseFloat(line.style.getPropertyValue(SHIFT_PROPERTY));
+				const current = parseFloat(line.style.getPropertyValue(TOP_PROPERTY));
 				const applied = Number.isNaN(current) ? 0 : current;
+				const dot = getComputedStyle(bullet, '::after');
+				const dotOffset = pixels(dot.top, DOT_OFFSET);
+				const dotSize = pixels(dot.height, DOT_SIZE);
 				const lineBox = line.getBoundingClientRect();
 				const bulletBox = bullet.getBoundingClientRect();
-				const titleBox = title.getBoundingClientRect();
-				const bulletMiddle = (bulletBox.top + bulletBox.bottom) / 2 - applied;
-				const wrapped = widget.getBoundingClientRect().top - lineBox.top > WRAP_DISTANCE;
-				const shift = wrapped ? 0 : (titleBox.top + titleBox.bottom) / 2 - bulletMiddle;
+				const widgetBox = widget.getBoundingClientRect();
+				const dotTop = bulletBox.top + dotOffset;
+				const naturalTop = widgetBox.top - applied;
+				const wrapped = naturalTop - lineBox.top > WRAP_DISTANCE;
+				const top = wrapped ? 0 : dotTop - naturalTop;
 				return [
 					{
 						line,
-						shift,
+						top,
 						guideX: (bulletBox.left + bulletBox.right) / 2 - lineBox.left,
-						guideTop: bulletBox.bottom - applied + shift - lineBox.top + GUIDE_GAP,
+						guideTop: dotTop - lineBox.top + dotSize + GUIDE_GAP,
 					},
 				];
 			}),
 		write: (items) => {
-			for (const { line, shift, guideX, guideTop } of items) {
+			for (const { line, top, guideX, guideTop } of items) {
 				line.setCssProps({
-					[SHIFT_PROPERTY]: `${Math.round(shift)}px`,
+					[TOP_PROPERTY]: `${Math.round(top)}px`,
 					[GUIDE_X_PROPERTY]: `${Math.round(guideX)}px`,
 					[GUIDE_TOP_PROPERTY]: `${Math.round(guideTop)}px`,
 				});

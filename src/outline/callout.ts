@@ -5,7 +5,7 @@ export interface CalloutBlock {
 	startLine: number;
 	endLine: number;
 	markerColumn: number;
-	hasChildren: boolean;
+	linked: boolean;
 	title: string;
 	markdown: string;
 }
@@ -37,23 +37,31 @@ function lastBodyLine(lines: readonly string[], item: OutlineNode, tabSize: numb
 	return last;
 }
 
+/** Tells whether a bullet is followed by a child or a sibling, so a line can lead from it to the next bullet. */
+function isLinked(item: OutlineNode, next: OutlineNode | undefined): boolean {
+	return next !== undefined && next.indentColumns >= item.indentColumns;
+}
+
 /** Returns the callout bullets of a note: each bullet whose text opens a callout, with the quote lines that continue it. */
 export function findCallouts(
 	lines: readonly string[],
 	tree: OutlineTree,
 	tabSize: number,
 ): CalloutBlock[] {
-	return tree.nodes.filter(opensCallout).map((item) => {
+	return tree.nodes.flatMap((item, index) => {
+		if (!opensCallout(item)) return [];
 		const endLine = lastBodyLine(lines, item, tabSize);
 		const body = lines.slice(item.startLine + 1, endLine + 1).map((text) => text.trimStart());
 		const head = lines[item.startLine] ?? '';
-		return {
-			startLine: item.startLine,
-			endLine,
-			markerColumn: head.length - item.text.length,
-			hasChildren: item.children.length > 0,
-			title: item.text,
-			markdown: [item.text, ...body].join('\n'),
-		};
+		return [
+			{
+				startLine: item.startLine,
+				endLine,
+				markerColumn: head.length - item.text.length,
+				linked: isLinked(item, tree.nodes[index + 1]),
+				title: item.text,
+				markdown: [item.text, ...body].join('\n'),
+			},
+		];
 	});
 }

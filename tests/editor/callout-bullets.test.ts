@@ -2,7 +2,7 @@ import { codeFolding, foldEffect, unfoldEffect } from '@codemirror/language';
 import { EditorSelection, EditorState } from '@codemirror/state';
 import { EditorView, WidgetType, type DecorationSet } from '@codemirror/view';
 import { describe, expect, it } from 'vitest';
-import { bulletCallouts } from '../../src/editor/callout-bullets';
+import { bulletCallouts, hasFoldChange } from '../../src/editor/callout-bullets';
 
 class TextWidget extends WidgetType {
 	toDOM(): HTMLElement {
@@ -83,7 +83,7 @@ describe('bulletCallouts', () => {
 		expect(count(changed)).toBe(2);
 	});
 
-	it('drops the guide class of a callout bullet when it is folded', () => {
+	it('keeps the linked class of a callout bullet when it is folded', () => {
 		const doc = '- > [!tip] t\n  - child\n- z';
 		const state = EditorState.create({
 			doc,
@@ -106,14 +106,39 @@ describe('bulletCallouts', () => {
 			}
 			return found;
 		};
-		expect(firstClass(state)).toContain('roamer-callout-parent');
+		expect(firstClass(state)).toContain('roamer-callout-linked');
 		const folded = state.update({
 			effects: foldEffect.of({ from: 12, to: doc.indexOf('\n- z') }),
 		}).state;
-		expect(firstClass(folded)).toBe('roamer-callout-line');
+		expect(firstClass(folded)).toContain('roamer-callout-linked');
 		const unfolded = folded.update({
 			effects: unfoldEffect.of({ from: 12, to: doc.indexOf('\n- z') }),
 		}).state;
-		expect(firstClass(unfolded)).toContain('roamer-callout-parent');
+		expect(firstClass(unfolded)).toContain('roamer-callout-linked');
+	});
+});
+
+describe('hasFoldChange', () => {
+	const state = EditorState.create({
+		doc: ['- a', '  - b'].join('\n'),
+		extensions: [codeFolding()],
+	});
+
+	it.each([
+		['a fold', state.update({ effects: foldEffect.of({ from: 3, to: 9 }) })],
+		['an unfold', state.update({ effects: unfoldEffect.of({ from: 3, to: 9 }) })],
+	])('is true for %s', (_name, transaction) => {
+		expect(hasFoldChange([transaction])).toBe(true);
+	});
+
+	it.each([
+		['a selection move', state.update({ selection: EditorSelection.single(2) })],
+		['an edit', state.update({ changes: { from: 0, insert: 'x' } })],
+	])('is false for %s', (_name, transaction) => {
+		expect(hasFoldChange([transaction])).toBe(false);
+	});
+
+	it('is false for no transactions', () => {
+		expect(hasFoldChange([])).toBe(false);
 	});
 });
