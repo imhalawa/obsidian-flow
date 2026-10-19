@@ -28,7 +28,11 @@ describe('isOverFoldIndicator', () => {
 	});
 });
 
-class FakeElement {}
+class FakeElement {
+	instanceOf(type: new () => object): boolean {
+		return this instanceof type;
+	}
+}
 
 interface FakeArrow {
 	getBoundingClientRect: () => { left: number; right: number };
@@ -42,7 +46,7 @@ function viewWithArrow(arrow: FakeArrow | null, asText: boolean): EditorView {
 	const element = Object.assign(new FakeElement(), {
 		closest: (selector: string) => (selector === '.cm-line' ? line : null),
 	});
-	const node = asText ? { parentElement: element } : element;
+	const node = asText ? { parentElement: element, instanceOf: () => false } : element;
 	return { domAtPos: () => ({ node }) } as unknown as EditorView;
 }
 
@@ -61,7 +65,7 @@ describe('foldIndicatorCenter', () => {
 
 	it('returns null when the position is in a text node without a parent element', () => {
 		const view = {
-			domAtPos: () => ({ node: { parentElement: null } }),
+			domAtPos: () => ({ node: { parentElement: null, instanceOf: () => false } }),
 		} as unknown as EditorView;
 		expect(foldIndicatorCenter(view, 0)).toBeNull();
 	});

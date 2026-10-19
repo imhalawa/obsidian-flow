@@ -1,5 +1,7 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
+import type { SettingDefinition, SettingDefinitionItem } from 'obsidian';
 import type RoamerPlugin from './main';
+import { SETTING_SECTIONS, type ToggleEntry } from './setting-sections';
 
 export interface RoamerSettings {
 	rememberZoom: boolean;
@@ -39,7 +41,7 @@ export const DEFAULT_SETTINGS: RoamerSettings = {
 	keepBulletOutOfSelection: true,
 };
 
-type ToggleKey = {
+export type ToggleKey = {
 	[Key in keyof RoamerSettings]: RoamerSettings[Key] extends boolean ? Key : never;
 }[keyof RoamerSettings];
 
@@ -55,6 +57,11 @@ export function mergeSettings(stored: unknown): RoamerSettings {
 	return merged;
 }
 
+/** Tells whether a key names one of the toggles. */
+function isToggleKey(key: string): key is ToggleKey {
+	return Object.keys(DEFAULT_SETTINGS).includes(key);
+}
+
 export class RoamerSettingTab extends PluginSettingTab {
 	constructor(
 		app: App,
@@ -63,123 +70,52 @@ export class RoamerSettingTab extends PluginSettingTab {
 		super(app, plugin);
 	}
 
+	/** Renders the tab by hand, which Obsidian does only before 1.13. */
 	display(): void {
 		this.containerEl.empty();
-		this.addToggle(
-			'Remember zoom per note',
-			'Reopen each note at the item you zoomed into.',
-			'rememberZoom',
-			null,
-		);
-		this.addToggle(
-			'Show the zoomed item at the left edge',
-			'Move the zoomed item to the left edge of the note and hide the indent guides of the levels above it.',
-			'cleanZoom',
-			() => this.app.workspace.updateOptions(),
-		);
-		this.addToggle(
-			'Use the same indent spacing in every theme',
-			'Give every level of a list the same width, so guide lines, bullets and fold arrows keep the same gaps in any theme.',
-			'fixedIndentSpacing',
-			() => this.app.workspace.updateOptions(),
-		);
-		this.addToggle(
-			'Hide embed titles in bullets',
-			'Hide the title bar of a note embedded in a bullet, so the bullet lines up with the first line of the embed.',
-			'hideEmbedTitles',
-			() => this.app.workspace.updateOptions(),
-		);
-		this.addToggle(
-			'Show callout bullets as callouts',
-			'Draw a bullet that starts with > [!tip] as a callout, with its bullet beside it. Put the cursor in it to edit the text.',
-			'bulletCallouts',
-			() => this.app.workspace.updateOptions(),
-		);
-		new Setting(this.containerEl).setName('Bullets and thread lines').setHeading();
-		this.addToggle(
-			'Click bullet to zoom',
-			'Select a bullet to zoom into that item.',
-			'clickBulletToZoom',
-			null,
-		);
-		this.addToggle(
-			'Click thread line to fold',
-			'Select a thread line to fold its branch. Hold Alt to fold every descendant too.',
-			'clickThreadLineToFold',
-			null,
-		);
-		this.addToggle(
-			'Use mouse back and forward for zoom',
-			"Step through zoom levels first. When none are left, Obsidian's own back and forward apply.",
-			'useMouseHistory',
-			null,
-		);
-		this.addToggle(
-			'Drag items by their bullet',
-			'Press a bullet and move to drag the item and its children, also to another open note. A click on the bullet still zooms.',
-			'dragItems',
-			() => this.app.workspace.updateOptions(),
-		);
-		new Setting(this.containerEl).setName('List editing').setHeading();
-		this.addToggle(
-			'Enter on an empty item outdents it',
-			'Outdent an empty item, or end the list when it is at the top level.',
-			'enterOutdentsEmptyItem',
-			null,
-		);
-		this.addToggle(
-			'Enter on an item with children adds its first child',
-			'Add the new item as the first child, as a task when the first child is a task, instead of between the item and its children.',
-			'enterAddsFirstChild',
-			null,
-		);
-		this.addToggle(
-			'Backspace at the start of an item merges it',
-			'Join the item with the one above instead of deleting the bullet.',
-			'backspaceMergesItem',
-			null,
-		);
-		this.addToggle(
-			'Home stays inside the item text',
-			'Move to the start of the item text before moving to the start of the line.',
-			'homeStaysInItem',
-			null,
-		);
-		this.addToggle(
-			'Select all starts with the item text',
-			'Select the text of the item first. Select all again to select the whole note.',
-			'selectAllStaysInItem',
-			null,
-		);
-		this.addToggle(
-			'Tab and Shift-Tab move whole items',
-			'Indent and outdent the item with its children. Turn this on to replace the editor keys.',
-			'tabIndentsItem',
-			null,
-		);
-		this.addToggle(
-			'Keep the bullet out of text selections',
-			'Treat the bullet as its own object: the cursor and selections stay in the text, and Backspace at the start of a text never eats the bullet.',
-			'keepBulletOutOfSelection',
-			() => this.app.workspace.updateOptions(),
-		);
+		for (const section of SETTING_SECTIONS) {
+			if (section.heading !== null) {
+				new Setting(this.containerEl).setName(section.heading).setHeading();
+			}
+			for (const toggle of section.toggles) this.addToggle(toggle);
+		}
 	}
 
-	private addToggle(
-		name: string,
-		description: string,
-		key: ToggleKey,
-		afterChange: (() => void) | null,
-	): void {
+	/** Describes the tab to Obsidian 1.13 and later, which renders it and searches it. */
+	getSettingDefinitions(): SettingDefinitionItem[] {
+		return SETTING_SECTIONS.flatMap((section): SettingDefinitionItem[] => {
+			const items = section.toggles.map((toggle): SettingDefinition => ({
+				name: toggle.name,
+				desc: toggle.description,
+				control: { type: 'toggle', key: toggle.key },
+			}));
+			if (section.heading === null) return items;
+			return [{ type: 'group', heading: section.heading, items }];
+		});
+	}
+
+	async setControlValue(key: string, value: unknown): Promise<void> {
+		if (!isToggleKey(key) || typeof value !== 'boolean') return;
+		await this.change(key, value);
+	}
+
+	private async change(key: ToggleKey, value: boolean): Promise<void> {
+		this.plugin.settings[key] = value;
+		await this.plugin.saveSettings();
+		const entry = SETTING_SECTIONS.flatMap((section) => section.toggles).find(
+			(toggle) => toggle.key === key,
+		);
+		if (entry?.refreshesEditors === true) this.app.workspace.updateOptions();
+	}
+
+	private addToggle(toggle: ToggleEntry): void {
 		new Setting(this.containerEl)
-			.setName(name)
-			.setDesc(description)
-			.addToggle((toggle) =>
-				toggle.setValue(this.plugin.settings[key]).onChange(async (value) => {
-					this.plugin.settings[key] = value;
-					await this.plugin.saveSettings();
-					afterChange?.();
-				}),
+			.setName(toggle.name)
+			.setDesc(toggle.description)
+			.addToggle((control) =>
+				control
+					.setValue(this.plugin.settings[toggle.key])
+					.onChange((value) => this.change(toggle.key, value)),
 			);
 	}
 }

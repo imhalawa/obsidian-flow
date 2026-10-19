@@ -17,7 +17,7 @@
       <rect x="226" y="410" width="110" height="44" rx="22" fill="#b9a6ff"/><text x="252" y="439">Fold</text>
       <rect x="352" y="410" width="110" height="44" rx="22" fill="#b9a6ff"/><text x="378" y="439">Drag</text>
     </g>
-    <text x="80" y="590" font-size="22" fill="#b9a6ff">github.com/imhalawa/obsidian-flow</text>
+    <text x="80" y="590" font-size="22" fill="#b9a6ff">github.com/imhalawa/obsidian-roamer</text>
   </g>
   <g font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="26" fill="#f2eeff">
     <rect x="680" y="110" width="440" height="455" rx="20" fill="#120d22" stroke="#4a3a8a" stroke-width="2"/>

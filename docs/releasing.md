@@ -14,7 +14,7 @@ A release is a tag. The tag workflow checks, builds and drafts a GitHub release.
 
 A version with a suffix, such as `0.1.0-beta.1` or `1.0.0-rc.1`, is a pre-release. Use it the same way as any other version: `npm version 0.1.0-beta.1` (or set the files by hand), merge, then run the workflow. The workflow accepts tags like `0.1.0-beta.1` and drafts the release marked **Pre-release**, so it never becomes the latest release.
 
-Testers install a pre-release with [BRAT](https://github.com/TfTHacker/obsidian42-brat): **Add beta plugin** with the repository `imhalawa/obsidian-flow`. BRAT needs a GitHub token in its settings while the repository is private.
+Testers install a pre-release with [BRAT](https://github.com/TfTHacker/obsidian42-brat): **Add beta plugin** with the repository `imhalawa/obsidian-roamer`. BRAT needs a GitHub token in its settings while the repository is private.
 
 The version in `versions.json` must be a full version with the same suffix. Pre-releases are not submitted to the community list; submit the stable version.
 
@@ -37,7 +37,7 @@ Release notes list `feat`, `fix`, `perf` and `revert` commits, and any commit ma
 
 ```bash
 npm run --silent release:verify -- 1.2.3
-npm run --silent release:notes -- 1.2.3 https://github.com/imhalawa/obsidian-flow HEAD
+npm run --silent release:notes -- 1.2.3 https://github.com/imhalawa/obsidian-roamer HEAD
 ```
 
 The last argument is the commit the notes end at. Notes start after the latest tag reachable from it.

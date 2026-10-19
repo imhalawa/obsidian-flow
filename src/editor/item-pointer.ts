@@ -10,7 +10,6 @@ import {
 	expandToMinimumWidth,
 	hitSizes,
 	threadParent,
-	type Interval,
 } from '../outline/pointer-hit';
 import {
 	ITEM_MENU_TITLES,

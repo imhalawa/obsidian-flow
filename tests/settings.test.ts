@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import RoamerPlugin from '../src/main';
-import { RoamerSettingTab } from '../src/settings';
+import { DEFAULT_SETTINGS, RoamerSettingTab } from '../src/settings';
 import { Setting } from './mocks/obsidian';
 import { FakeApp } from './support/fake-app';
 
@@ -177,5 +177,74 @@ describe('settings tab', () => {
 		expect(plugin.settings.dragItems).toBe(false);
 		expect(await plugin.loadData()).toMatchObject({ dragItems: false });
 		expect(app.updateOptionsCalls).toBe(1);
+	});
+});
+
+interface LooseDefinition {
+	name?: string;
+	heading?: string;
+	items?: LooseDefinition[];
+	control?: { key: string };
+}
+
+const asLoose = (items: unknown): LooseDefinition[] => items as LooseDefinition[];
+
+describe('settings definitions', () => {
+	const definitionsOf = async () => {
+		const app = new FakeApp();
+		const plugin = new RoamerPlugin(app as never, {} as never);
+		await plugin.onload();
+		const tab = new RoamerSettingTab(app as never, plugin);
+		return { app, plugin, tab, items: tab.getSettingDefinitions() };
+	};
+
+	it('lists the first five toggles flat, then one group for each heading', async () => {
+		const { items } = await definitionsOf();
+		expect(
+			asLoose(items).map((item) =>
+				item.heading === undefined ? item.name : `group:${item.heading}`,
+			),
+		).toEqual([
+			'Remember zoom per note',
+			'Show the zoomed item at the left edge',
+			'Use the same indent spacing in every theme',
+			'Hide embed titles in bullets',
+			'Show callout bullets as callouts',
+			'group:Bullets and thread lines',
+			'group:List editing',
+		]);
+	});
+
+	it('binds every toggle to the key of its setting', async () => {
+		const { items } = await definitionsOf();
+		const keys = asLoose(items)
+			.flatMap((item) => item.items ?? [item])
+			.map((item) => item.control?.key);
+		expect(keys).toEqual(Object.keys(DEFAULT_SETTINGS));
+	});
+
+	it('saves a changed value and refreshes the editors when the setting needs it', async () => {
+		const { app, plugin, tab } = await definitionsOf();
+		await tab.setControlValue('cleanZoom', false);
+		expect(plugin.settings.cleanZoom).toBe(false);
+		expect(await plugin.loadData()).toMatchObject({ cleanZoom: false });
+		expect(app.updateOptionsCalls).toBe(1);
+	});
+
+	it('does not refresh the editors for a setting that does not need it', async () => {
+		const { app, plugin, tab } = await definitionsOf();
+		await tab.setControlValue('rememberZoom', false);
+		expect(plugin.settings.rememberZoom).toBe(false);
+		expect(app.updateOptionsCalls).toBe(0);
+	});
+
+	it.each([
+		['an unknown key', 'nothing', true],
+		['a value that is not a boolean', 'cleanZoom', 'off'],
+	])('ignores %s', async (_name, key, value) => {
+		const { app, plugin, tab } = await definitionsOf();
+		await tab.setControlValue(key, value);
+		expect(plugin.settings.cleanZoom).toBe(true);
+		expect(app.updateOptionsCalls).toBe(0);
 	});
 });

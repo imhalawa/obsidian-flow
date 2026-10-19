@@ -16,7 +16,7 @@ export function isOverFoldIndicator(target: object | null): boolean {
 /** Returns the rendered line that holds a document position, or null when it is not drawn. */
 function renderedLine(view: EditorView, position: number): Element | null {
 	const node = view.domAtPos(position).node;
-	const element = node instanceof Element ? node : node.parentElement;
+	const element = node.instanceOf(Element) ? node : node.parentElement;
 	return element?.closest('.cm-line') ?? null;
 }
 
