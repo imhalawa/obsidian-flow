@@ -3,9 +3,9 @@ import { ITEM_MENU_TITLES, itemMenuActions } from '../../src/ui/item-menu-model'
 
 describe('itemMenuActions', () => {
 	it.each([
-		['a leaf', false, false, ['zoom']],
-		['an open item with children', true, false, ['zoom', 'fold']],
-		['a folded item with children', true, true, ['zoom', 'unfold']],
+		['a leaf', false, false, ['zoom', 'duplicate']],
+		['an open item with children', true, false, ['zoom', 'fold', 'duplicate']],
+		['a folded item with children', true, true, ['zoom', 'unfold', 'duplicate']],
 	] as const)('offers for %s', (_name, hasChildren, folded, expected) => {
 		expect(itemMenuActions(hasChildren, folded)).toEqual(expected);
 	});
@@ -17,6 +17,7 @@ describe('ITEM_MENU_TITLES', () => {
 			zoom: 'Zoom into item',
 			fold: 'Fold item',
 			unfold: 'Unfold item',
+			duplicate: 'Duplicate item',
 		});
 	});
 });

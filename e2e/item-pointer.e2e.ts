@@ -284,7 +284,20 @@ describe('bullets and thread lines in real Obsidian', () => {
 		const bullet = await editor.bulletPoint(0);
 		await app.rightClick(bullet.x, bullet.y);
 		await wait(300);
-		expect(await editor.menuEntries()).toEqual(['Zoom into item', 'Fold item']);
+		expect(await editor.menuEntries()).toEqual([
+			'Zoom into item',
+			'Fold item',
+			'Duplicate item',
+		]);
+	});
+
+	it('duplicates the item with its children below itself from the menu', async () => {
+		const editor = await NoteEditor.open(app, NOTE);
+		const bullet = await editor.bulletPoint(0);
+		await app.rightClick(bullet.x, bullet.y);
+		await wait(300);
+		await editor.chooseMenuEntry('Duplicate item');
+		expect(await editor.text()).toBe('- a\n\t- b\n\t\t- c\n- a\n\t- b\n\t\t- c\n- d');
 	});
 
 	it('folds the item from the menu and then offers to unfold it', async () => {

@@ -20,6 +20,7 @@ import {
 } from '../ui/item-menu-model';
 import { hasStartedDragging, isFinishedPress, type PressPoint } from './bullet-press';
 import { showLitBullet, litBulletAt } from './bullet-hover';
+import { duplicateItem } from './duplicate-item';
 import { isFolded, isHiddenByFold, toggleBranch } from './fold-control';
 import { foldIndicatorCenter, foldIndicatorOf, isOverFoldIndicator } from './fold-indicator';
 import { editorFontSize, firstRow, markerSpan } from './item-geometry';
@@ -137,6 +138,7 @@ function perform(
 	startLine: number,
 ): void {
 	if (action === 'zoom') dispatchZoom(view, startLine, 'visit');
+	else if (action === 'duplicate') duplicateItem(view, startLine);
 	else toggleBranch(view, startLine, false);
 }
 
