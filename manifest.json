@@ -1,7 +1,7 @@
 {
 	"id": "roamer",
 	"name": "Roamer",
-	"version": "0.1.0-beta.11",
+	"version": "0.1.0-beta.12",
 	"minAppVersion": "1.12.0",
 	"description": "Edit lists as an outline with zoom, folds, and drag and drop, inspired by RemNote, Roam Research and Logseq.",
 	"author": "imhalawa",
